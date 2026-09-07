@@ -8,14 +8,18 @@ on:
 jobs:
   quality:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: ${{ matrix.python-version }}
           cache: pip
       - name: Install package and development tools
         run: python -m pip install --upgrade pip && python -m pip install -e ".[dev]"
@@ -34,11 +38,51 @@ jobs:
           tests/test_phase6_features.py tests/test_cli_contract.py
       - name: Compile
         run: python -m compileall -q astrotransit cli dashboard
-      - name: Pytest
-        run: python -m pytest -q
+      - name: Pytest with coverage
+        run: python -m pytest -q --cov=astrotransit --cov-report=term --cov-report=xml
       - name: CLI contract smoke tests
         run: |
           python -m cli.main --help
           python -m cli.main migrate --help
           python -m cli.main target-pool --help
           python -m cli.main version
+      - name: Output schema contract check
+        # Şema sürümü ve epistemik alanlar (fpp_method) sözleşmede kalmalı.
+        run: |
+          python - <<'PY'
+          from astrotransit.outputs.schemas import SCHEMA_VERSION, TransitCandidateRecord
+          from astrotransit.quality.vetting import FPP_METHOD
+          assert SCHEMA_VERSION == "1.7"
+          rec = TransitCandidateRecord(fpp_method=FPP_METHOD)
+          flat = rec.to_flat_dict()
+          assert flat["fpp_method"] == FPP_METHOD
+          assert rec.to_nested_dict()["vetting"]["fpp_method"] == FPP_METHOD
+          print("schema contract ok:", SCHEMA_VERSION)
+          PY
+      - name: Upload coverage
+        if: matrix.python-version == '3.11'
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage.xml
+
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Install build backend
+        run: python -m pip install --upgrade pip build
+      - name: Build sdist and wheel
+        run: python -m build --sdist --wheel
+      - name: Upload package artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: package-build
+          path: dist/*
