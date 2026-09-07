@@ -22,6 +22,8 @@ class TestTransitCandidateRecord:
         assert rec.source_id == ""
         assert rec.period == 0.0
         assert rec.candidate_class == ""
+        assert rec.followup_confirmed is False
+        assert rec.to_nested_dict()["followup"]["status"] == "not_confirmed"
 
     def test_to_dict(self):
         rec = TransitCandidateRecord(

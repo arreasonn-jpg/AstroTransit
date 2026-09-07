@@ -6,6 +6,7 @@ from astrotransit.data.catalog_client import StellarProperties
 from astrotransit.outputs.schemas import build_record
 from astrotransit.validation.followup import (
     FollowupEvidence,
+    FollowupValidationResult,
     coerce_followup_result,
     validate_followup_evidence,
 )
@@ -18,6 +19,11 @@ def test_confirmed_followup_requires_observation_id():
             observation_type="radial_velocity",
             confirmed=True,
         )
+
+
+def test_followup_validation_result_cannot_bypass_evidence_contract():
+    with pytest.raises(ValueError):
+        FollowupValidationResult(confirmed=True, status="followup_confirmed")
 
 
 def test_followup_result_does_not_infer_confirmation_from_bare_flag():

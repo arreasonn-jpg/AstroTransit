@@ -98,6 +98,14 @@ class FollowupValidationResult:
     notes: tuple[str, ...] = ()
     evidence: tuple[FollowupEvidence, ...] = field(default_factory=tuple)
 
+    def __post_init__(self) -> None:
+        if self.confirmed and (not self.evidence or not self.observation_ids):
+            raise ValueError(
+                "confirmed FollowupValidationResult geçerli evidence ve observation_id gerektirir."
+            )
+        if self.status == "followup_confirmed" and not self.confirmed:
+            raise ValueError("followup_confirmed status confirmed=True gerektirir.")
+
     def to_dict(self) -> dict[str, Any]:
         return {
             "target_id": self.target_id,
