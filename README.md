@@ -47,11 +47,20 @@ Git'e eklemeyin.
 astrotransit version
 astrotransit single "TIC 261136679" --force-map --no-viz
 astrotransit batch benchmarks/pilot_targets.csv --force-map --no-viz
+astrotransit earth-search targets.csv --min-similarity 90 --limit 50 \
+  --output outputs/earth_search_ranked.json
 astrotransit benchmark --max 5
 ```
 
 Ayarlar `configs/default.toml` içinden yüklenir. Farklı bir dosya vermek için
 `--config configs/wsl_mcmc.toml` kullanabilirsiniz.
+
+`earth-search` komutu listedeki TESS hedeflerini batch olarak tarar ve yaklaşık
+`%90+` Earth similarity adaylarını sıralar. Çıktıda `similarity_score`,
+`detection_confidence` ve `false_positive_probability` ayrı tutulur;
+`priority_score` yalnızca takip gözlemi önceliğidir, doğrulama olasılığı
+değildir. Takip doğrulaması için `FollowupEvidence` kaydı ve gözlem kimliği
+kullanılmalıdır; çıplak `confirmed=true` değeri Earth twin onayı sayılmaz.
 
 Dashboard:
 

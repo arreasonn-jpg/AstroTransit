@@ -312,8 +312,12 @@ class TESSPipeline:
         stellar_props = self._get_stellar_properties(target_id)
         result.stellar_props = stellar_props
 
-        stellar_radius = stellar_props.radius if stellar_props.is_valid() else 1.0
-        stellar_mass = stellar_props.mass if stellar_props.is_valid() else 1.0
+        # Tespit motorları fiziksel parametre yokken operasyonel fallback
+        # kullanabilir; bu değerler bilimsel çıktı veya Earth similarity için
+        # ölçüm gibi kabul edilmez. build_record ham catalog provenance'ını
+        # kontrol ederek varsayılanları skorlamadan dışarıda bırakır.
+        stellar_radius = stellar_props.radius if stellar_props.radius > 0 else 1.0
+        stellar_mass = stellar_props.mass if stellar_props.mass > 0 else 1.0
         stellar_teff = stellar_props.teff if stellar_props.teff > 0 else 5778.0
 
         # ═══════════════════════════════

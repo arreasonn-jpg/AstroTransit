@@ -30,4 +30,28 @@ arama periyodu ile fiziksel olarak ölçeklenir. Arama sonucu:
 Uzun periyot sonucu normal BLS/TLS `cascade_confirmed` alanını otomatik olarak
 onaylamaz; follow-up ve ek sektör önceliklendirmesi için kullanılır.
 
+### Earth-like hedef araması
+
+`astrotransit earth-search targets.csv --min-similarity 90` komutu, listedeki
+hedefleri TESS pipeline'ından geçirir ve `EarthCandidateRanker` ile tek hedef
+başına en iyi Earth-like kaydı seçer. Operasyonel `priority_score`, similarity
+skoru, ölçüm tamlığı, detection confidence, FPP ve kategori olgunluğunu
+birleştirir; bu skor Earth similarity veya gezegen doğrulama olasılığı değildir.
+
+Sıralama üç ayrı kategori taşır:
+
+- `photometric_earth_like_candidate`: kütlesiz fotometrik öncelik adayı.
+- `earth_twin_candidate`: strict profile için yarıçap, ışınım, `T_eq`, yörünge,
+  gezegen kütlesi ve yıldız sıcaklığı ölçümleri bulunan aday.
+- `confirmed_earth_twin`: yalnızca geçerli takip gözlemi kanıtı ile strict
+  adayın birlikte bulunduğu kayıt.
+
+### Takip gözlemi sözleşmesi
+
+`FollowupEvidence`, takip kaynağı, gözlem tipi ve `observation_id` taşır.
+RV kütlesi varsa `mass_mearth` olarak similarity hesabına girer; bilinmeyen
+kütle hiçbir zaman `1 M_earth` ile doldurulmaz. TESS cascade `confirmed` alanı
+ve çıplak `{"confirmed": true}` payload'ı doğrulanmış Earth twin statüsü
+üretmez.
+
 ### Cascade Karar Ağacı

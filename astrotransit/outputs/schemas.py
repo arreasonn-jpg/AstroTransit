@@ -17,11 +17,15 @@ from typing import Any, Optional
 
 import numpy as np
 
-from astrotransit.science.earth_similarity import score_earth_similarity
+from astrotransit.science.earth_similarity import (
+    EARTH_SIMILARITY_DEFINITION_VERSION,
+    score_earth_similarity,
+)
+from astrotransit.validation.followup import coerce_followup_result
 from astrotransit.utils.identifiers import extract_tic_number
 
 
-SCHEMA_VERSION = "1.3"
+SCHEMA_VERSION = "1.5"
 
 
 def _finite_or_none(value: Any) -> Any:
@@ -151,6 +155,7 @@ class TransitCandidateRecord:
 
     # Dünya-benzerlik ve bilimsel öncelik
     earth_similarity_profile: str = ""
+    earth_similarity_definition_version: str = EARTH_SIMILARITY_DEFINITION_VERSION
     earth_similarity_score: Optional[float] = 0.0
     earth_similarity_p05: Optional[float] = 0.0
     earth_similarity_p50: Optional[float] = 0.0
@@ -171,6 +176,14 @@ class TransitCandidateRecord:
     long_period_identifiability: str = ""
     long_period_screening: bool = False
 
+    # Takip doğrulama sözleşmesi
+    followup_confirmed: bool = False
+    followup_status: str = "not_confirmed"
+    followup_evidence_quality: str = "none"
+    followup_sources: str = "[]"
+    followup_observation_ids: str = "[]"
+    followup_evidence: str = "{}"
+
     # Kalite
     snr_adopted: Optional[float] = 0.0
     snr_tls: Optional[float] = 0.0
@@ -186,10 +199,10 @@ class TransitCandidateRecord:
 
     # Tespit güveni ve vetting (Earth similarity'den ayrı)
     detection_confidence: str = "UNKNOWN"
-    false_positive_probability: Optional[float] = 0.0
+    false_positive_probability: Optional[float] = None
 
     # Vetting
-    fpp: Optional[float] = 0.0
+    fpp: Optional[float] = None
     is_false_positive: bool = False
     is_variable_star: bool = False
     is_binary_suspect: bool = False
@@ -334,6 +347,7 @@ class TransitCandidateRecord:
             },
             "earth_similarity": {
                 "profile": flat["earth_similarity_profile"],
+                "definition_version": flat["earth_similarity_definition_version"],
                 "score": flat["earth_similarity_score"],
                 "score_p05": flat["earth_similarity_p05"],
                 "score_p50": flat["earth_similarity_p50"],
@@ -354,6 +368,14 @@ class TransitCandidateRecord:
                 "source_sectors": _json_load_list_or_empty(flat["source_sectors"]),
                 "long_period_identifiability": flat["long_period_identifiability"],
                 "long_period_screening": flat["long_period_screening"],
+            },
+            "followup": {
+                "confirmed": flat["followup_confirmed"],
+                "status": flat["followup_status"],
+                "evidence_quality": flat["followup_evidence_quality"],
+                "sources": _json_load_list_or_empty(flat["followup_sources"]),
+                "observation_ids": _json_load_list_or_empty(flat["followup_observation_ids"]),
+                "evidence": _json_load_or_empty(flat["followup_evidence"]),
             },
             "quality": {
                 "snr_adopted": flat["snr_adopted"],
@@ -495,11 +517,21 @@ def build_record(
     candidate_depth = _get(candidate, "depth", 0.0)
     candidate_duration = _get(candidate, "duration", 0.0)
     candidate_depth_ppm = _finite_or_none(candidate_depth * 1e6) if candidate_depth is not None else 0.0
+    followup_validation = coerce_followup_result(
+        followup_result,
+        target_id=str(_get(candidate, "target_id", "") or ""),
+    )
 
     # Fit sonucu yokken de yıldız bilgisi ve cascade parametreleri ile
-    # fiziksel türevler hesaplanabilir. Hesaplama başarısızsa sıfır bırakılır.
+    # fiziksel türevler hesaplanabilir. Eksik yıldız parametreleri Dünya veya
+    # Güneş değerleriyle doldurulmaz; bu durumda fiziksel türevler eksik kalır.
     derived = _get(fit_result, "derived") if fit_success else None
-    if derived is None:
+    stellar_radius = _first_positive(_get(stellar_props, "radius"))
+    stellar_mass = _first_positive(_get(stellar_props, "mass"))
+    stellar_teff = _first_positive(_get(stellar_props, "teff"))
+    if derived is None and all(
+        value is not None for value in (stellar_radius, stellar_mass, stellar_teff)
+    ):
         try:
             from astrotransit.modeling.parameters import compute_derived_parameters
 
@@ -509,17 +541,25 @@ def build_record(
                     rp_rs=float(rp_rs),
                     impact_parameter=float(impact or 0),
                     duration=float(candidate_duration or 0.1),
-                    stellar_radius=float(_get(stellar_props, "radius", 1.0) or 1.0),
-                    stellar_mass=float(_get(stellar_props, "mass", 1.0) or 1.0),
-                    stellar_teff=float(_get(stellar_props, "teff", 5778.0) or 5778.0),
+                    stellar_radius=float(stellar_radius),
+                    stellar_mass=float(stellar_mass),
+                    stellar_teff=float(stellar_teff),
                 )
         except Exception:
             derived = None
 
-    derived_dict = _dict_from_dataclass(derived)
+    stellar_physics_complete = all(
+        value is not None for value in (stellar_radius, stellar_mass, stellar_teff)
+    )
+    # A fit can contain derived values calculated with detector fallbacks
+    # (R*=1, M*=1, Teff=5778). They are not measurements and must not enter
+    # Earth similarity when catalog stellar physics is incomplete.
+    derived_dict = _dict_from_dataclass(derived) if stellar_physics_complete else {}
+    fit_physics = fit_result if stellar_physics_complete else None
     planet_mass_mearth = _first_positive(
         _get(fit_result, "planet_mass_mearth"),
         derived_dict.get("planet_mass_mearth"),
+        followup_validation.mass_mearth,
     )
     planet_density_gcm3 = _first_positive(
         _get(fit_result, "planet_density_gcm3"),
@@ -529,19 +569,19 @@ def build_record(
     earth_insolation = _first_positive(
         derived_dict.get("insolation_flux"),
         derived_dict.get("insolation_s_earth"),
-        _get(fit_result, "insolation_s_earth"),
+        _get(fit_physics, "insolation_s_earth"),
     )
     planet_radius_rearth = _first_positive(
         derived_dict.get("planet_radius_rearth"),
-        _get(fit_result, "planet_radius_rearth"),
+        _get(fit_physics, "planet_radius_rearth"),
     )
     equilibrium_temperature_k = _first_positive(
         derived_dict.get("equilibrium_temperature_k"),
-        _get(fit_result, "equilibrium_temperature_k"),
+        _get(fit_physics, "equilibrium_temperature_k"),
     )
     semi_major_axis_au = _first_positive(
         derived_dict.get("semi_major_axis_au"),
-        _get(fit_result, "semi_major_axis_au"),
+        _get(fit_physics, "semi_major_axis_au"),
     )
     earth_similarity = score_earth_similarity(
         earth_similarity_profile,
@@ -556,15 +596,7 @@ def build_record(
             _get(fit_result, "stellar_teff_k"),
         ),
     )
-    followup_confirmed = _followup_confirmed(
-        followup_result if isinstance(followup_result, bool) else False,
-        _get(followup_result, "confirmed", False),
-        _get(followup_result, "status", ""),
-        _get(candidate, "followup_confirmed", False),
-        _get(candidate, "followup_status", ""),
-        _get(quality_result, "followup_confirmed", False),
-        _get(quality_result, "followup_status", ""),
-    )
+    followup_confirmed = followup_validation.confirmed
     earth_analog_class = earth_similarity.classification
     if followup_confirmed and earth_similarity.is_strict_candidate:
         earth_analog_class = "CONFIRMED_EARTH_TWIN"
@@ -575,7 +607,8 @@ def build_record(
     fpp_report = _get(quality_result, "fpp_report")
     false_positive_probability = _first_value(
         _get(fpp_report, "fpp"),
-        _get(vetting, "false_positive_probability", 0.0),
+        _get(vetting, "false_positive_probability", None),
+        followup_validation.false_positive_probability,
     )
     explicit_confidence = _first_value(
         _get(fpp_report, "confidence"),
@@ -678,6 +711,7 @@ def build_record(
             _get(candidate, "n_observed_transits", len(_get(candidate, "transit_times", []))) or 0
         ),
         earth_similarity_profile=earth_similarity.profile,
+        earth_similarity_definition_version=earth_similarity.definition_version,
         earth_similarity_score=_finite_or_none(earth_similarity.score),
         earth_similarity_p05=_finite_or_none(earth_similarity.score_p05),
         earth_similarity_p50=_finite_or_none(earth_similarity.score_p50),
@@ -703,6 +737,12 @@ def build_record(
         source_sectors=_serialise_list(_get(candidate, "source_sectors", [])),
         long_period_identifiability=str(_get(candidate, "long_period_identifiability", "") or ""),
         long_period_screening=bool(_get(candidate, "long_period_screening", False)),
+        followup_confirmed=followup_validation.confirmed,
+        followup_status=followup_validation.status,
+        followup_evidence_quality=followup_validation.evidence_quality,
+        followup_sources=_serialise_list(followup_validation.sources),
+        followup_observation_ids=_serialise_list(followup_validation.observation_ids),
+        followup_evidence=json.dumps(followup_validation.to_dict(), ensure_ascii=False),
         detection_confidence=detection_confidence,
         false_positive_probability=_finite_or_none(false_positive_probability),
         snr_adopted=_finite_or_none(_get(snr, "snr_adopted", _get(candidate, "snr", 0.0))),
@@ -859,21 +899,6 @@ def _positive_finite(value: Any) -> bool:
         return math.isfinite(float(value)) and float(value) > 0
     except (TypeError, ValueError):
         return False
-
-
-def _followup_confirmed(*values: Any) -> bool:
-    """Sadece açık follow-up işaretini kabul eder; cascade confirmed yeterli değildir."""
-
-    for value in values:
-        if isinstance(value, bool) and value:
-            return True
-        if isinstance(value, str) and value.strip().lower() in {
-            "confirmed",
-            "followup_confirmed",
-            "validated",
-        }:
-            return True
-    return False
 
 
 def _earth_twin_status(classification: str, *, followup_confirmed: bool) -> str:

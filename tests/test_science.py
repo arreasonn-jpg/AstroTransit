@@ -5,7 +5,11 @@ from types import SimpleNamespace
 from astrotransit.data.catalog_client import StellarProperties
 from astrotransit.modeling.parameters import DerivedParameters
 from astrotransit.outputs.schemas import build_record
-from astrotransit.science.earth_similarity import score_earth_similarity
+from astrotransit.science.earth_similarity import (
+    EARTH_SIMILARITY_DEFINITION_VERSION,
+    score_earth_similarity,
+)
+from astrotransit.validation.followup import FollowupEvidence
 
 
 def test_strict_profile_requires_mass_and_host_temperature():
@@ -41,6 +45,21 @@ def test_strict_profile_can_produce_earth_twin_candidate():
     assert result.classification == "EARTH_TWIN_CANDIDATE"
     assert result.score_p50 == 100.0
     assert result.measurement_completeness > 0.8
+
+
+def test_photometric_profile_requires_all_non_mass_physical_dimensions():
+    result = score_earth_similarity(
+        "photometric_earth_analog",
+        planet_radius_rearth=1.0,
+        insolation_s_earth=1.0,
+    )
+
+    assert result.classification == "INCOMPLETE_EARTH_TWIN"
+    assert result.missing_required_dimensions == (
+        "equilibrium_temperature",
+        "semi_major_axis",
+        "host_teff",
+    )
 
 
 def test_sampled_scores_expose_uncertainty():
@@ -89,6 +108,7 @@ def test_build_record_persists_similarity_fields():
     )
 
     assert record.earth_similarity_profile == "photometric_earth_analog"
+    assert record.earth_similarity_definition_version == EARTH_SIMILARITY_DEFINITION_VERSION
     assert record.earth_similarity_score is not None
     assert record.earth_analog_class == "PHOTOMETRIC_EARTH_ANALOG"
     assert record.planet_mass_mearth is None
@@ -126,7 +146,15 @@ def test_followup_confirmation_is_separate_from_cascade_confirmation():
         quality_result=quality,
         stellar_props=_solar_stellar(),
         earth_similarity_profile="strict_earth_twin",
-        followup_result={"confirmed": True},
+        followup_result=FollowupEvidence(
+            source="RV campaign",
+            observation_type="radial_velocity",
+            observation_ids=("rv-001",),
+            confirmed=True,
+            mass_mearth=1.0,
+            mass_err_mearth=0.2,
+            false_positive_probability=0.02,
+        ),
     )
 
     assert record.cascade_confirmed is True
@@ -134,3 +162,20 @@ def test_followup_confirmation_is_separate_from_cascade_confirmation():
     assert record.earth_twin_status == "confirmed_earth_twin"
     assert record.detection_confidence == "HIGH"
     assert record.false_positive_probability == 0.02
+
+
+def test_missing_stellar_properties_are_not_replaced_with_solar_defaults():
+    record = build_record(
+        candidate=_earth_like_candidate(),
+        stellar_props=StellarProperties(tic_id=123456789),
+        earth_similarity_profile="photometric_earth_analog",
+    )
+
+    assert record.mass_status == "unavailable"
+    assert record.planet_radius_rearth == 0.0
+    assert record.semi_major_axis_au == 0.0
+    assert record.equilibrium_temperature_k == 0.0
+    assert record.insolation_s_earth is None
+    assert record.earth_similarity_score == 0.0
+    assert record.earth_similarity_completeness == 0.0
+    assert record.earth_similarity_definition_version == EARTH_SIMILARITY_DEFINITION_VERSION

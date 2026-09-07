@@ -65,10 +65,13 @@ class ParquetWriter:
             "candidate_class", "anomaly_flags", "fit_method", "fit_status",
             "period_err_source", "rp_rs_err_source", "u1_err_source", "u2_err_source",
             "json_path", "figure_dir", "created_at", "schema_version",
-            "earth_similarity_profile", "earth_analog_class", "earth_twin_status",
+            "earth_similarity_profile", "earth_similarity_definition_version",
+            "earth_analog_class", "earth_twin_status",
             "earth_similarity_components", "earth_similarity_missing_dimensions",
             "earth_similarity_missing_required", "earth_similarity_notes", "mass_status",
             "search_channel", "source_sectors", "long_period_identifiability", "detection_confidence",
+            "followup_status", "followup_evidence_quality", "followup_sources",
+            "followup_observation_ids", "followup_evidence",
         }
         bool_fields = {
             "cascade_confirmed", "is_false_positive", "is_variable_star",
@@ -76,7 +79,7 @@ class ParquetWriter:
             "posterior_converged", "fallback_used", "mcmc_converged",
             "period_sampled", "rp_rs_sampled", "u1_sampled", "u2_sampled",
             "derived_errors_available", "earth_similarity_uncertainty_available",
-            "long_period_screening",
+            "long_period_screening", "followup_confirmed",
         }
         int_fields = {
             "tic_id", "sector", "n_points", "n_transits", "n_observed_transits",

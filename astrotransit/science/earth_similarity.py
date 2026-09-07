@@ -14,6 +14,9 @@ from typing import Any, Mapping, Optional, Sequence
 import numpy as np
 
 
+EARTH_SIMILARITY_DEFINITION_VERSION = "1.0"
+
+
 @dataclass(frozen=True)
 class SimilarityDimension:
     """Tek bir fiziksel özelliğin referans ve tolerans tanımı."""
@@ -86,6 +89,8 @@ class EarthSimilarityProfile:
 # başlangıç profilleridir. Proje kullanıcıları kendi hedef örneklemleri için
 # profili kopyalayıp ağırlıkları değiştirebilir.
 EARTH_SIMILARITY_PROFILES: dict[str, EarthSimilarityProfile] = {
+    # v1.0: değerler, ağırlıklar ve sınıflandırma eşikleri bu profillerle
+    # birlikte kaydedilir; yeni bilimsel tanımlar sürüm artırmalıdır.
     "strict_earth_twin": EarthSimilarityProfile(
         name="strict_earth_twin",
         dimensions=(
@@ -117,9 +122,18 @@ EARTH_SIMILARITY_PROFILES: dict[str, EarthSimilarityProfile] = {
             SimilarityDimension("semi_major_axis", 1.0, 0.60, 0.05, "AU"),
             SimilarityDimension("host_teff", 5778.0, 900.0, 0.09, "K", "linear"),
         ),
-        required_dimensions=("radius", "insolation"),
+        required_dimensions=(
+            "radius",
+            "insolation",
+            "equilibrium_temperature",
+            "semi_major_axis",
+            "host_teff",
+        ),
         minimum_score=90.0,
-        description="Transit ve yıldız ışınımından oluşturulan kütlesiz photometric profil.",
+        description=(
+            "Gezegen kütlesi olmadan; yarıçap, ışınım, denge sıcaklığı, yörünge "
+            "ve yıldız sıcaklığı ile oluşturulan photometric profil."
+        ),
     ),
     "terrestrial_hz_analog": EarthSimilarityProfile(
         name="terrestrial_hz_analog",
@@ -185,6 +199,7 @@ class EarthSimilarityResult:
     missing_required_dimensions: tuple[str, ...]
     uncertainty_available: bool = False
     notes: tuple[str, ...] = ()
+    definition_version: str = EARTH_SIMILARITY_DEFINITION_VERSION
 
     @property
     def score(self) -> float:
@@ -199,6 +214,7 @@ class EarthSimilarityResult:
     def to_dict(self) -> dict[str, Any]:
         return {
             "profile": self.profile,
+            "definition_version": self.definition_version,
             "score": round(self.score_p50, 4),
             "score_p05": round(self.score_p05, 4),
             "score_p50": round(self.score_p50, 4),
@@ -341,6 +357,7 @@ def score_earth_similarity(
         missing_required_dimensions=missing_required,
         uncertainty_available=uncertainty_available,
         notes=tuple(notes),
+        definition_version=EARTH_SIMILARITY_DEFINITION_VERSION,
     )
 
 
@@ -425,6 +442,7 @@ def _aggregate_sample_scores(
 
 
 __all__ = [
+    "EARTH_SIMILARITY_DEFINITION_VERSION",
     "EARTH_SIMILARITY_PROFILES",
     "EarthSimilarityProfile",
     "EarthSimilarityResult",

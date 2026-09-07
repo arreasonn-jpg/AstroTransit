@@ -182,6 +182,136 @@ def batch(
     )
 
 
+@app.command("earth-search")
+def earth_search(
+    targets_file: str = typer.Argument(
+        ...,
+        help="TESS hedef listesi (CSV veya TXT, her satırda bir TIC ID)",
+    ),
+    min_similarity: float = typer.Option(
+        90.0,
+        "--min-similarity",
+        help="Minimum Earth similarity skoru (0-100)",
+    ),
+    limit: int = typer.Option(
+        50,
+        "--limit",
+        help="Gösterilecek ve JSON'a yazılacak maksimum aday sayısı",
+    ),
+    output: Optional[str] = typer.Option(
+        None,
+        "--output", "-o",
+        help="Sıralanmış aday özetinin JSON yolu",
+    ),
+    sectors: Optional[list[int]] = typer.Option(
+        None,
+        "--sectors", "-s",
+        help="İşlenecek sektörler (boş = tüm mevcut sektörler)",
+    ),
+    config: Optional[str] = typer.Option(None, "--config", "-c"),
+    force_map: bool = typer.Option(True, "--force-map/--no-force-map"),
+    no_catalog: bool = typer.Option(False, "--no-catalog"),
+    log_level: str = typer.Option("INFO", "--log-level"),
+):
+    """TESS hedef listesini tarar ve yüzde 90+ Earth-like adayları sıralar.
+
+    Earth similarity, detection confidence ve FPP ayrı sütunlarda gösterilir;
+    öncelik skoru yalnızca operasyonel follow-up sıralamasıdır.
+    """
+
+    from astrotransit.discovery.earth_search import EarthCandidateRanker
+    from astrotransit.pipelines.orchestrator import AstroTransitOrchestrator
+
+    if limit < 1:
+        console.print("[red]--limit en az 1 olmalıdır.[/red]")
+        raise typer.Exit(1)
+    if not 0.0 <= min_similarity <= 100.0:
+        console.print("[red]--min-similarity 0 ile 100 arasında olmalıdır.[/red]")
+        raise typer.Exit(1)
+
+    path = Path(targets_file)
+    if not path.exists():
+        console.print(f"[red]Dosya bulunamadı: {path}[/red]")
+        raise typer.Exit(1)
+
+    if path.suffix.lower() == ".csv":
+        import pandas as pd
+
+        df = pd.read_csv(path)
+        if "tic_id" in df.columns:
+            targets = [f"TIC {tid}" for tid in df["tic_id"].tolist()]
+        else:
+            targets = df.iloc[:, 0].astype(str).tolist()
+    else:
+        targets = [
+            line.strip()
+            for line in path.read_text(encoding="utf-8").splitlines()
+            if line.strip() and not line.lstrip().startswith("#")
+        ]
+
+    if not targets:
+        console.print("[yellow]Hedef listesi boş.[/yellow]")
+        raise typer.Exit(0)
+
+    console.print(
+        Panel(
+            f"[bold cyan]AstroTransit — Earth-like TESS Araması[/bold cyan]\n"
+            f"Hedef sayısı: [bold]{len(targets)}[/bold] | "
+            f"minimum similarity: [bold]{min_similarity:.1f}[/bold]",
+            border_style="cyan",
+        )
+    )
+
+    with AstroTransitOrchestrator(
+        config_path=config,
+        force_map=force_map,
+        skip_visualization=True,
+        skip_catalog=no_catalog,
+        log_level=log_level,
+    ) as orchestrator:
+        results = orchestrator.run_batch(targets, sectors=sectors)
+
+    ranker = EarthCandidateRanker(min_similarity=min_similarity)
+    records = ranker.records_from_target_results(results)
+    summary = ranker.summarize(records, n_targets=len(results))
+    ranked = summary.ranked_candidates[:limit]
+
+    table = Table(title="Earth-like aday önceliklendirmesi")
+    table.add_column("#", justify="right")
+    table.add_column("Hedef", style="cyan")
+    table.add_column("Kategori", style="green")
+    table.add_column("Similarity", justify="right")
+    table.add_column("Confidence", justify="center")
+    table.add_column("FPP", justify="right")
+    table.add_column("Priority", justify="right")
+    for index, candidate in enumerate(ranked, start=1):
+        fpp = "?" if candidate.false_positive_probability is None else f"{candidate.false_positive_probability:.3f}"
+        table.add_row(
+            str(index),
+            candidate.target_id,
+            candidate.category_label,
+            f"{candidate.similarity_score:.1f}",
+            candidate.detection_confidence,
+            fpp,
+            f"{candidate.priority_score:.1f}",
+        )
+    console.print(table)
+    console.print(
+        f"\n[bold]Özet:[/bold] {summary.n_ranked_candidates} uygun aday / "
+        f"{summary.n_targets} hedef; similarity, confidence ve FPP ayrı raporlandı."
+    )
+
+    if output:
+        limited_summary = type(summary)(
+            n_targets=summary.n_targets,
+            n_records=summary.n_records,
+            n_ranked_candidates=len(ranked),
+            ranked_candidates=tuple(ranked),
+        )
+        output_path = limited_summary.write_json(output)
+        console.print(f"JSON çıktı: [green]{output_path}[/green]")
+
+
 @app.command()
 def benchmark(
     max_per_category: Optional[int] = typer.Option(

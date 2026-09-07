@@ -23,6 +23,7 @@
 | cascade_confirmed | bool | Cascade onayladı mı |
 | fit_method | string | "map" veya "mcmc" |
 | earth_similarity_profile | string | Dünya-benzerlik profili |
+| earth_similarity_definition_version | string | Tekrarlanabilir similarity tanım sürümü |
 | earth_similarity_score | float64 | Medyan Dünya-benzerlik skoru (0-100) |
 | earth_similarity_p05/p95 | float64 | Belirsizlik aralığı sınırları |
 | earth_similarity_completeness | float64 | Kullanılan ölçümlerin ağırlıklı tamlığı (0-1) |
@@ -39,9 +40,16 @@
 | source_sectors | JSON string | Uzun periyot taramasına giren sektörler |
 | long_period_identifiability | string | Çok/tek transit tanımlanabilirliği |
 | long_period_screening | bool | Uzun periyot screening kaydı mı |
+| followup_confirmed | bool | Geçerli takip kanıtı açıkça doğruladı mı |
+| followup_status | string | Takip kanıtının durumu |
+| followup_evidence_quality | string | Takip kanıtının kalite sınıfı |
+| followup_sources | JSON string | Takip gözlemi kaynakları |
+| followup_observation_ids | JSON string | Takip gözlemlerinin kimlikleri |
+| followup_evidence | JSON string | Takip kanıtı ayrıntıları |
 
-Tam şema `astrotransit/outputs/schemas.py` dosyasında, şema sürümü `1.3`
-olarak tanımlıdır.
+Tam şema `astrotransit/outputs/schemas.py` dosyasında, şema sürümü `1.5`
+olarak tanımlıdır. Similarity hesabı ayrıca `definition_version="1.0"`
+ile etiketlenir.
 
 ## Dünya-benzerlik skoru
 
@@ -51,12 +59,22 @@ olarak tanımlıdır.
 - `photometric_earth_analog`: transit ve yıldız fotometrisiyle kütlesiz önceliklendirme.
 - `terrestrial_hz_analog`: daha geniş yaşanabilir bölge keşif profili.
 
+Her dimension, Dünya referansına karşı tanımlı ağırlıklı Gaussian benzerlik
+fonksiyonuyla hesaplanır; pozitif oranlar log-uzayında, sıcaklık ve yıldız
+etkin sıcaklığı lineer uzayda değerlendirilir. Işınım `S/S_earth`, yörünge
+`a/AU`, denge sıcaklığı ise `T_eq` olarak ayrı ayrı kullanılır. Yıldız tipi
+TESS katalogundaki etkin sıcaklık (`host_teff`) ile tekrarlanabilir bir proxy
+olarak temsil edilir. `T_eq` türetiminde varsayılan Bond albedosu `A=0.3`
+olduğu için bu varsayım yaşam/atmosfer kanıtı değildir.
+
 Eksik kütle veya yıldız parametresi Dünya değeriyle doldurulmaz. Böyle bir
 sonuç yüksek fotometrik skor alabilir, ancak `INCOMPLETE_EARTH_TWIN` olarak
-kalır ve strict aday kabul edilmez. `CONFIRMED_EARTH_TWIN` yalnızca açık bir
-follow-up doğrulaması (`followup_result.confirmed`) ve strict similarity
-adaylığı birlikte bulunduğunda üretilir; cascade'in `confirmed` alanı tek
-başına follow-up doğrulaması sayılmaz.
+kalır ve strict aday kabul edilmez. `CONFIRMED_EARTH_TWIN` yalnızca geçerli bir `FollowupEvidence` kaydı (kaynak
+ve gözlem kimliği içeren açık takip doğrulaması) ile strict similarity
+adaylığı birlikte bulunduğunda üretilir. TESS cascade'in `confirmed` alanı,
+çıplak `{"confirmed": true}` payload'ı veya similarity skoru tek başına
+follow-up doğrulaması sayılmaz. Takip kütlesi yoksa strict profil yine
+kütlesiz tamamlanmış kabul edilmez.
 
 ## Uzun periyot arama özeti
 

@@ -1,6 +1,7 @@
 """Bilimsel aday önceliklendirme ve Dünya-benzerlik araçları."""
 
 from astrotransit.science.earth_similarity import (
+    EARTH_SIMILARITY_DEFINITION_VERSION,
     EARTH_SIMILARITY_PROFILES,
     EarthSimilarityProfile,
     EarthSimilarityResult,
@@ -11,6 +12,7 @@ from astrotransit.science.earth_similarity import (
 )
 
 __all__ = [
+    "EARTH_SIMILARITY_DEFINITION_VERSION",
     "EARTH_SIMILARITY_PROFILES",
     "EarthSimilarityProfile",
     "EarthSimilarityResult",
