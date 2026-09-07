@@ -1,4 +1,19 @@
-﻿.venv-validate/
+.venv-validate/
 .venv/
 .venv-wsl/
-outputs*/
+.venv-test/
+
+# Generated Python/cache files
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Runtime data and local credentials
+/outputs*/
+.cache/
+*.log
+.env

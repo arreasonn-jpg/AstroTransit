@@ -27,8 +27,8 @@ def download_and_flatten(tic_id, sector):
             return None, None
         lc = search[0].download()
         time = np.array(lc.time.value, dtype=float)
-        flux = np.array(lc.flux.value, dtype=float)
-        qual = np.array(lc.quality.value, dtype=int)
+        flux = np.array(getattr(lc.flux, "value", lc.flux), dtype=float)
+        qual = np.array(getattr(lc.quality, "value", lc.quality), dtype=int)
         v = np.isfinite(time) & np.isfinite(flux) & (qual == 0)
         time, flux = time[v], flux[v]
         flux /= np.nanmedian(flux)

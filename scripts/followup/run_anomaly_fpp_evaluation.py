@@ -491,8 +491,8 @@ def main():
     lc = download_lc(args.tic, args.sector)
 
     time_raw = np.array(lc.time.value, dtype=float)
-    flux_raw = np.array(lc.flux.value, dtype=float)
-    flux_err_raw = np.array(lc.flux_err.value, dtype=float)
+    flux_raw = np.array(getattr(lc.flux, "value", lc.flux), dtype=float)
+    flux_err_raw = np.array(getattr(lc.flux_err, "value", lc.flux_err), dtype=float)
 
     # NaN temizle
     valid = np.isfinite(time_raw) & np.isfinite(flux_raw)

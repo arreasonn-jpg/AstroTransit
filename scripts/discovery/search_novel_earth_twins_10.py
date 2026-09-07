@@ -1,4 +1,4 @@
-﻿"""
+"""
 AstroTransit — Pure Novelty Earth Twin Finder (Robust & Bug-Free)
 100% Non-TOI, Real Project Outputs & Catalog Intersection
 """

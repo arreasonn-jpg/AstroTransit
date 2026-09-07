@@ -275,7 +275,8 @@ def main():
     print("=" * 100)
     print("ANOMALY + FPP SUMMARY")
     print("=" * 100)
-    print(f"{'TIC':<14} {'S':>3} {'Anomaly':<10} {'Score':>6} {'FPP':>6} {'Ppl':>6} {'Dom':>5} {'CROWD':>6} {'Near\"':>7} {'Δmag':>7} {'Triage':<40}")
+    near_label = 'Near"'
+    print(f"{'TIC':<14} {'S':>3} {'Anomaly':<10} {'Score':>6} {'FPP':>6} {'Ppl':>6} {'Dom':>5} {'CROWD':>6} {near_label:>7} {'Δmag':>7} {'Triage':<40}")
     print("-" * 100)
     for r in rows:
         print(

@@ -1,8 +1,20 @@
-﻿fit_method = "map"
+# AstroTransit — temperate-target search configuration
+
+[project]
+name = "AstroTransit"
+version = "0.1.0"
+
+[modeling]
+fit_method = "map"
+mcmc_auto_upgrade = true
+
+[modeling.mcmc]
 mcmc_snr_threshold = 5.0
 
-tess.author = "SPOC"
-tess.exptime = 120
+[tess]
+author = "SPOC"
+exptime = 120
 
-detection.min_period = 0.5
-detection.max_period = 60.0
+[detection]
+min_period = 0.5
+max_period = 60.0

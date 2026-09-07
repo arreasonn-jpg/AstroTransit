@@ -30,8 +30,8 @@ def download_and_normalize(tic_id: int, sector: int):
         raise FileNotFoundError(f"TIC {tic_id} S{sector}: LC bulunamadı.")
     lc = search[0].download()
     time = np.array(lc.time.value, dtype=float)
-    flux = np.array(lc.flux.value, dtype=float)
-    quality = np.array(lc.quality.value, dtype=int)
+    flux = np.array(getattr(lc.flux, "value", lc.flux), dtype=float)
+    quality = np.array(getattr(lc.quality, "value", lc.quality), dtype=int)
     valid = np.isfinite(time) & np.isfinite(flux) & (quality == 0)
     time, flux = time[valid], flux[valid]
     flux = flux / np.nanmedian(flux)

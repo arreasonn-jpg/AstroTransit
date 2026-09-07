@@ -9,7 +9,11 @@ from __future__ import annotations
 
 from typing import Optional
 
-from astroquery.mast import Observations, Catalogs
+try:  # Keep offline/data-model imports usable without the MAST stack.
+    from astroquery.mast import Observations, Catalogs
+except ImportError:  # pragma: no cover - depends on the local installation
+    Observations = None
+    Catalogs = None
 from astropy.table import Table
 from loguru import logger
 
@@ -36,6 +40,14 @@ class MASTClient:
     api_token : str, opsiyonel
         MAST API token. Verilmezse anonim erişim kullanılır.
     """
+
+    @staticmethod
+    def _require_dependency() -> None:
+        if Observations is None or Catalogs is None:
+            raise MASTConnectionError(
+                "astroquery MAST bağımlılıkları kullanılamıyor. "
+                "Kurulumu tamamlamak için 'pip install astroquery keyring' çalıştırın."
+            )
 
     def __init__(self, api_token: Optional[str] = None):
         self._authenticated = False
@@ -96,6 +108,7 @@ class MASTClient:
             Sorgu başarısız olursa.
         """
 
+        self._require_dependency()
         query_params = {}
 
         if target_name:
@@ -154,6 +167,7 @@ class MASTClient:
             Veri ürünleri listesi.
         """
 
+        self._require_dependency()
         if len(observations) == 0:
             logger.warning("Boş gözlem tablosu, ürün listesi alınamıyor.")
             return Table()
@@ -190,6 +204,7 @@ class MASTClient:
             TIC katalog sonuçları.
         """
 
+        self._require_dependency()
         import time as _time
 
         last_error = None

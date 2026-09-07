@@ -53,7 +53,14 @@ class TESSConfig(BaseModel):
     cache_ttl_hours: int = 24
     author: str = "SPOC"
     exptime: int = 120
-    quality_bitmask: str = "default"
+    quality_bitmask: str | int = "default"
+
+    @field_validator("cache_ttl_hours")
+    @classmethod
+    def validate_cache_ttl(cls, v: int) -> int:
+        if v <= 0:
+            raise ValueError("cache_ttl_hours pozitif olmalıdır.")
+        return v
 
     @field_validator("exptime")
     @classmethod
@@ -62,6 +69,24 @@ class TESSConfig(BaseModel):
         if v not in allowed:
             raise ValueError(f"exptime {v} geçersiz. İzin verilenler: {allowed}")
         return v
+
+    @field_validator("quality_bitmask", mode="before")
+    @classmethod
+    def validate_quality_bitmask(cls, v: str | int) -> str | int:
+        allowed = {"default", "hard", "hardest"}
+        if isinstance(v, bool):
+            raise ValueError("quality_bitmask bool olamaz.")
+        if isinstance(v, int):
+            if v < 0:
+                raise ValueError("quality_bitmask integer değeri negatif olamaz.")
+            return v
+        if not isinstance(v, str) or not v.strip():
+            raise ValueError("quality_bitmask boş olamaz.")
+        if v.lower() not in allowed:
+            raise ValueError(
+                f"quality_bitmask '{v}' geçersiz. İzin verilenler: {sorted(allowed)}"
+            )
+        return v.lower()
 
 
 class JWSTConfig(BaseModel):
@@ -73,6 +98,13 @@ class JWSTConfig(BaseModel):
     instruments: list[str] = Field(
         default=["NIRSpec", "NIRISS", "MIRI", "NIRCam"]
     )
+
+    @field_validator("cache_ttl_hours")
+    @classmethod
+    def validate_cache_ttl(cls, v: int) -> int:
+        if v <= 0:
+            raise ValueError("cache_ttl_hours pozitif olmalıdır.")
+        return v
 
     @field_validator("product_type")
     @classmethod
@@ -90,10 +122,17 @@ class DetrendingConfig(BaseModel):
     window_length: float = 0.5
     break_tolerance: float = 0.5
 
+    @field_validator("window_length", "break_tolerance")
+    @classmethod
+    def validate_positive_duration(cls, v: float) -> float:
+        if v <= 0:
+            raise ValueError("detrending süre ayarları pozitif olmalıdır.")
+        return v
+
     @field_validator("method")
     @classmethod
     def validate_method(cls, v: str) -> str:
-        allowed = {"biweight", "cosine", "gp", "spline"}
+        allowed = {"biweight", "cosine", "spline", "median", "lowess"}
         if v.lower() not in allowed:
             raise ValueError(f"detrending method '{v}' geçersiz. İzin verilenler: {allowed}")
         return v.lower()
@@ -106,6 +145,13 @@ class PreprocessingConfig(BaseModel):
     sigma_clip_lower: float = 5.0
     nan_fill_method: str = "interpolate"
     detrending: DetrendingConfig = Field(default_factory=DetrendingConfig)
+
+    @field_validator("sigma_clip_upper", "sigma_clip_lower")
+    @classmethod
+    def validate_sigma_clip(cls, v: float) -> float:
+        if v <= 0:
+            raise ValueError("sigma clip eşikleri pozitif olmalıdır.")
+        return v
 
     @field_validator("nan_fill_method")
     @classmethod
@@ -123,6 +169,20 @@ class BLSConfig(BaseModel):
     n_durations: int = 20
     min_power_threshold: float = 7.0
 
+    @field_validator("duration_range")
+    @classmethod
+    def validate_duration_range(cls, v: list[float]) -> list[float]:
+        if len(v) != 2 or not 0 < v[0] < v[1]:
+            raise ValueError("duration_range [pozitif_min, max] biçiminde olmalıdır.")
+        return v
+
+    @field_validator("n_durations")
+    @classmethod
+    def validate_n_durations(cls, v: int) -> int:
+        if v < 2:
+            raise ValueError("n_durations en az 2 olmalıdır.")
+        return v
+
 
 class TLSConfig(BaseModel):
     """TLS arama alt ayarları."""
@@ -130,6 +190,14 @@ class TLSConfig(BaseModel):
     min_sde_threshold: float = 6.0
     use_transit_template: bool = True
     oversampling_factor: int = 3
+    period_search_window: float = 0.1
+
+    @field_validator("period_search_window")
+    @classmethod
+    def validate_period_search_window(cls, v: float) -> float:
+        if not 0.0 < v < 1.0:
+            raise ValueError("period_search_window 0 ile 1 arasında olmalıdır.")
+        return v
 
 
 class CascadeConfig(BaseModel):

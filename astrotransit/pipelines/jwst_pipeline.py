@@ -29,7 +29,7 @@ import numpy as np
 from loguru import logger
 
 from astrotransit.settings import Settings, get_settings
-from astrotransit.data.mast_client import MASTClient, MASTQueryError
+from astrotransit.data.mast_client import MASTClient, MASTConnectionError, MASTQueryError
 from astrotransit.preprocessing.jwst_detrend import (
     JWSTObservationData,
     JWSTGPDetrending,
@@ -37,7 +37,6 @@ from astrotransit.preprocessing.jwst_detrend import (
 )
 from astrotransit.modeling.parameters import TransitPriors
 from astrotransit.modeling.map_fit import MAPFitter, MAPFitResult
-from astrotransit.outputs.writers import OutputManager
 
 
 # ──────────────────────────────────────
@@ -197,7 +196,7 @@ class JWSTFollowUpPipeline:
 
             return observations
 
-        except MASTQueryError as e:
+        except (MASTConnectionError, MASTQueryError) as e:
             logger.warning(f"JWST araması başarısız: {e}")
             return []
 
@@ -344,7 +343,11 @@ class JWSTFollowUpPipeline:
             f"Gerçek implementasyon sonraki fazda."
         )
 
-        obs_result.success = True
-        obs_result.error = "placeholder — veri işleme henüz implemente edilmedi"
+        # Metadata araması, bilimsel veri ürününün işlendiği anlamına gelmez.
+        # Gerçek FITS/GP/MAP adımları hazır olana kadar sonucu açıkça
+        # başarısız bırakıyoruz; aksi halde downstream raporları yanıltıcı
+        # biçimde başarılı görünecektir.
+        obs_result.success = False
+        obs_result.error = "JWST veri ürünü işleme henüz implemente edilmedi"
 
         return obs_result

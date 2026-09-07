@@ -35,6 +35,10 @@ class TestSettings:
             cfg = TESSConfig(exptime=exp)
             assert cfg.exptime == exp
 
+    def test_quality_bitmask_rejects_bool(self):
+        with pytest.raises(ValueError):
+            TESSConfig(quality_bitmask=True)
+
     def test_detection_defaults(self):
         d = DetectionConfig()
         assert d.min_period == 0.3

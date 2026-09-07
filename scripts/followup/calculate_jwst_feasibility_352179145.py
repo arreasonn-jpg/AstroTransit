@@ -1,4 +1,4 @@
-﻿import numpy as np
+import numpy as np
 
 # TIC 352179145 Parametreleri
 R_star = 0.713032      # R_sun

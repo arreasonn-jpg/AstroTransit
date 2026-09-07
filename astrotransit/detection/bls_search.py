@@ -111,11 +111,22 @@ class BLSSearch:
         )
 
     def _build_duration_grid(self) -> np.ndarray:
-        return np.linspace(
-            self.thresholds.min_duration_days,
+        # Astropy requires every trial duration to be shorter than the
+        # minimum search period.  The historical defaults (0.5 d duration,
+        # 0.3 d minimum period) violated that contract and made every BLS
+        # search fail before it started.  Keep the configured upper bound
+        # when valid, otherwise use a conservative fraction of P_min.
+        max_duration = min(
             self.thresholds.max_duration_days,
-            self.n_durations,
+            self.thresholds.min_period_days * 0.5,
         )
+        min_duration = self.thresholds.min_duration_days
+        if max_duration <= min_duration:
+            raise ValueError(
+                "BLS transit-duration aralığı minimum arama periyodundan "
+                "küçük olmalıdır."
+            )
+        return np.linspace(min_duration, max_duration, self.n_durations)
 
     def _compute_n_transits(
         self,

@@ -185,7 +185,15 @@ class AstroTransitOrchestrator:
 
         logger.info(f"Mod: FOLLOWUP — hedef: {target_id}")
 
-        pipeline = JWSTFollowUpPipeline(settings=self.settings)
+        try:
+            pipeline = JWSTFollowUpPipeline(settings=self.settings)
+        except ImportError as exc:
+            logger.error(f"JWST follow-up bağımlılığı eksik: {exc}")
+            return JWSTFollowUpResult(
+                target_id=target_id,
+                tess_period=tess_period,
+                error=str(exc),
+            )
 
         result = pipeline.run(
             target_id=target_id,

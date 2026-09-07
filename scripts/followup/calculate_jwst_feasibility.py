@@ -1,4 +1,4 @@
-﻿"""
+"""
 TIC 303241161 için JWST Transmission Spectroscopy Metric (TSM) 
 ve Atmosferik Ölçek Yüksekliği (Scale Height) hesaplayıcı.
 Referans: Kempton et al. 2018 (TSM formülleri)

@@ -1,4 +1,4 @@
-﻿"""
+"""
 AstroTransit — 10 Pure Novel Earth Twins Finder (Bug-Free & Astrophysically Accurate)
 100% Non-TOI, ESI >= 0.90, Terrestrial TSM Thresholds
 """

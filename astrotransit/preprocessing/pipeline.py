@@ -113,7 +113,7 @@ class TESSPreprocessingPipeline:
         self,
         settings: Optional[Settings] = None,
         norm_method: str = "median",
-        detrend_method: str = "biweight",
+        detrend_method: Optional[str] = None,
         window_length: Optional[float] = None,
     ):
         if settings is None:
@@ -122,8 +122,14 @@ class TESSPreprocessingPipeline:
         self.settings = settings
         cfg_pre = settings.preprocessing
 
-        # window_length önceliği: parametre > config
-        _window = window_length or cfg_pre.detrending.window_length
+        # Parametre verilmişse config'i override eder; sıfır gibi geçersiz
+        # değerler sessizce config'e düşmemelidir.
+        _window = (
+            cfg_pre.detrending.window_length
+            if window_length is None
+            else window_length
+        )
+        _detrend_method = detrend_method or cfg_pre.detrending.method
 
         # Alt modüller
         self._normalizer = LightCurveNormalizer(method=norm_method)
@@ -134,7 +140,7 @@ class TESSPreprocessingPipeline:
         )
 
         self._detrend = TESSDetrending(
-            method=detrend_method,
+            method=_detrend_method,
             window_length=_window,
             break_tolerance=cfg_pre.detrending.break_tolerance,
         )
@@ -142,7 +148,7 @@ class TESSPreprocessingPipeline:
         logger.info(
             f"TESSPreprocessingPipeline — "
             f"norm: {norm_method}, "
-            f"detrend: {detrend_method}, "
+            f"detrend: {_detrend_method}, "
             f"pencere: {_window}d"
         )
 

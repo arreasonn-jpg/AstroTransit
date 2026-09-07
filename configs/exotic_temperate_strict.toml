@@ -1,9 +1,21 @@
-﻿fit_method = "map"
+# AstroTransit — strict temperate-target search configuration
+
+[project]
+name = "AstroTransit"
+version = "0.1.0"
+
+[modeling]
+fit_method = "map"
+mcmc_auto_upgrade = true
+
+[modeling.mcmc]
 mcmc_snr_threshold = 5.0
 
-tess.author = "SPOC"
-tess.exptime = 120
+[tess]
+author = "SPOC"
+exptime = 120
 
-# Strict temperate pilot iÃ§in biraz daha uzun periyot eriÅŸimi
-detection.min_period = 0.5
-detection.max_period = 50.0
+# Strict temperate pilot için biraz daha uzun periyot erişimi
+[detection]
+min_period = 0.5
+max_period = 50.0

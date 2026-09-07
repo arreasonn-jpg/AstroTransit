@@ -1,4 +1,4 @@
-﻿"""
+"""
 TIC 289972535 — ESI %98.66 (15.0°C) Pure Novel Earth Twin Publication Plot
 """
 import numpy as np
@@ -24,7 +24,7 @@ lc_clean = lc.remove_nans().remove_outliers(sigma=4.0)
 lc_flat, _ = lc_clean.flatten(window_length=201, return_trend=True)
 
 time = lc_flat.time.value
-flux = lc_flat.flux.value
+flux = getattr(lc_flat.flux, "value", lc_flat.flux)
 
 phase = ((time - T0 + 0.5 * PERIOD) % PERIOD) / PERIOD - 0.5
 phase_hours = phase * PERIOD * 24.0

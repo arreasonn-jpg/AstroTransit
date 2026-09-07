@@ -1,4 +1,4 @@
-﻿"""
+"""
 Gerçek Fotometrik Fits Üzerinden ESI ve TSM Hesaplayıcı
 """
 import pandas as pd

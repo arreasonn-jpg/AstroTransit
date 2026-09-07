@@ -1,4 +1,4 @@
-﻿"""
+"""
 Tam Matematiksel ESI (Earth Similarity Index) Tarayıcı ve Filtreleyici
 Referans: Schulze-Makuch et al. (2011) Astrobiology
 """

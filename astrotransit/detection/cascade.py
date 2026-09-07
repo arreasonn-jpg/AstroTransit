@@ -158,6 +158,7 @@ class CascadeDetector:
                 if settings.detection.tls.use_transit_template
                 else "box"
             ),
+            period_search_window=settings.detection.tls.period_search_window,
         )
 
         logger.info(

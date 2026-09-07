@@ -191,19 +191,46 @@ class TransitModel:
         Returns
         -------
         float
-            Log-likelihood değeri.
+            Sayısal olarak normalize edilmiş (sabit ofseti alınmış)
+            log-likelihood değeri.
+
+        Notes
+        -----
+        Gaussian yoğunlukları, flux birimleri küçük olduğunda pozitif
+        mutlak log değerleri üretebilir.  Bu, özellikle normalized light
+        curve'lerde karşılaştırmayı zorlaştırır ve eski downstream çıktılar
+        negatif log-likelihood varsayar.  Burada parametrelerden bağımsız,
+        jitter=0 durumundaki hata-normalizasyon sabitini çıkarıyoruz.
+        Böylece optimizasyon sıralaması değişmez; yalnızca raporlanan değer
+        sabit bir referansa göre verilir.
         """
+
+        observed_flux = np.asarray(observed_flux, dtype=float)
+        flux_err = np.asarray(flux_err, dtype=float)
+        if observed_flux.shape != flux_err.shape:
+            raise ValueError("observed_flux ve flux_err aynı boyutta olmalıdır.")
+        if not np.all(np.isfinite(observed_flux)) or not np.all(np.isfinite(flux_err)):
+            raise ValueError("observed_flux ve flux_err sonlu değerlerden oluşmalıdır.")
+        if np.any(flux_err <= 0):
+            raise ValueError("flux_err değerleri pozitif olmalıdır.")
+        if not np.isfinite(log_jitter):
+            raise ValueError("log_jitter sonlu olmalıdır.")
 
         jitter = np.exp(log_jitter)
         sigma2 = flux_err ** 2 + jitter ** 2
 
         resid = self.residuals(params, observed_flux)
 
-        log_like = -0.5 * np.sum(
+        raw_log_like = -0.5 * np.sum(
             resid ** 2 / sigma2 + np.log(2 * np.pi * sigma2)
         )
 
-        return float(log_like)
+        # This is a data-only constant.  It keeps the peak at or below zero
+        # without changing MAP/MCMC comparisons between model parameters.
+        reference = np.sum(
+            np.maximum(0.0, -0.5 * np.log(2 * np.pi * flux_err ** 2))
+        )
+        return float(raw_log_like - reference)
 
     @staticmethod
     def impact_to_inclination(

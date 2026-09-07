@@ -1,4 +1,4 @@
-﻿"""
+"""
 TIC 352179145 S84 Faz Katlanmış Transit Çizici (Publication-Ready v3 - Final)
 """
 import numpy as np
@@ -30,7 +30,7 @@ lc_clean = lc.remove_nans().remove_outliers(sigma=4.0)
 lc_flat, trend = lc_clean.flatten(window_length=201, return_trend=True)
 
 time = lc_flat.time.value
-flux = lc_flat.flux.value
+flux = getattr(lc_flat.flux, "value", lc_flat.flux)
 
 # Faz Katlama (Phase Folding)
 phase = ((time - T0 + 0.5 * PERIOD) % PERIOD) / PERIOD - 0.5
