@@ -13,7 +13,7 @@ Literatür referansları:
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Optional
 import numpy as np
 
@@ -423,6 +423,7 @@ class DerivedParameters:
     equilibrium_temperature_k: float = 0.0
     transit_depth_ppm: float = 0.0
     insolation_flux: float = 0.0
+    equilibrium_temperature_albedo: float = 0.3
 
     def to_dict(self) -> dict:
         return {
@@ -432,6 +433,7 @@ class DerivedParameters:
             "inclination_deg": round(self.inclination_deg, 4),
             "stellar_density_gcm3": round(self.stellar_density_gcm3, 4),
             "equilibrium_temperature_k": round(self.equilibrium_temperature_k, 2),
+            "equilibrium_temperature_albedo": round(self.equilibrium_temperature_albedo, 4),
             "transit_depth_ppm": round(self.transit_depth_ppm, 2),
             "insolation_flux": round(self.insolation_flux, 4),
         }
@@ -475,7 +477,10 @@ def compute_derived_parameters(
         Hesaplanan fiziksel parametreler.
     """
 
-    derived = DerivedParameters()
+    if not np.isfinite(albedo) or not 0.0 <= albedo <= 1.0:
+        raise ValueError("Bond albedosu 0 ile 1 arasında olmalıdır.")
+
+    derived = DerivedParameters(equilibrium_temperature_albedo=float(albedo))
 
     # Transit derinliği (ppm)
     derived.transit_depth_ppm = float((rp_rs ** 2) * 1e6)

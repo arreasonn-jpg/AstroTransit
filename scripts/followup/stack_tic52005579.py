@@ -1,4 +1,4 @@
-﻿"""
+"""
 TIC 52005579 (TOI-6251.01) Çoklu Sektör Birlestirici ve Transit Dogrulayici
 ESI = %96.52 (Earth Twin)
 """
@@ -32,7 +32,7 @@ for lc in lc_collection:
 combined_lc = lk.LightCurveCollection(cleaned_lcs).stitch()
 
 time = combined_lc.time.value
-flux = combined_lc.flux.value
+flux = combined_getattr(lc.flux, "value", lc.flux)
 
 # Faz Katlama (Phase Folding)
 phase = ((time - T0 + 0.5 * PERIOD) % PERIOD) / PERIOD - 0.5

@@ -8,6 +8,8 @@ from astrotransit.settings import (
     GeneralConfig,
     TESSConfig,
     DetectionConfig,
+    LongPeriodConfig,
+    QualityConfig,
     load_settings,
 )
 
@@ -35,6 +37,10 @@ class TestSettings:
             cfg = TESSConfig(exptime=exp)
             assert cfg.exptime == exp
 
+    def test_quality_bitmask_rejects_bool(self):
+        with pytest.raises(ValueError):
+            TESSConfig(quality_bitmask=True)
+
     def test_detection_defaults(self):
         d = DetectionConfig()
         assert d.min_period == 0.3
@@ -42,6 +48,19 @@ class TestSettings:
         assert d.min_transits == 2
         assert d.bls.min_power_threshold == 7.0
         assert d.tls.min_sde_threshold == 6.0
+
+    def test_earth_similarity_profile_validation(self):
+        assert QualityConfig(earth_similarity_profile="STRICT_EARTH_TWIN").earth_similarity_profile == "strict_earth_twin"
+        with pytest.raises(ValueError):
+            QualityConfig(earth_similarity_profile="unknown_profile")
+
+    def test_long_period_defaults_and_validation(self):
+        cfg = LongPeriodConfig()
+        assert cfg.min_period_days == 20.0
+        assert cfg.max_period_days == 500.0
+        assert cfg.min_points_per_transit == 3
+        with pytest.raises(ValueError):
+            LongPeriodConfig(min_period_days=500.0, max_period_days=20.0)
 
     def test_load_from_toml(self):
         config_path = Path("configs/default.toml")

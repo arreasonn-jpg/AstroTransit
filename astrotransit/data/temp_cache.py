@@ -32,8 +32,10 @@ class TempCache:
     """
 
     def __init__(self, cache_dir: str | Path, ttl_hours: int = 24):
-        self.cache_dir = Path(cache_dir)
-        self.ttl_seconds = ttl_hours * 3600
+        if ttl_hours <= 0:
+            raise ValueError("ttl_hours pozitif olmalıdır.")
+        self.cache_dir = Path(cache_dir).expanduser().resolve()
+        self.ttl_seconds = float(ttl_hours) * 3600
         self._index_file = self.cache_dir / "_cache_index.json"
 
         # Cache dizinini oluştur
@@ -53,27 +55,56 @@ class TempCache:
 
         if self._index_file.exists():
             try:
-                with open(self._index_file, "r") as f:
-                    return json.load(f)
-            except (json.JSONDecodeError, IOError):
+                with self._index_file.open("r", encoding="utf-8") as f:
+                    value = json.load(f)
+                if not isinstance(value, dict):
+                    raise ValueError("cache index sözlük değil")
+                return {
+                    key: entry
+                    for key, entry in value.items()
+                    if isinstance(entry, dict)
+                    and isinstance(entry.get("path"), str)
+                    and isinstance(entry.get("timestamp"), (int, float))
+                }
+            except (json.JSONDecodeError, OSError, ValueError):
                 logger.warning("Cache indeksi okunamadı, sıfırdan başlatılıyor.")
                 return {}
         return {}
 
     def _save_index(self) -> None:
-        """Cache indeksini diske yazar."""
+        """Cache indeksini atomik olarak diske yazar."""
 
+        temp_path = self._index_file.with_suffix(".tmp")
         try:
-            with open(self._index_file, "w") as f:
-                json.dump(self._index, f, indent=2)
-        except IOError as e:
+            with temp_path.open("w", encoding="utf-8") as f:
+                json.dump(self._index, f, indent=2, ensure_ascii=False)
+                f.write("\n")
+            temp_path.replace(self._index_file)
+        except (OSError, TypeError, ValueError) as e:
             logger.error(f"Cache indeksi yazılamadı: {e}")
+            try:
+                temp_path.unlink(missing_ok=True)
+            except OSError:
+                pass
 
     @staticmethod
     def _make_key(identifier: str) -> str:
         """Tanımlayıcıdan benzersiz cache anahtarı üretir."""
 
         return hashlib.sha256(identifier.encode()).hexdigest()[:16]
+
+    def _resolve_path(self, file_path: str | Path) -> Path:
+        """Cache indeksindeki yolu cache köküne göre mutlak hale getirir.
+
+        Eski indekslerde göreli yollar bulunabilir. Bunları çalışma dizinine
+        göre yorumlamak, farklı bir process çalışma dizininden cache okununca
+        kayıtların kaybolmuş görünmesine neden olur.
+        """
+
+        path = Path(file_path).expanduser()
+        if not path.is_absolute():
+            path = self.cache_dir / path
+        return path.resolve()
 
     def get_path(self, identifier: str) -> Optional[Path]:
         """
@@ -96,7 +127,7 @@ class TempCache:
             return None
 
         entry = self._index[key]
-        file_path = Path(entry["path"])
+        file_path = self._resolve_path(entry["path"])
 
         # Dosya var mı kontrol et
         if not file_path.exists():
@@ -130,10 +161,11 @@ class TempCache:
         """
 
         key = self._make_key(identifier)
+        resolved_path = self._resolve_path(file_path)
 
         self._index[key] = {
             "identifier": identifier,
-            "path": str(file_path),
+            "path": str(resolved_path),
             "timestamp": time.time(),
         }
 
@@ -146,7 +178,7 @@ class TempCache:
         key = self._make_key(identifier)
 
         if key in self._index:
-            file_path = Path(self._index[key]["path"])
+            file_path = self._resolve_path(self._index[key]["path"])
             self._remove_file(file_path)
             del self._index[key]
             self._save_index()
@@ -171,7 +203,7 @@ class TempCache:
                 expired_keys.append(key)
 
         for key in expired_keys:
-            file_path = Path(self._index[key]["path"])
+            file_path = self._resolve_path(self._index[key]["path"])
             self._remove_file(file_path)
             del self._index[key]
 
@@ -194,7 +226,7 @@ class TempCache:
         count = len(self._index)
 
         for entry in self._index.values():
-            self._remove_file(Path(entry["path"]))
+            self._remove_file(self._resolve_path(entry["path"]))
 
         self._index.clear()
         self._save_index()
@@ -226,7 +258,7 @@ class TempCache:
         now = time.time()
 
         for entry in self._index.values():
-            file_path = Path(entry["path"])
+            file_path = self._resolve_path(entry["path"])
             if file_path.exists():
                 total_size += file_path.stat().st_size
                 age = now - entry["timestamp"]

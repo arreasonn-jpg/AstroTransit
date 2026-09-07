@@ -1,1 +1,1 @@
-﻿"""AstroTransit CLI (komut satırı arayüzü)."""
+"""AstroTransit CLI (komut satırı arayüzü)."""

@@ -1,78 +1,78 @@
-﻿[project]
+[project]
 name = "AstroTransit"
 version = "0.1.0"
 
-# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# ──────────────────────────────────────
 # Genel ayarlar
-# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# ──────────────────────────────────────
 [general]
 log_level = "INFO"                     # DEBUG, INFO, WARNING, ERROR
-temp_dir = ".cache/astrotransit"       # geÃ§ici dosyalar
-output_dir = "outputs"                 # sonuÃ§ dizini
+temp_dir = ".cache/astrotransit"       # geçici dosyalar
+output_dir = "outputs"                 # sonuç dizini
 random_seed = 42
 
-# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-# TESS veri eriÅŸim ayarlarÄ±
-# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# ──────────────────────────────────────
+# TESS veri erişim ayarları
+# ──────────────────────────────────────
 [tess]
-use_cache = true                       # indirilen light curve geÃ§ici olarak saklanÄ±r
-cache_ttl_hours = 24                   # cache sÃ¼resi (saat)
+use_cache = true                       # indirilen light curve geçici olarak saklanır
+cache_ttl_hours = 24                   # cache süresi (saat)
 author = "SPOC"                        # SPOC veya TESS-SPOC
 exptime = 120                          # kadans (saniye): 20, 120, 600
-quality_bitmask = "default"            # "default", "hard", "hardest" veya Ã¶zel int
+quality_bitmask = "default"            # "default", "hard", "hardest" veya özel int
 
-# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-# JWST veri eriÅŸim ayarlarÄ±
-# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# ──────────────────────────────────────
+# JWST veri erişim ayarları
+# ──────────────────────────────────────
 [jwst]
 use_cache = true
 cache_ttl_hours = 48
 product_type = "stage3"                # "stage2" veya "stage3"
 instruments = ["NIRSpec", "NIRISS", "MIRI", "NIRCam"]
 
-# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-# Ã–n iÅŸleme ayarlarÄ±
-# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# ──────────────────────────────────────
+# Ön işleme ayarları
+# ──────────────────────────────────────
 [preprocessing]
-sigma_clip_upper = 5.0                 # Ã¼st sigma kesimi
+sigma_clip_upper = 5.0                 # üst sigma kesimi
 sigma_clip_lower = 5.0                 # alt sigma kesimi
 nan_fill_method = "interpolate"        # "interpolate", "median", "drop"
 
 [preprocessing.detrending]
-method = "biweight"                    # "biweight", "cosine", "gp", "spline"
-window_length = 0.5                    # gÃ¼n cinsinden pencere geniÅŸliÄŸi
-break_tolerance = 0.5                  # veri boÅŸluk toleransÄ± (gÃ¼n)
+method = "biweight"                    # "biweight", "cosine", "spline", "median", "lowess"
+window_length = 0.5                    # gün cinsinden pencere genişliği
+break_tolerance = 0.5                  # veri boşluk toleransı (gün)
 
-# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-# Transit arama ayarlarÄ±
-# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# ──────────────────────────────────────
+# Transit arama ayarları
+# ──────────────────────────────────────
 [detection]
-min_period = 0.3                       # minimum arama periyodu (gÃ¼n)
-max_period = 30.0                      # maksimum arama periyodu (gÃ¼n)
-min_transits = 2                       # minimum transit sayÄ±sÄ±
-frequency_factor = 2.0                 # frekans Ã¶rnekleme faktÃ¶rÃ¼
+min_period = 0.3                       # minimum arama periyodu (gün)
+max_period = 30.0                      # maksimum arama periyodu (gün)
+min_transits = 2                       # minimum transit sayısı
+frequency_factor = 2.0                 # frekans örnekleme faktörü
 
 [detection.bls]
-duration_range = [0.01, 0.2]           # transit sÃ¼re aralÄ±ÄŸÄ± (gÃ¼n cinsinden, periyodun kesri)
-n_durations = 20                       # test edilecek sÃ¼re sayÄ±sÄ±
-min_power_threshold = 7.0              # minimum BLS gÃ¼Ã§ eÅŸiÄŸi (SDE)
+duration_range = [0.01, 0.2]           # transit süre aralığı (gün cinsinden, periyodun kesri)
+n_durations = 20                       # test edilecek süre sayısı
+min_power_threshold = 7.0              # minimum BLS güç eşiği (SDE)
 
 [detection.tls]
-min_sde_threshold = 6.0                # minimum TLS SDE eÅŸiÄŸi
-use_transit_template = true            # gerÃ§ekÃ§i transit ÅŸekli kullanÄ±lsÄ±n mÄ±
+min_sde_threshold = 6.0                # minimum TLS SDE eşiği
+use_transit_template = true            # gerçekçi transit şekli kullanılsın mı
 oversampling_factor = 3                # frekans oversampling
-period_search_window = 0.30   # 0.10 â†’ 0.30 (%30 pencere)
+period_search_window = 0.30   # 0.10 → 0.30 (%30 pencere)
 
 [detection.cascade]
 require_both = true
 period_tolerance = 0.02
 
-# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-# Modelleme ayarlarÄ±
-# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# ──────────────────────────────────────
+# Modelleme ayarları
+# ──────────────────────────────────────
 [modeling]
 fit_method = "mcmc"                     # "map" veya "mcmc"
-mcmc_auto_upgrade = true               # gÃ¼Ã§lÃ¼ adaylarda otomatik MCMC'ye geÃ§
+mcmc_auto_upgrade = true               # güçlü adaylarda otomatik MCMC'ye geç
 
 [modeling.map]
 optimizer = "scipy"                    # scipy L-BFGS-B
@@ -84,30 +84,31 @@ chains = 4
 draws = 3000
 tune = 1500
 target_accept = 0.99
-mcmc_snr_threshold = 10.0             # MCMC sadece SNR bu deÄŸerin Ã¼stÃ¼ndeyse Ã§alÄ±ÅŸÄ±r
+mcmc_snr_threshold = 10.0             # MCMC sadece SNR bu değerin üstündeyse çalışır
 
-# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-# Kalite ve doÄŸrulama ayarlarÄ±
-# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# ──────────────────────────────────────
+# Kalite ve doğrulama ayarları
+# ──────────────────────────────────────
 [quality]
-min_snr = 5.0                          # minimum sinyal-gÃ¼rÃ¼ltÃ¼ oranÄ±
+min_snr = 5.0                          # minimum sinyal-gürültü oranı
 max_residual_rms = 0.005               # maksimum residual RMS
-min_data_completeness = 0.80           # minimum veri tamlÄ±ÄŸÄ± (0-1)
+min_data_completeness = 0.80           # minimum veri tamlığı (0-1)
+earth_similarity_profile = "photometric_earth_analog"
 
-# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-# Ã‡Ä±ktÄ± ayarlarÄ±
-# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# ──────────────────────────────────────
+# Çıktı ayarları
+# ──────────────────────────────────────
 [outputs]
-formats = ["parquet", "json"]          # ana Ã§Ä±ktÄ± formatlarÄ±
-extra_formats = ["csv"]                # ek dÄ±ÅŸa aktarma formatlarÄ±
+formats = ["parquet", "json"]          # ana çıktı formatları
+extra_formats = ["csv"]                # ek dışa aktarma formatları
 save_figures = true
 figure_format = "png"                  # "png", "pdf", "svg"
 figure_dpi = 150
-generate_html_report = false           # HTML rapor Ã¼retilsin mi
+generate_html_report = false           # HTML rapor üretilsin mi
 
-# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-# Benchmark ayarlarÄ±
-# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# ──────────────────────────────────────
+# Benchmark ayarları
+# ──────────────────────────────────────
 [benchmark]
 confirmed_targets_file = "benchmarks/tess/confirmed_targets.parquet"
 false_positives_file = "benchmarks/tess/false_positives.parquet"

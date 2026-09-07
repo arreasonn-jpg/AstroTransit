@@ -64,9 +64,9 @@ def download_and_clean_lc(tic_id: int, sector: int):
 
     lc = search[0].download()
     time = np.array(lc.time.value, dtype=float)
-    flux = np.array(lc.flux.value, dtype=float)
-    flux_err = np.array(lc.flux_err.value, dtype=float)
-    quality = np.array(lc.quality.value, dtype=int)
+    flux = np.array(getattr(lc.flux, "value", lc.flux), dtype=float)
+    flux_err = np.array(getattr(lc.flux_err, "value", lc.flux_err), dtype=float)
+    quality = np.array(getattr(lc.quality, "value", lc.quality), dtype=int)
 
     # Basit temizlik
     valid = np.isfinite(time) & np.isfinite(flux) & (quality == 0)

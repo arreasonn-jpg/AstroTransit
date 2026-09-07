@@ -1,4 +1,4 @@
-﻿"""
+"""
 Flagship Adaylar çin Bireysel FPP (False Positive Probability) Üretici
 """
 import json

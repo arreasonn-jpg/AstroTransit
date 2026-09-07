@@ -1,4 +1,4 @@
-﻿"""
+"""
 TIC 383353664 — ESI %81.26, TSM 66.44 Pure Novel Super-Earth Publication Plot
 """
 import numpy as np
@@ -25,7 +25,7 @@ lc_clean = lc.remove_nans().remove_outliers(sigma=4.0)
 lc_flat, _ = lc_clean.flatten(window_length=201, return_trend=True)
 
 time = lc_flat.time.value
-flux = lc_flat.flux.value
+flux = getattr(lc_flat.flux, "value", lc_flat.flux)
 
 phase = ((time - T0 + 0.5 * PERIOD) % PERIOD) / PERIOD - 0.5
 phase_hours = phase * PERIOD * 24.0

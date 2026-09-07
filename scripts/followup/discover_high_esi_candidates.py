@@ -1,4 +1,4 @@
-﻿"""
+"""
 NASA Exoplanet Archive & TESS TOI Canlı ESI Tarayıcı
 Doğrudan ESI > 0.80 - 0.95 (Dünya kizi) Adaylarını Çeker
 """

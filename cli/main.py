@@ -10,6 +10,7 @@ Kullanım:
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 from typing import Optional
 
@@ -182,6 +183,307 @@ def batch(
     )
 
 
+@app.command("target-pool")
+def target_pool(
+    input_file: str = typer.Argument(
+        ...,
+        help="TIC ID/TIC-benzeri katalog CSV veya JSON dosyası",
+    ),
+    output: str = typer.Option(
+        "outputs/target_pool.json",
+        "--output", "-o",
+        help="Hedef havuzu JSON/CSV çıktı yolu",
+    ),
+    query_mast: bool = typer.Option(
+        False,
+        "--query-mast/--no-query-mast",
+        help="TESS coverage için MAST sorgusu yap",
+    ),
+    min_teff: float = typer.Option(3500.0, "--min-teff"),
+    max_teff: float = typer.Option(6500.0, "--max-teff"),
+    max_tmag: float = typer.Option(13.0, "--max-tmag"),
+):
+    """TIC/MAST metadata'dan Earth-twin hedef havuzu üretir."""
+
+    from astrotransit.discovery.target_pool import EarthTargetPoolBuilder, TargetPoolConfig
+
+    source = Path(input_file)
+    if not source.exists():
+        console.print(f"[red]Dosya bulunamadı: {source}[/red]")
+        raise typer.Exit(1)
+    try:
+        if source.suffix.lower() == ".csv":
+            import pandas as pd
+
+            rows = pd.read_csv(source).to_dict(orient="records")
+        elif source.suffix.lower() == ".json":
+            rows = json.loads(source.read_text(encoding="utf-8"))
+            if isinstance(rows, dict):
+                rows = rows.get("targets", rows.get("data", [rows]))
+        else:
+            rows = [
+                {"tic_id": line.strip()}
+                for line in source.read_text(encoding="utf-8").splitlines()
+                if line.strip() and not line.lstrip().startswith("#")
+            ]
+        if not isinstance(rows, list):
+            raise ValueError("Girdi listesi veya katalog satırları içeren JSON olmalıdır.")
+        builder = EarthTargetPoolBuilder(
+            TargetPoolConfig(min_teff_k=min_teff, max_teff_k=max_teff, max_tmag=max_tmag)
+        )
+        entries = builder.build_from_rows(rows, query_coverage=query_mast)
+        destination = Path(output)
+        if destination.suffix.lower() == ".csv":
+            builder.write_csv(entries, destination)
+        else:
+            builder.write_json(entries, destination)
+    except (OSError, ValueError, TypeError, json.JSONDecodeError) as exc:
+        console.print(f"[red]Hedef havuzu oluşturulamadı: {exc}[/red]")
+        raise typer.Exit(1)
+
+    n_eligible = sum(entry.eligible for entry in entries)
+    console.print(
+        f"[green]{n_eligible}/{len(entries)} hedef uygun bulundu.[/green] "
+        f"Çıktı: {destination}"
+    )
+
+
+@app.command("earth-search")
+def earth_search(
+    targets_file: str = typer.Argument(
+        ...,
+        help="TESS hedef listesi (CSV veya TXT, her satırda bir TIC ID)",
+    ),
+    min_similarity: float = typer.Option(
+        90.0,
+        "--min-similarity",
+        help="Minimum Earth similarity skoru (0-100)",
+    ),
+    limit: int = typer.Option(
+        50,
+        "--limit",
+        help="Gösterilecek ve JSON'a yazılacak maksimum aday sayısı",
+    ),
+    output: Optional[str] = typer.Option(
+        None,
+        "--output", "-o",
+        help="Sıralanmış aday özetinin JSON yolu",
+    ),
+    sectors: Optional[list[int]] = typer.Option(
+        None,
+        "--sectors", "-s",
+        help="İşlenecek sektörler (boş = tüm mevcut sektörler)",
+    ),
+    config: Optional[str] = typer.Option(None, "--config", "-c"),
+    force_map: bool = typer.Option(True, "--force-map/--no-force-map"),
+    no_catalog: bool = typer.Option(False, "--no-catalog"),
+    log_level: str = typer.Option("INFO", "--log-level"),
+):
+    """TESS hedef listesini tarar ve yüzde 90+ Earth-like adayları sıralar.
+
+    Earth similarity, detection confidence ve FPP ayrı sütunlarda gösterilir;
+    öncelik skoru yalnızca operasyonel follow-up sıralamasıdır.
+    """
+
+    from astrotransit.discovery.earth_search import EarthCandidateRanker
+    from astrotransit.pipelines.orchestrator import AstroTransitOrchestrator
+
+    if limit < 1:
+        console.print("[red]--limit en az 1 olmalıdır.[/red]")
+        raise typer.Exit(1)
+    if not 0.0 <= min_similarity <= 100.0:
+        console.print("[red]--min-similarity 0 ile 100 arasında olmalıdır.[/red]")
+        raise typer.Exit(1)
+
+    path = Path(targets_file)
+    if not path.exists():
+        console.print(f"[red]Dosya bulunamadı: {path}[/red]")
+        raise typer.Exit(1)
+
+    if path.suffix.lower() == ".csv":
+        import pandas as pd
+
+        df = pd.read_csv(path)
+        if "tic_id" in df.columns:
+            targets = [f"TIC {tid}" for tid in df["tic_id"].tolist()]
+        else:
+            targets = df.iloc[:, 0].astype(str).tolist()
+    else:
+        targets = [
+            line.strip()
+            for line in path.read_text(encoding="utf-8").splitlines()
+            if line.strip() and not line.lstrip().startswith("#")
+        ]
+
+    if not targets:
+        console.print("[yellow]Hedef listesi boş.[/yellow]")
+        raise typer.Exit(0)
+
+    console.print(
+        Panel(
+            f"[bold cyan]AstroTransit — Earth-like TESS Araması[/bold cyan]\n"
+            f"Hedef sayısı: [bold]{len(targets)}[/bold] | "
+            f"minimum similarity: [bold]{min_similarity:.1f}[/bold]",
+            border_style="cyan",
+        )
+    )
+
+    with AstroTransitOrchestrator(
+        config_path=config,
+        force_map=force_map,
+        skip_visualization=True,
+        skip_catalog=no_catalog,
+        log_level=log_level,
+    ) as orchestrator:
+        results = orchestrator.run_batch(targets, sectors=sectors)
+
+    ranker = EarthCandidateRanker(min_similarity=min_similarity)
+    records = ranker.records_from_target_results(results)
+    summary = ranker.summarize(records, n_targets=len(results))
+    ranked = summary.ranked_candidates[:limit]
+
+    table = Table(title="Earth-like aday önceliklendirmesi")
+    table.add_column("#", justify="right")
+    table.add_column("Hedef", style="cyan")
+    table.add_column("Kategori", style="green")
+    table.add_column("Similarity", justify="right")
+    table.add_column("Confidence", justify="center")
+    table.add_column("FPP", justify="right")
+    table.add_column("Priority", justify="right")
+    for index, candidate in enumerate(ranked, start=1):
+        fpp = "?" if candidate.false_positive_probability is None else f"{candidate.false_positive_probability:.3f}"
+        table.add_row(
+            str(index),
+            candidate.target_id,
+            candidate.category_label,
+            f"{candidate.similarity_score:.1f}",
+            candidate.detection_confidence,
+            fpp,
+            f"{candidate.priority_score:.1f}",
+        )
+    console.print(table)
+    console.print(
+        f"\n[bold]Özet:[/bold] {summary.n_ranked_candidates} uygun aday / "
+        f"{summary.n_targets} hedef; similarity, confidence ve FPP ayrı raporlandı."
+    )
+
+    if output:
+        limited_summary = type(summary)(
+            n_targets=summary.n_targets,
+            n_records=summary.n_records,
+            n_ranked_candidates=len(ranked),
+            ranked_candidates=tuple(ranked),
+        )
+        output_path = limited_summary.write_json(output)
+        console.print(f"JSON çıktı: [green]{output_path}[/green]")
+
+
+@app.command("followup-update")
+def followup_update(
+    target: str = typer.Argument(..., help="Hedef TIC ID (örn. TIC 123456789)"),
+    sector: int = typer.Argument(..., help="Güncellenecek TESS sektör numarası"),
+    evidence_file: str = typer.Argument(
+        ...,
+        help="FollowupEvidence JSON dosyası",
+    ),
+    output_dir: str = typer.Option(
+        "outputs",
+        "--output-dir",
+        help="Mevcut JSON/Parquet çıktı kökü",
+    ),
+):
+    """Mevcut aday kaydını doğrulanmış follow-up kanıtıyla günceller."""
+
+    from astrotransit.outputs.writers import OutputManager
+    from astrotransit.utils.identifiers import normalize_tic_id
+
+    evidence_path = Path(evidence_file)
+    if not evidence_path.exists():
+        console.print(f"[red]Kanıt dosyası bulunamadı: {evidence_path}[/red]")
+        raise typer.Exit(1)
+    try:
+        evidence = json.loads(evidence_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        console.print(f"[red]Kanıt JSON'u okunamadı: {exc}[/red]")
+        raise typer.Exit(1)
+    if not isinstance(evidence, dict):
+        console.print("[red]Kanıt JSON'u bir nesne olmalıdır.[/red]")
+        raise typer.Exit(1)
+
+    try:
+        target_id = normalize_tic_id(target)
+    except ValueError:
+        target_id = str(target)
+
+    manager = OutputManager(output_dir=output_dir)
+    record = manager.find_record(target_id, sector)
+    if record is None:
+        manager.close()
+        console.print(
+            f"[red]Kayıt bulunamadı: source_id={target_id}, sector={sector}[/red]"
+        )
+        raise typer.Exit(1)
+
+    try:
+        updated = manager.update_followup(record, evidence)
+        manager.close()
+    except (TypeError, ValueError, RuntimeError) as exc:
+        manager.close()
+        console.print(f"[red]Follow-up güncellemesi başarısız: {exc}[/red]")
+        raise typer.Exit(1)
+
+    console.print(
+        Panel(
+            f"[bold green]Follow-up kaydı güncellendi[/bold green]\n"
+            f"Hedef: {updated.source_id} / sektör {updated.sector}\n"
+            f"Durum: {updated.followup_status}\n"
+            f"Earth sınıfı: {updated.earth_twin_status}",
+            border_style="green",
+        )
+    )
+
+
+@app.command("migrate")
+def migrate_outputs(
+    input_path: str = typer.Argument(
+        ...,
+        help="Eski JSON veya Parquet dosyası",
+    ),
+    output_path: Optional[str] = typer.Option(
+        None,
+        "--output", "-o",
+        help="Yeni dosya yolu; verilmezse dosya yerinde güncellenir",
+    ),
+):
+    """Eski JSON/Parquet çıktısını schema 1.6'ya taşır."""
+
+    from astrotransit.outputs.migration import migrate_json, migrate_parquet
+
+    source = Path(input_path)
+    if not source.exists():
+        console.print(f"[red]Dosya bulunamadı: {source}[/red]")
+        raise typer.Exit(1)
+    suffix = source.suffix.lower()
+    try:
+        if suffix == ".json":
+            destination = migrate_json(source, output_path)
+        elif suffix in {".parquet", ".pq"}:
+            destination = migrate_parquet(source, output_path)
+        else:
+            console.print("[red]Yalnızca .json, .parquet veya .pq desteklenir.[/red]")
+            raise typer.Exit(2)
+    except (OSError, ValueError, TypeError, ImportError, json.JSONDecodeError) as exc:
+        console.print(f"[red]Migration başarısız: {exc}[/red]")
+        raise typer.Exit(1)
+    console.print(
+        Panel(
+            f"[bold green]Schema migration tamamlandı[/bold green]\\n"
+            f"Kaynak: {source}\\nHedef: {destination}\\nSchema: 1.6",
+            border_style="green",
+        )
+    )
+
+
 @app.command()
 def benchmark(
     max_per_category: Optional[int] = typer.Option(
@@ -198,7 +500,7 @@ def benchmark(
 
     console.print(
         Panel(
-            f"[bold cyan]AstroTransit — Benchmark Doğrulama[/bold cyan]",
+            "[bold cyan]AstroTransit — Benchmark Doğrulama[/bold cyan]",
             border_style="cyan",
         )
     )

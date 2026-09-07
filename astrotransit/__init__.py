@@ -1,4 +1,4 @@
-﻿"""
+"""
 AstroTransit
 ============
 TESS ve JWST verilerinden transit tespiti, filtreleme ve kategorizasyon platformu.

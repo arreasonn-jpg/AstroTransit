@@ -8,7 +8,7 @@ _project_root = Path(__file__).resolve().parent.parent
 if str(_project_root) not in sys.path:
     sys.path.insert(0, str(_project_root))
 
-import streamlit as st
+import streamlit as st  # noqa: E402
 
 
 @st.cache_data(show_spinner=False)
@@ -240,8 +240,20 @@ def page_catalog_explorer():
             score_range = (0.0, 100.0)
 
         max_fpp = st.slider("Maks FPP", 0.0, 1.0, 1.0, 0.05) if "fpp" in df.columns else 1.0
-        confirmed_only = st.checkbox("Sadece Onayli", value=False)
-        exclude_fp = st.checkbox("FP Heric Tut", value=False)
+        if "earth_similarity_score" in df.columns:
+            similarity_range = st.slider("Earth similarity", 0.0, 100.0, (0.0, 100.0))
+        else:
+            similarity_range = (0.0, 100.0)
+        earth_classes = (
+            sorted(df["earth_analog_class"].dropna().astype(str).unique().tolist())
+            if "earth_analog_class" in df.columns else []
+        )
+        selected_earth_classes = st.multiselect(
+            "Earth analog sınıfı", options=earth_classes, default=earth_classes
+        )
+        followup_only = st.checkbox("Sadece follow-up doğrulanan", value=False)
+        confirmed_only = st.checkbox("Sadece TESS cascade onaylı", value=False)
+        exclude_fp = st.checkbox("FP Hariç Tut", value=False)
         anomalous_only = st.checkbox("Sadece Anomali", value=False)
 
     mask = pd.Series([True] * len(df), index=df.index)
@@ -252,13 +264,21 @@ def page_catalog_explorer():
     if "total_score" in df.columns:
         mask &= df["total_score"].between(score_range[0], score_range[1])
     if "fpp" in df.columns:
-        mask &= df["fpp"] <= max_fpp
+        mask &= df["fpp"].fillna(1.0) <= max_fpp
+    if "earth_similarity_score" in df.columns:
+        mask &= df["earth_similarity_score"].fillna(0.0).between(
+            similarity_range[0], similarity_range[1]
+        )
+    if "earth_analog_class" in df.columns and selected_earth_classes:
+        mask &= df["earth_analog_class"].astype(str).isin(selected_earth_classes)
+    if followup_only and "followup_confirmed" in df.columns:
+        mask &= df["followup_confirmed"].fillna(False)
     if confirmed_only and "cascade_confirmed" in df.columns:
-        mask &= df["cascade_confirmed"] == True
+        mask &= df["cascade_confirmed"].fillna(False)
     if exclude_fp and "is_false_positive" in df.columns:
-        mask &= df["is_false_positive"] == False
+        mask &= ~df["is_false_positive"].fillna(False)
     if anomalous_only and "is_anomalous" in df.columns:
-        mask &= df["is_anomalous"] == True
+        mask &= df["is_anomalous"].fillna(False)
 
     df_filtered = df[mask].copy()
     st.metric("Filtrelenmis Kayit", len(df_filtered))
@@ -272,8 +292,12 @@ def page_catalog_explorer():
                 st.metric(f"Sinif {cls}", count)
 
     st.subheader("Aday Tablosu")
-    display_cols = ["source_id", "sector", "period", "depth_ppm", "rp_rs",
-                    "planet_radius_rearth", "snr_adopted", "total_score", "candidate_class", "fpp"]
+    display_cols = [
+        "source_id", "sector", "period", "depth_ppm", "rp_rs",
+        "planet_radius_rearth", "earth_similarity_score", "earth_analog_class",
+        "earth_twin_status", "detection_confidence", "followup_status",
+        "snr_adopted", "total_score", "candidate_class", "fpp",
+    ]
     available_display = [c for c in display_cols if c in df_filtered.columns]
 
     if available_display:
@@ -331,41 +355,68 @@ def page_candidate_detail():
         derived = data.get("derived", {})
         quality = data.get("quality", {})
         score_data = data.get("score", {})
+        similarity_data = data.get("earth_similarity", {})
+        followup_data = data.get("followup", {})
+        vetting_data = data.get("vetting", {})
 
-        col1, col2, col3, col4 = st.columns(4)
+        col1, col2, col3, col4, col5, col6 = st.columns(6)
         with col1:
             st.metric("Periyot", f"{params.get('period_days', 0):.5f} d")
         with col2:
             st.metric("Rp", f"{derived.get('planet_radius_rearth', 0):.2f} R_earth")
         with col3:
-            st.metric("SNR", f"{quality.get('snr_adopted', 0):.2f}")
+            st.metric("Earth similarity", f"{similarity_data.get('score', 0):.1f}/100")
         with col4:
+            st.metric("Confidence", data.get("detection_confidence", vetting_data.get("detection_confidence", "?")))
+        with col5:
+            st.metric("Follow-up", followup_data.get("status", "not_confirmed"))
+        with col6:
             cls = score_data.get("candidate_class", "?")
             scr = score_data.get("total_score", 0)
-            st.metric(f"Sinif {cls}", f"{scr:.0f}/100")
+            st.metric(f"Sınıf {cls}", f"{scr:.0f}/100")
 
-        tabs = st.tabs(["Parametreler", "Yildiz", "Tespit", "Kalite", "Vetting", "Ham JSON"])
+        tabs = st.tabs([
+            "Parametreler", "Earth similarity", "Follow-up", "Yıldız", "Tespit",
+            "Kalite", "Vetting", "Ham JSON",
+        ])
 
         with tabs[0]:
             st.json(params)
             st.json(derived)
         with tabs[1]:
-            st.json(data.get("stellar", {}))
+            st.subheader("Earth similarity uncertainty")
+            st.metric("Score", f"{similarity_data.get('score', 0):.2f}")
+            p05 = similarity_data.get("score_p05")
+            p95 = similarity_data.get("score_p95")
+            if p05 is not None and p95 is not None:
+                st.caption(f"P05–P95: {p05:.2f} – {p95:.2f}")
+            st.write("Sınıf:", similarity_data.get("classification", "unverified"))
+            st.write("Durum:", similarity_data.get("status", "unverified"))
+            st.write("Ölçüm completeness:", similarity_data.get("measurement_completeness", 0.0))
+            st.json(similarity_data)
         with tabs[2]:
-            st.json(data.get("detection", {}))
+            st.subheader("Follow-up kanıtı")
+            st.write("Durum:", followup_data.get("status", "not_confirmed"))
+            st.write("Doğrulandı:", followup_data.get("confirmed", False))
+            st.write("Kaynaklar:", followup_data.get("sources", []))
+            st.write("Observation ID'leri:", followup_data.get("observation_ids", []))
+            st.json(followup_data.get("evidence", {}))
         with tabs[3]:
+            st.json(data.get("stellar", {}))
+        with tabs[4]:
+            st.json(data.get("detection", {}))
+        with tabs[5]:
             st.json(quality)
             st.json(score_data)
-        with tabs[4]:
-            st.json(data.get("vetting", {}))
-        with tabs[5]:
+        with tabs[6]:
+            st.json(vetting_data)
+        with tabs[7]:
             st.json(data)
 
         st.subheader("Gorseller")
         source_id = data.get("target", {}).get("source_id", "")
         sector = data.get("target", {}).get("sector", 0)
         safe_id = source_id.replace(" ", "_").replace("/", "_")
-        sector_str = f"S{sector:02d}"
 
         found_images = find_candidate_images(source_id, sector)
 

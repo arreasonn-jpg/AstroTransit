@@ -11,7 +11,7 @@ import sys
 from pathlib import Path
 from typing import Optional
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 # ──────────────────────────────────────
 # Python 3.11+ tomllib, altı için tomli
@@ -53,7 +53,14 @@ class TESSConfig(BaseModel):
     cache_ttl_hours: int = 24
     author: str = "SPOC"
     exptime: int = 120
-    quality_bitmask: str = "default"
+    quality_bitmask: str | int = "default"
+
+    @field_validator("cache_ttl_hours")
+    @classmethod
+    def validate_cache_ttl(cls, v: int) -> int:
+        if v <= 0:
+            raise ValueError("cache_ttl_hours pozitif olmalıdır.")
+        return v
 
     @field_validator("exptime")
     @classmethod
@@ -62,6 +69,24 @@ class TESSConfig(BaseModel):
         if v not in allowed:
             raise ValueError(f"exptime {v} geçersiz. İzin verilenler: {allowed}")
         return v
+
+    @field_validator("quality_bitmask", mode="before")
+    @classmethod
+    def validate_quality_bitmask(cls, v: str | int) -> str | int:
+        allowed = {"default", "hard", "hardest"}
+        if isinstance(v, bool):
+            raise ValueError("quality_bitmask bool olamaz.")
+        if isinstance(v, int):
+            if v < 0:
+                raise ValueError("quality_bitmask integer değeri negatif olamaz.")
+            return v
+        if not isinstance(v, str) or not v.strip():
+            raise ValueError("quality_bitmask boş olamaz.")
+        if v.lower() not in allowed:
+            raise ValueError(
+                f"quality_bitmask '{v}' geçersiz. İzin verilenler: {sorted(allowed)}"
+            )
+        return v.lower()
 
 
 class JWSTConfig(BaseModel):
@@ -73,6 +98,13 @@ class JWSTConfig(BaseModel):
     instruments: list[str] = Field(
         default=["NIRSpec", "NIRISS", "MIRI", "NIRCam"]
     )
+
+    @field_validator("cache_ttl_hours")
+    @classmethod
+    def validate_cache_ttl(cls, v: int) -> int:
+        if v <= 0:
+            raise ValueError("cache_ttl_hours pozitif olmalıdır.")
+        return v
 
     @field_validator("product_type")
     @classmethod
@@ -90,10 +122,17 @@ class DetrendingConfig(BaseModel):
     window_length: float = 0.5
     break_tolerance: float = 0.5
 
+    @field_validator("window_length", "break_tolerance")
+    @classmethod
+    def validate_positive_duration(cls, v: float) -> float:
+        if v <= 0:
+            raise ValueError("detrending süre ayarları pozitif olmalıdır.")
+        return v
+
     @field_validator("method")
     @classmethod
     def validate_method(cls, v: str) -> str:
-        allowed = {"biweight", "cosine", "gp", "spline"}
+        allowed = {"biweight", "cosine", "spline", "median", "lowess"}
         if v.lower() not in allowed:
             raise ValueError(f"detrending method '{v}' geçersiz. İzin verilenler: {allowed}")
         return v.lower()
@@ -106,6 +145,13 @@ class PreprocessingConfig(BaseModel):
     sigma_clip_lower: float = 5.0
     nan_fill_method: str = "interpolate"
     detrending: DetrendingConfig = Field(default_factory=DetrendingConfig)
+
+    @field_validator("sigma_clip_upper", "sigma_clip_lower")
+    @classmethod
+    def validate_sigma_clip(cls, v: float) -> float:
+        if v <= 0:
+            raise ValueError("sigma clip eşikleri pozitif olmalıdır.")
+        return v
 
     @field_validator("nan_fill_method")
     @classmethod
@@ -123,6 +169,20 @@ class BLSConfig(BaseModel):
     n_durations: int = 20
     min_power_threshold: float = 7.0
 
+    @field_validator("duration_range")
+    @classmethod
+    def validate_duration_range(cls, v: list[float]) -> list[float]:
+        if len(v) != 2 or not 0 < v[0] < v[1]:
+            raise ValueError("duration_range [pozitif_min, max] biçiminde olmalıdır.")
+        return v
+
+    @field_validator("n_durations")
+    @classmethod
+    def validate_n_durations(cls, v: int) -> int:
+        if v < 2:
+            raise ValueError("n_durations en az 2 olmalıdır.")
+        return v
+
 
 class TLSConfig(BaseModel):
     """TLS arama alt ayarları."""
@@ -130,6 +190,14 @@ class TLSConfig(BaseModel):
     min_sde_threshold: float = 6.0
     use_transit_template: bool = True
     oversampling_factor: int = 3
+    period_search_window: float = 0.1
+
+    @field_validator("period_search_window")
+    @classmethod
+    def validate_period_search_window(cls, v: float) -> float:
+        if not 0.0 < v < 1.0:
+            raise ValueError("period_search_window 0 ile 1 arasında olmalıdır.")
+        return v
 
 
 class CascadeConfig(BaseModel):
@@ -137,6 +205,49 @@ class CascadeConfig(BaseModel):
 
     require_both: bool = True
     period_tolerance: float = 0.01
+
+
+class LongPeriodConfig(BaseModel):
+    """20-500 gün aralığı ve tek-transit taraması ayarları."""
+
+    enabled: bool = True
+    min_period_days: float = 20.0
+    max_period_days: float = 500.0
+    min_power: float = 7.0
+    min_depth: float = 1e-4
+    max_depth: float = 0.5
+    min_points_per_transit: int = 3
+    n_durations: int = 8
+    n_peaks: int = 5
+
+    @field_validator("min_period_days", "max_period_days")
+    @classmethod
+    def validate_periods(cls, v: float) -> float:
+        if v <= 0:
+            raise ValueError("long_period periyotları pozitif olmalıdır.")
+        return v
+
+    @field_validator("min_power", "min_depth", "max_depth")
+    @classmethod
+    def validate_positive_thresholds(cls, v: float) -> float:
+        if v <= 0:
+            raise ValueError("long_period eşikleri pozitif olmalıdır.")
+        return v
+
+    @field_validator("min_points_per_transit", "n_durations", "n_peaks")
+    @classmethod
+    def validate_counts(cls, v: int) -> int:
+        if v < 1:
+            raise ValueError("long_period sayısal ayarları en az 1 olmalıdır.")
+        return v
+
+    @model_validator(mode="after")
+    def validate_period_range(self):
+        if self.min_period_days >= self.max_period_days:
+            raise ValueError("long_period min_period_days < max_period_days olmalıdır.")
+        if self.min_depth >= self.max_depth:
+            raise ValueError("long_period min_depth < max_depth olmalıdır.")
+        return self
 
 
 class DetectionConfig(BaseModel):
@@ -149,6 +260,7 @@ class DetectionConfig(BaseModel):
     bls: BLSConfig = Field(default_factory=BLSConfig)
     tls: TLSConfig = Field(default_factory=TLSConfig)
     cascade: CascadeConfig = Field(default_factory=CascadeConfig)
+    long_period: LongPeriodConfig = Field(default_factory=LongPeriodConfig)
 
 
 class MAPConfig(BaseModel):
@@ -187,11 +299,27 @@ class ModelingConfig(BaseModel):
 
 
 class QualityConfig(BaseModel):
-    """Kalite değerlendirme ayarları."""
+    """Kalite ve Dünya-benzerlik önceliklendirme ayarları."""
 
     min_snr: float = 5.0
     max_residual_rms: float = 0.005
     min_data_completeness: float = 0.80
+    earth_similarity_profile: str = "photometric_earth_analog"
+
+    @field_validator("earth_similarity_profile")
+    @classmethod
+    def validate_earth_similarity_profile(cls, v: str) -> str:
+        allowed = {
+            "strict_earth_twin",
+            "photometric_earth_analog",
+            "terrestrial_hz_analog",
+        }
+        value = v.strip().lower()
+        if value not in allowed:
+            raise ValueError(
+                f"earth_similarity_profile '{v}' geçersiz. İzin verilenler: {sorted(allowed)}"
+            )
+        return value
 
 
 class OutputsConfig(BaseModel):

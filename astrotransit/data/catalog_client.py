@@ -10,11 +10,14 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Optional
 
-from astroquery.simbad import Simbad
+try:  # SIMBAD is optional for TESS-only/offline runs.
+    from astroquery.simbad import Simbad
+except ImportError:  # pragma: no cover - depends on local optional deps
+    Simbad = None
 from astropy.table import Table
 from loguru import logger
 
-from astrotransit.data.mast_client import MASTClient, MASTQueryError
+from astrotransit.data.mast_client import MASTClient, MASTConnectionError, MASTQueryError
 from astrotransit.utils.identifiers import extract_tic_number
 
 
@@ -120,7 +123,7 @@ class CatalogClient:
 
         try:
             result = self._mast.query_tic_catalog(tic_id=tic_id)
-        except MASTQueryError as e:
+        except (MASTConnectionError, MASTQueryError) as e:
             logger.error(f"TIC katalog sorgusu başarısız: {e}")
             return StellarProperties(tic_id=tic_id, source="failed")
 
@@ -177,6 +180,9 @@ class CatalogClient:
         """
 
         logger.debug(f"SIMBAD sorgusu: {target_name}")
+        if Simbad is None:
+            logger.warning("SIMBAD bağımlılıkları kullanılamıyor; sorgu atlandı.")
+            return None
 
         try:
             custom_simbad = Simbad()

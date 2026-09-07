@@ -1,4 +1,4 @@
-﻿import json
+import json
 
 P_orig = 2.8540582115788187
 P_double = P_orig * 2.0

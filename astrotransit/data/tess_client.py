@@ -16,16 +16,22 @@ Sonraki fazlarda eklenecek:
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+import json
 from pathlib import Path
-from typing import Optional
+import re
+import zipfile
+from typing import Any, Optional
 
 import numpy as np
-import lightkurve as lk
-from astropy.time import Time
 from loguru import logger
 
+try:  # Import is intentionally lazy-friendly: data models work offline.
+    import lightkurve as lk
+except ImportError:  # pragma: no cover - exercised only in minimal installs
+    lk = None
+
 from astrotransit.data.temp_cache import TempCache
-from astrotransit.data.mast_client import MASTClient, MASTQueryError
+from astrotransit.data.mast_client import MASTClient
 from astrotransit.utils.identifiers import normalize_tic_id, extract_tic_number
 
 
@@ -266,6 +272,12 @@ class TESSClient:
             Veri bulunamazsa.
         """
 
+        if lk is None:
+            raise TESSDataError(
+                "Lightkurve bağımlılığı kullanılamıyor. "
+                "Kurulumu tamamlamak için 'pip install lightkurve' çalıştırın."
+            )
+
         # TIC ID standardizasyonu
         if isinstance(target, int):
             target_str = normalize_tic_id(target)
@@ -279,7 +291,6 @@ class TESSClient:
 
         import time as _time
 
-        last_error = None
         search_result = None
 
         for attempt in range(3):
@@ -293,7 +304,6 @@ class TESSClient:
                 )
                 break
             except Exception as e:
-                last_error = e
                 wait = 2 ** attempt  # 1, 2, 4 saniye
                 if attempt < 2:
                     logger.warning(
@@ -335,7 +345,7 @@ class TESSClient:
             İndirilen light curve.
         """
 
-        if index >= len(search_result):
+        if index < 0 or index >= len(search_result):
             raise TESSDataError(
                 f"İndeks {index} geçersiz. "
                 f"Arama sonucunda {len(search_result)} kayıt var."
@@ -399,14 +409,14 @@ class TESSClient:
         logger.debug(f"NaN temizleme sonrası: {len(lc.time)} nokta")
 
         # 2. Sonsuz değerleri kaldır
-        finite_mask = np.isfinite(lc.flux.value)
+        finite_mask = np.isfinite(self._value_array(lc.flux))
         if hasattr(lc, 'flux_err') and lc.flux_err is not None:
-            finite_mask &= np.isfinite(lc.flux_err.value)
+            finite_mask &= np.isfinite(self._value_array(lc.flux_err))
         lc = lc[finite_mask]
         logger.debug(f"Sonsuz değer temizleme sonrası: {len(lc.time)} nokta")
 
         # 3. Sıfır ve negatif akı temizleme
-        positive_mask = lc.flux.value > 0
+        positive_mask = self._value_array(lc.flux) > 0
         lc = lc[positive_mask]
         logger.debug(f"Sıfır/negatif temizleme sonrası: {len(lc.time)} nokta")
 
@@ -430,6 +440,12 @@ class TESSClient:
         )
 
         return lc
+
+    @staticmethod
+    def _value_array(value: Any) -> np.ndarray:
+        """Astropy Quantity/Time veya ndarray değerini NumPy dizisine çevirir."""
+
+        return np.asarray(getattr(value, "value", value))
 
     def _to_data_object(
         self,
@@ -456,12 +472,12 @@ class TESSClient:
         """
 
         # Zaman ve akı dizilerini çıkar
-        time_arr = np.array(lc.time.value, dtype=np.float64)
-        flux_arr = np.array(lc.flux.value, dtype=np.float64)
+        time_arr = np.array(self._value_array(lc.time), dtype=np.float64)
+        flux_arr = np.array(self._value_array(lc.flux), dtype=np.float64)
 
         # Hata dizisi
         if hasattr(lc, 'flux_err') and lc.flux_err is not None:
-            flux_err_arr = np.array(lc.flux_err.value, dtype=np.float64)
+            flux_err_arr = np.array(self._value_array(lc.flux_err), dtype=np.float64)
         else:
             # Hata yoksa medyan akının sabit bir oranı olarak tahmin et
             flux_err_arr = np.full_like(flux_arr, np.nanmedian(flux_arr) * 1e-4)
@@ -469,7 +485,7 @@ class TESSClient:
 
         # Kalite bayrakları
         if hasattr(lc, 'quality') and lc.quality is not None:
-            quality_arr = np.array(lc.quality.value, dtype=np.int32)
+            quality_arr = np.array(self._value_array(lc.quality), dtype=np.int32)
         else:
             quality_arr = np.zeros(len(time_arr), dtype=np.int32)
 
@@ -501,12 +517,137 @@ class TESSClient:
             n_points_clean=len(time_arr),
         )
 
-    def _cache_identifier(self, target_id: str, sector: Optional[int]) -> str:
-        """Cache anahtarı oluşturur."""
+    def _cache_identifier(
+        self,
+        target_id: str,
+        sector: Optional[int],
+        sigma_upper: float = 5.0,
+        sigma_lower: float = 5.0,
+    ) -> str:
+        """Temizlenmiş light curve için tüm sonucu tanımlayan cache anahtarı."""
 
         tic_num = extract_tic_number(target_id)
-        sector_str = f"s{sector}" if sector else "all"
-        return f"tess_lc_{tic_num}_{sector_str}_{self.author}_{self.exptime}"
+        sector_str = f"s{sector}" if sector is not None else "all"
+        return (
+            f"tess_lc_{tic_num}_{sector_str}_{self.author}_{self.exptime}_"
+            f"{self.quality_bitmask}_{sigma_upper:g}_{sigma_lower:g}"
+        )
+
+    @staticmethod
+    def _row_value(row: Any, name: str, default: Any = None) -> Any:
+        """Astropy Row ve dict nesnelerinden değer okur."""
+
+        if row is None:
+            return default
+        try:
+            if name in row.colnames:  # astropy Row
+                return row[name]
+        except AttributeError:
+            pass
+        if isinstance(row, dict):
+            return row.get(name, default)
+        try:
+            return row[name]
+        except (KeyError, IndexError, TypeError):
+            return default
+
+    @classmethod
+    def _sector_from_row(cls, row: Any) -> Optional[int]:
+        """Lightkurve arama satırından sektör numarasını çıkarır."""
+
+        for name in ("sector", "sequence_number"):
+            value = cls._row_value(row, name)
+            if value not in (None, ""):
+                try:
+                    return int(value)
+                except (TypeError, ValueError):
+                    pass
+        mission = str(cls._row_value(row, "mission", ""))
+        match = re.search(r"sector\s*(\d+)", mission, flags=re.IGNORECASE)
+        if match:
+            return int(match.group(1))
+        obs_id = str(cls._row_value(row, "obs_id", ""))
+        match = re.search(r"s(?:ector)?[-_ ]?(\d+)", obs_id, flags=re.IGNORECASE)
+        return int(match.group(1)) if match else None
+
+    def _cache_path(self, identifier: str) -> Optional[Path]:
+        if self._cache is None:
+            return None
+        return self._cache.cache_dir / f"{TempCache._make_key(identifier)}.npz"
+
+    def _load_cached_data(self, identifier: str) -> Optional[TESSLightCurveData]:
+        """Cache'teki temiz light curve'ü güvenle okur."""
+
+        if self._cache is None:
+            return None
+        path = self._cache.get_path(identifier)
+        if path is None:
+            return None
+        try:
+            with np.load(path, allow_pickle=False) as archive:
+                meta = json.loads(str(archive["meta_json"].item()))
+                return TESSLightCurveData(
+                    target_id=str(meta["target_id"]),
+                    sector=int(meta["sector"]),
+                    time=np.asarray(archive["time"], dtype=np.float64),
+                    flux=np.asarray(archive["flux"], dtype=np.float64),
+                    flux_err=np.asarray(archive["flux_err"], dtype=np.float64),
+                    quality=np.asarray(archive["quality"], dtype=np.int32),
+                    cadence=float(meta["cadence"]),
+                    time_format=str(meta.get("time_format", "btjd")),
+                    meta=dict(meta.get("meta", {})),
+                    n_points_raw=int(meta["n_points_raw"]),
+                    n_points_clean=int(meta["n_points_clean"]),
+                )
+        except (
+            OSError,
+            EOFError,
+            zipfile.BadZipFile,
+            KeyError,
+            TypeError,
+            ValueError,
+            json.JSONDecodeError,
+        ) as exc:
+            logger.warning(f"Bozuk TESS cache kaydı temizleniyor: {identifier} ({exc})")
+            self._cache.invalidate(identifier)
+            return None
+
+    def _store_cached_data(self, identifier: str, data: TESSLightCurveData) -> None:
+        """Temiz light curve'ü atomik olarak cache'e yazar."""
+
+        if self._cache is None:
+            return
+        path = self._cache_path(identifier)
+        if path is None:
+            return
+        path.parent.mkdir(parents=True, exist_ok=True)
+        temp_path = path.with_suffix(".tmp.npz")
+        meta = {
+            "target_id": data.target_id,
+            "sector": data.sector,
+            "cadence": data.cadence,
+            "time_format": data.time_format,
+            "meta": data.meta,
+            "n_points_raw": data.n_points_raw,
+            "n_points_clean": data.n_points_clean,
+        }
+        try:
+            np.savez_compressed(
+                temp_path,
+                time=np.asarray(data.time, dtype=np.float64),
+                flux=np.asarray(data.flux, dtype=np.float64),
+                flux_err=np.asarray(data.flux_err, dtype=np.float64),
+                quality=np.asarray(data.quality, dtype=np.int32),
+                meta_json=json.dumps(meta, ensure_ascii=False, default=str),
+            )
+            temp_path.replace(path)
+            self._cache.register(identifier, path)
+        except (OSError, TypeError, ValueError) as exc:
+            logger.warning(f"TESS cache yazılamadı: {identifier} ({exc})")
+            try:
+                temp_path.unlink(missing_ok=True)
+            except OSError:
+                pass
 
     def get_lightcurve(
         self,
@@ -549,8 +690,19 @@ class TESSClient:
 
         # Hedef standardizasyonu
         target_id = normalize_tic_id(target) if isinstance(target, (int, str)) else str(target)
+        cache_id = self._cache_identifier(
+            target_id,
+            sector,
+            sigma_upper=sigma_upper,
+            sigma_lower=sigma_lower,
+        )
 
         logger.info(f"Light curve alınıyor — hedef: {target_id}, sektör: {sector}")
+
+        cached = self._load_cached_data(cache_id)
+        if cached is not None:
+            logger.info(f"TESS light curve cache'ten yüklendi — {target_id} sektör {cached.sector}")
+            return cached
 
         # Ara → İndir → Temizle → Dönüştür
         search_result = self.search(target_id, sector=sector)
@@ -564,6 +716,18 @@ class TESSClient:
         )
 
         data = self._to_data_object(clean_lc, target_id, n_raw)
+        # Cache yalnızca temizlenmiş standart veri nesnesini tutar; ham
+        # Lightkurve nesnesine bağlı kalmadığı için sonraki çalıştırmalarda
+        # Lightkurve import edilemese bile cache okunabilir.
+        self._store_cached_data(cache_id, data)
+        actual_cache_id = self._cache_identifier(
+            target_id,
+            data.sector,
+            sigma_upper=sigma_upper,
+            sigma_lower=sigma_lower,
+        )
+        if actual_cache_id != cache_id:
+            self._store_cached_data(actual_cache_id, data)
 
         logger.info(
             f"Light curve hazır — {target_id} sektör {data.sector}: "
@@ -613,17 +777,47 @@ class TESSClient:
         multi_data = TESSMultiSectorData(target_id=target_id)
 
         for i in range(len(search_result)):
+            row = None
             try:
-                raw_lc = self.download_lightcurve(search_result, index=i)
-                n_raw = len(raw_lc.time)
+                table = getattr(search_result, "table", None)
+                if table is not None:
+                    row = table[i]
+            except (IndexError, TypeError):
+                row = None
 
-                clean_lc = self._clean_lightcurve(
-                    raw_lc,
+            row_sector = self._sector_from_row(row)
+            row_cache_id = (
+                self._cache_identifier(
+                    target_id,
+                    row_sector,
                     sigma_upper=sigma_upper,
                     sigma_lower=sigma_lower,
                 )
+                if row_sector is not None
+                else None
+            )
 
-                sector_data = self._to_data_object(clean_lc, target_id, n_raw)
+            try:
+                sector_data = self._load_cached_data(row_cache_id) if row_cache_id else None
+                if sector_data is None:
+                    raw_lc = self.download_lightcurve(search_result, index=i)
+                    n_raw = len(raw_lc.time)
+
+                    clean_lc = self._clean_lightcurve(
+                        raw_lc,
+                        sigma_upper=sigma_upper,
+                        sigma_lower=sigma_lower,
+                    )
+                    sector_data = self._to_data_object(clean_lc, target_id, n_raw)
+                    self._store_cached_data(
+                        self._cache_identifier(
+                            target_id,
+                            sector_data.sector,
+                            sigma_upper=sigma_upper,
+                            sigma_lower=sigma_lower,
+                        ),
+                        sector_data,
+                    )
 
                 # Minimum veri kontrolü
                 if sector_data.n_points_clean < 100:
@@ -683,17 +877,12 @@ class TESSClient:
             return []
 
         sectors = []
-        for row in search_result.table:
-            # lightkurve arama sonuçlarından sektör bilgisini çıkar
-            mission = str(row.get("mission", ""))
-            if "Sector" in mission:
-                try:
-                    sector_num = int(mission.split("Sector")[-1].strip())
-                    sectors.append(sector_num)
-                except (ValueError, IndexError):
-                    pass
+        for row in getattr(search_result, "table", []):
+            sector_num = self._sector_from_row(row)
+            if sector_num is not None:
+                sectors.append(sector_num)
 
-        sectors.sort()
+        sectors = sorted(set(sectors))
         logger.info(f"{target_id}: {len(sectors)} sektör mevcut — {sectors}")
 
         return sectors
