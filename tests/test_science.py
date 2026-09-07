@@ -173,6 +173,31 @@ def test_followup_confirmation_is_separate_from_cascade_confirmation():
     assert record.false_positive_probability == 0.02
 
 
+def test_fit_derived_values_with_missing_stellar_provenance_are_not_scored():
+    fit = SimpleNamespace(
+        success=True,
+        fit_method="map",
+        period=365.25,
+        rp_rs=0.0092,
+        derived=DerivedParameters(
+            planet_radius_rearth=1.0,
+            semi_major_axis_au=1.0,
+            equilibrium_temperature_k=255.0,
+            insolation_flux=1.0,
+        ),
+    )
+    record = build_record(
+        candidate=_earth_like_candidate(),
+        fit_result=fit,
+        stellar_props=StellarProperties(tic_id=123456789),
+        earth_similarity_profile="photometric_earth_analog",
+    )
+
+    assert record.earth_similarity_score == 0.0
+    assert record.semi_major_axis_au == 0.0
+    assert record.earth_twin_status == "insufficient_data"
+
+
 def test_missing_stellar_properties_are_not_replaced_with_solar_defaults():
     record = build_record(
         candidate=_earth_like_candidate(),
