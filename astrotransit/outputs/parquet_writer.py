@@ -70,6 +70,7 @@ class ParquetWriter:
             "earth_similarity_components", "earth_similarity_missing_dimensions",
             "earth_similarity_missing_required", "earth_similarity_notes", "mass_status",
             "search_channel", "source_sectors", "long_period_identifiability", "detection_confidence",
+            "fpp_method",
             "followup_status", "followup_evidence_quality", "followup_sources",
             "followup_observation_ids", "followup_evidence",
         }

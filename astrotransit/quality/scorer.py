@@ -27,7 +27,7 @@ from loguru import logger
 
 from astrotransit.quality.metrics import QualityMetrics
 from astrotransit.quality.snr import SNRBreakdown
-from astrotransit.quality.vetting import VettingReport, VettingVerdict
+from astrotransit.quality.vetting import FPP_METHOD, VettingReport, VettingVerdict
 from astrotransit.detection.cascade import CascadeCandidate
 
 
@@ -117,7 +117,10 @@ class QualityScore:
     anomaly_flags : list[str]
         Anormallik açıklamaları.
     fpp : float
-        False Positive Probability.
+        Heuristik false-positive risk proxy'si (0-1). Kalibre edilmiş
+        Bayesyen FPP değildir (bkz. astrotransit.quality.vetting).
+    fpp_method : str
+        FPP tahmin metodunun kimliği.
     is_false_positive : bool
         FP kararı.
     """
@@ -131,6 +134,7 @@ class QualityScore:
     is_anomalous: bool = False
     anomaly_flags: list[str] = field(default_factory=list)
     fpp: float = 0.0
+    fpp_method: str = FPP_METHOD
     is_false_positive: bool = False
 
     def to_dict(self) -> dict:
@@ -141,6 +145,7 @@ class QualityScore:
             "candidate_class": self.candidate_class.value,
             "class_description": self.class_description,
             "fpp": round(self.fpp, 4),
+            "fpp_method": self.fpp_method,
             "is_false_positive": self.is_false_positive,
             "is_anomalous": self.is_anomalous,
             "anomaly_flags": self.anomaly_flags,
@@ -154,6 +159,7 @@ class QualityScore:
             "score": round(self.total_score, 2),
             "class": self.candidate_class.value,
             "fpp": round(self.fpp, 4),
+            "fpp_method": self.fpp_method,
             "is_fp": self.is_false_positive,
             "is_anomalous": self.is_anomalous,
         }
@@ -399,6 +405,7 @@ class CandidateScorer:
             is_anomalous=is_anomalous,
             anomaly_flags=anomaly_flags,
             fpp=vetting.false_positive_probability,
+            fpp_method=vetting.fpp_method,
             is_false_positive=vetting.is_false_positive,
         )
 

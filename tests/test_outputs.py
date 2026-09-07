@@ -42,6 +42,20 @@ class TestTransitCandidateRecord:
         flat = rec.to_flat_dict()
         assert isinstance(flat, dict)
 
+    def test_fpp_method_in_flat_dict(self):
+        rec = TransitCandidateRecord(source_id="TEST", fpp_method="heuristic_vetting_weighted_v1")
+        flat = rec.to_flat_dict()
+        assert flat["fpp_method"] == "heuristic_vetting_weighted_v1"
+        nested = rec.to_nested_dict()
+        assert nested["vetting"]["fpp_method"] == "heuristic_vetting_weighted_v1"
+
+    def test_parquet_schema_treats_fpp_method_as_string(self, tmp_output_dir):
+        import pyarrow as pa
+
+        writer = ParquetWriter(tmp_output_dir / "parquet")
+        field = writer.schema.field("fpp_method")
+        assert field.type == pa.string()
+
 
 class TestParquetWriter:
     """Parquet yazıcı testleri."""

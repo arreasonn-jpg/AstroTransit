@@ -171,6 +171,54 @@ def test_followup_confirmation_is_separate_from_cascade_confirmation():
     assert record.earth_twin_status == "confirmed_earth_twin"
     assert record.detection_confidence == "HIGH"
     assert record.false_positive_probability == 0.02
+    # FPP değeri açık metod bildirmeyen fpp_report'tan geldiği için
+    # varsayılan heuristik vetting metod etiketi işlenir.
+    from astrotransit.quality.vetting import FPP_METHOD
+
+    assert record.fpp_method == FPP_METHOD
+    assert record.to_nested_dict()["vetting"]["fpp_method"] == FPP_METHOD
+
+
+def test_fpp_method_followup_source_label():
+    """Follow-up kanıtından gelen FPP ayrı metod etiketiyle kaydedilir."""
+    record = build_record(
+        candidate=_earth_like_candidate(),
+        stellar_props=_solar_stellar(),
+        earth_similarity_profile="photometric_earth_analog",
+        followup_result=FollowupEvidence(
+            source="RV campaign",
+            observation_type="radial_velocity",
+            observation_ids=("rv-001",),
+            confirmed=True,
+            false_positive_probability=0.03,
+        ),
+    )
+
+    assert record.false_positive_probability == 0.03
+    assert record.fpp_method == "followup_evidence_reported"
+
+
+def test_fpp_method_vetting_source_label():
+    """Vetting raporundaki metod kimliği çıktıya aynen işlenir."""
+    quality = SimpleNamespace(
+        vetting=SimpleNamespace(
+            false_positive_probability=0.12,
+            fpp_method="custom_vetting_v2",
+            n_pass=5,
+            n_fail=1,
+            n_warn=1,
+        ),
+    )
+
+    record = build_record(
+        candidate=_earth_like_candidate(),
+        quality_result=quality,
+        stellar_props=_solar_stellar(),
+        earth_similarity_profile="photometric_earth_analog",
+    )
+
+    assert record.false_positive_probability == 0.12
+    assert record.fpp_method == "custom_vetting_v2"
 
 
 def test_fit_derived_values_with_missing_stellar_provenance_are_not_scored():
