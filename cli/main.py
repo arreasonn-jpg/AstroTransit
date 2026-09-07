@@ -10,6 +10,7 @@ Kullanım:
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 from typing import Optional
 
@@ -310,6 +311,71 @@ def earth_search(
         )
         output_path = limited_summary.write_json(output)
         console.print(f"JSON çıktı: [green]{output_path}[/green]")
+
+
+@app.command("followup-update")
+def followup_update(
+    target: str = typer.Argument(..., help="Hedef TIC ID (örn. TIC 123456789)"),
+    sector: int = typer.Argument(..., help="Güncellenecek TESS sektör numarası"),
+    evidence_file: str = typer.Argument(
+        ...,
+        help="FollowupEvidence JSON dosyası",
+    ),
+    output_dir: str = typer.Option(
+        "outputs",
+        "--output-dir",
+        help="Mevcut JSON/Parquet çıktı kökü",
+    ),
+):
+    """Mevcut aday kaydını doğrulanmış follow-up kanıtıyla günceller."""
+
+    from astrotransit.outputs.writers import OutputManager
+    from astrotransit.utils.identifiers import normalize_tic_id
+
+    evidence_path = Path(evidence_file)
+    if not evidence_path.exists():
+        console.print(f"[red]Kanıt dosyası bulunamadı: {evidence_path}[/red]")
+        raise typer.Exit(1)
+    try:
+        evidence = json.loads(evidence_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        console.print(f"[red]Kanıt JSON'u okunamadı: {exc}[/red]")
+        raise typer.Exit(1)
+    if not isinstance(evidence, dict):
+        console.print("[red]Kanıt JSON'u bir nesne olmalıdır.[/red]")
+        raise typer.Exit(1)
+
+    try:
+        target_id = normalize_tic_id(target)
+    except ValueError:
+        target_id = str(target)
+
+    manager = OutputManager(output_dir=output_dir)
+    record = manager.find_record(target_id, sector)
+    if record is None:
+        manager.close()
+        console.print(
+            f"[red]Kayıt bulunamadı: source_id={target_id}, sector={sector}[/red]"
+        )
+        raise typer.Exit(1)
+
+    try:
+        updated = manager.update_followup(record, evidence)
+        manager.close()
+    except (TypeError, ValueError, RuntimeError) as exc:
+        manager.close()
+        console.print(f"[red]Follow-up güncellemesi başarısız: {exc}[/red]")
+        raise typer.Exit(1)
+
+    console.print(
+        Panel(
+            f"[bold green]Follow-up kaydı güncellendi[/bold green]\n"
+            f"Hedef: {updated.source_id} / sektör {updated.sector}\n"
+            f"Durum: {updated.followup_status}\n"
+            f"Earth sınıfı: {updated.earth_twin_status}",
+            border_style="green",
+        )
+    )
 
 
 @app.command()

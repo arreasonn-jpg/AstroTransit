@@ -206,6 +206,12 @@ class TestCSVExporter:
         assert payload["followup"]["confirmed"] is True
         assert payload["earth_similarity"]["status"] == "confirmed_earth_twin"
 
+        reopened = OutputManager(output_dir=tmp_output_dir / "followup_manager")
+        found = reopened.find_record("TIC 777", 14)
+        assert found is not None
+        assert found.followup_confirmed is True
+        reopened.close()
+
     def test_output_manager_exports_csv_while_open(self, tmp_output_dir):
         manager = OutputManager(output_dir=tmp_output_dir / "manager")
         manager.append(TransitCandidateRecord(source_id="TIC 42", sector=3))

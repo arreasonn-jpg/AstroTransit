@@ -63,6 +63,12 @@ değildir. Takip doğrulaması için `FollowupEvidence` kaydı ve gözlem kimli�
 kullanılmalıdır; çıplak `confirmed=true` değeri Earth twin onayı sayılmaz.
 Mevcut JSON/Parquet adayları için `OutputManager.update_followup()` aynı
 hedef/sektör satırını güncelleyerek follow-up sonucunu kalıcı kayda bağlar.
+CLI ile de yapılabilir:
+
+```bash
+astrotransit followup-update "TIC 123456789" 14 followup.json \
+  --output-dir outputs
+```
 
 Dashboard:
 

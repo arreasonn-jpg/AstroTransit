@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from dataclasses import fields
 from pathlib import Path
 import json
 from typing import Any, Optional
@@ -131,6 +132,36 @@ class OutputManager:
         self.parquet_writer.append(record)
         self._records.append(record)
         return record
+
+    def find_record(
+        self,
+        source_id: str,
+        sector: int,
+    ) -> Optional[TransitCandidateRecord]:
+        """Bellekteki veya mevcut Parquet kataloğundaki kaydı bulur."""
+
+        source_id = str(source_id)
+        sector = int(sector)
+        for record in self._records:
+            if record.source_id == source_id and record.sector == sector:
+                return record
+
+        rows = list(getattr(self.parquet_writer, "_existing_rows", []))
+        rows.extend(getattr(self.parquet_writer, "_buffer", []))
+        field_names = {item.name for item in fields(TransitCandidateRecord)}
+        for row in rows:
+            if str(row.get("source_id", "")) != source_id:
+                continue
+            try:
+                if int(row.get("sector", -1)) != sector:
+                    continue
+            except (TypeError, ValueError):
+                continue
+            values = {name: row[name] for name in field_names if name in row}
+            record = TransitCandidateRecord(**values)
+            self._records.append(record)
+            return record
+        return None
 
     def update_followup(
         self,
