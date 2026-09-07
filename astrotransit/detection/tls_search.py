@@ -26,11 +26,13 @@ from loguru import logger
 try:
     from transitleastsquares import transitleastsquares, transit_mask
     _TLS_AVAILABLE = True
-except ImportError:
+except ImportError as _tls_import_error:
     _TLS_AVAILABLE = False
+    # Gerçek hata mesajını kaybetme: sessiz devre-dışı bırakma, ortam
+    # sorunlarını (eksik/başarısız kurulum, sürüm uyumsuzluğu) gizler.
     logger.warning(
-        "transitleastsquares kütüphanesi bulunamadı. "
-        "TLS doğrulama devre dışı: pip install transitleastsquares"
+        "transitleastsquares kütüphanesi yüklenemedi — TLS doğrulama "
+        f"devre dışı (pip install transitleastsquares). Sebep: {_tls_import_error}"
     )
 
 from astrotransit.preprocessing.tess_detrend import DetrendedLightCurve

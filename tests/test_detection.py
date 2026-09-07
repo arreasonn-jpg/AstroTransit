@@ -70,6 +70,12 @@ class TestCascade:
     """Kademeli tespit sistemi testleri."""
 
     def test_cascade_confirmed(self, detrended_lc):
+        # TLS olmadan kaskad kurulamaz; zarif degradasyon tasarımına göre
+        # bağımlılık import edilemiyorsa bu test atlanır.
+        pytest.importorskip(
+            "transitleastsquares",
+            reason="transitleastsquares bu ortamda import edilemiyor",
+        )
         from astrotransit.detection.cascade import CascadeDetector, CascadeStatus
         from astrotransit.settings import Settings
 

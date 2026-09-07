@@ -8,6 +8,12 @@ class TestSNR:
     """SNR hesaplama testleri."""
 
     def test_snr_positive_for_transit(self, detrended_lc):
+        # Kaskad tespiti TLS gerektirir; zarif degradasyon tasarımına göre
+        # bağımlılık import edilemiyorsa bu test atlanır.
+        pytest.importorskip(
+            "transitleastsquares",
+            reason="transitleastsquares bu ortamda import edilemiyor",
+        )
         from astrotransit.quality.snr import SNRCalculator
         from astrotransit.detection.cascade import CascadeDetector
         from astrotransit.settings import Settings
