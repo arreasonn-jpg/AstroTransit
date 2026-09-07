@@ -12,8 +12,23 @@ __pycache__/
 .coverage
 htmlcov/
 
+# Build metadata (never commit packaging artifacts)
+*.egg-info/
+build/
+dist/
+
 # Runtime data and local credentials
 /outputs*/
 .cache/
 *.log
 .env
+
+# Release artifacts and campaign run outputs.
+# These are evidence packages / analysis products: keep them locally, publish
+# them through GitHub Releases / Zenodo — never commit them to the source repo.
+/release/
+/campaign_runs/
+
+# One-off tooling dumps (project tree listings generated for LLM context etc.)
+proje_yapisi*.txt
+scripts_inventory*.txt

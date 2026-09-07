@@ -17,6 +17,7 @@ from typing import Any, Optional
 
 import numpy as np
 
+from astrotransit.quality.vetting import FPP_METHOD
 from astrotransit.science.earth_similarity import (
     EARTH_SIMILARITY_DEFINITION_VERSION,
     score_earth_similarity,
@@ -25,7 +26,10 @@ from astrotransit.validation.followup import coerce_followup_result
 from astrotransit.utils.identifiers import extract_tic_number
 
 
-SCHEMA_VERSION = "1.6"
+# 1.7: `fpp_method` alanı eklendi. `fpp`/`false_positive_probability` alanları
+# heuristik vetting ağırlıklı oy ile üretilen risk proxy'leridir; kalibre
+# edilmiş Bayesyen olasılıklar değildir. Alan adları 1.6 ile uyumlu tutulur.
+SCHEMA_VERSION = "1.7"
 
 
 def _finite_or_none(value: Any) -> Any:
@@ -204,6 +208,7 @@ class TransitCandidateRecord:
 
     # Vetting
     fpp: Optional[float] = None
+    fpp_method: str = ""
     is_false_positive: bool = False
     is_variable_star: bool = False
     is_binary_suspect: bool = False
@@ -394,6 +399,7 @@ class TransitCandidateRecord:
             },
             "vetting": {
                 "fpp": flat["fpp"],
+                "fpp_method": flat["fpp_method"],
                 "false_positive_probability": flat["false_positive_probability"],
                 "detection_confidence": flat["detection_confidence"],
                 "is_false_positive": flat["is_false_positive"],
@@ -607,11 +613,24 @@ def build_record(
         followup_confirmed=followup_confirmed,
     )
     fpp_report = _get(quality_result, "fpp_report")
+    fpp_from_report = _get(fpp_report, "fpp")
+    fpp_from_vetting = _get(vetting, "false_positive_probability", None)
     false_positive_probability = _first_value(
-        _get(fpp_report, "fpp"),
-        _get(vetting, "false_positive_probability", None),
+        fpp_from_report,
+        fpp_from_vetting,
         followup_validation.false_positive_probability,
     )
+    # FPP tahmin metodunun kimliği: değerin geldiği kaynağa göre etiketlenir.
+    # Rapor açık metod bildirmediyse varsayılan heuristik vetting yöntemi
+    # kullanılır; follow-up kanıtından gelen değer ayrı etiket alır.
+    if fpp_from_report is not None:
+        fpp_method = str(_get(fpp_report, "fpp_method") or FPP_METHOD)
+    elif fpp_from_vetting is not None:
+        fpp_method = str(_get(vetting, "fpp_method") or FPP_METHOD)
+    elif followup_validation.false_positive_probability is not None:
+        fpp_method = "followup_evidence_reported"
+    else:
+        fpp_method = ""
     explicit_confidence = _first_value(
         _get(fpp_report, "confidence"),
         _get(vetting, "confidence"),
@@ -769,6 +788,7 @@ def build_record(
         transit_symmetry=_finite_or_none(_get(transit_metrics, "transit_symmetry", 0.0)),
         timing_rms_min=_finite_or_none((_get(transit_metrics, "timing_rms", 0.0) or 0.0) * 1440),
         fpp=_finite_or_none(false_positive_probability),
+        fpp_method=fpp_method,
         is_false_positive=bool(_get(vetting, "is_false_positive", False)),
         is_variable_star=bool(_get(stellar_metrics, "is_variable_star", False)),
         is_binary_suspect=bool(_get(stellar_metrics, "is_binary_suspect", False)),

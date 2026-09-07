@@ -19,11 +19,13 @@ from loguru import logger
 try:
     import batman
     _BATMAN_AVAILABLE = True
-except ImportError:
+except ImportError as _batman_import_error:
     _BATMAN_AVAILABLE = False
+    # Gerçek hata mesajını kaydet: sessiz devre-dışı bırakma, ortam
+    # sorunlarını (eksik/başarısız kurulum, sürüm uyumsuzluğu) gizler.
     logger.warning(
-        "batman-package bulunamadı. Transit model devre dışı: "
-        "pip install batman-package"
+        "batman-package yüklenemedi — transit modeli devre dışı "
+        f"(pip install batman-package). Sebep: {_batman_import_error}"
     )
 
 

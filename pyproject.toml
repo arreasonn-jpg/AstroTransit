@@ -1,13 +1,13 @@
 [build-system]
-requires = ["setuptools>=68.0", "wheel"]
+requires = ["setuptools>=77.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "astrotransit"
 version = "0.1.0"
-description = "TESS ve JWST verilerinden transit tespiti, filtreleme ve kategorizasyon platformu"
+description = "TESS verilerinden transit tespiti ve aday karakterizasyon platformu (JWST takip arayüzü)"
 readme = "README.md"
-license = {text = "Proprietary"}
+license = "MIT"
 requires-python = ">=3.11"
 authors = [
     {name = "AstroTransit Team"}
@@ -20,6 +20,10 @@ dependencies = [
     "boto3>=1.26",
     "wotan>=1.9",
     "transitleastsquares",
+    # PEP 632: std 'distutils' Python 3.12'de kaldırıldı; batman-package
+    # (transitleastsquares bağımlılığı) import sırasında distutils kullanıyor.
+    # setuptools, 3.12+ için distutils shim'i sağlıyor.
+    "setuptools>=61; python_version >= '3.12'",
     "numpy>=1.24",
     "scipy>=1.10",
     "pandas>=2.0",

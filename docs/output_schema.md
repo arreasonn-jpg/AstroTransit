@@ -1,5 +1,32 @@
 # AstroTransit — Çıktı Şeması
 
+## Epistemik sınırlar — çıktıları okumadan önce
+
+Bu bölüm, şemadaki sayıların ne anlama geldiğini ve ne anlama **gelmediğini**
+belirtir. Çıktı tüketen her araç ve rapor bu ayrımı korumak zorundadır.
+
+- **`earth_similarity_score` bir olasılık değildir.** Dünya referansına göre
+  ağırlıklı Gaussian benzerlik indeksidir (0-100). Yaşanabilirlik, atmosfer,
+  yaşam veya "Dünya-twin olma olasılığı" hakkında bilgi vermez. Ağırlıklar
+  `definition_version="1.0"` ile birlikte kaydedilen **heuristik
+  varsayılanlardır**; etiketli bir popülasyon üzerinde kalibre edilmemiştir.
+  Bir `"similarity_score": 94` değeri "94% Earth-like" olarak okunmamalıdır.
+- **`fpp` / `false_positive_probability` kalibre bir Bayesyen olasılık
+  değildir.** `astrotransit.quality.vetting` içindeki testlerin ağırlıklı
+  oylarından türeyen bir **risk proxy'sidir**. Metod kimliği `fpp_method`
+  alanında tutulur (`heuristic_vetting_weighted_v1`, `followup_evidence_reported`).
+  Kalibre FPP üretimi için etiketli veri üzerinde
+  `astrotransit.validation.fpp_benchmark` kullanılmalıdır.
+- **`confirmed` tek başına yetmez.** `CONFIRMED_EARTH_TWIN` / follow-up
+  doğrulaması yalnızca `followup_evidence` (kaynak + gözlem kimliği) ve
+  strict similarity birlikte bulunduğunda üretilir. Çıplak
+  `{"confirmed": true}` payload'ı veya yüksek similarity skoru doğrulama
+  sayılmaz.
+- **Uzun periyot / single-transit** kayıtlarında periyot genellikle
+  `PERIOD_ESTIMATED` düzeyinde belirlidir (bkz.
+  `long_period_identifiability`); `DETECTED` ile periyot tahmini
+  karıştırılmamalıdır.
+
 ## Parquet Katalog Şeması
 
 | Alan | Tip | Açıklama |
@@ -20,12 +47,13 @@
 | snr_adopted | float64 | Benimsenen SNR |
 | total_score | float64 | Genel kalite skoru (0-100) |
 | candidate_class | string | A/B/C/D/X sınıfı |
-| fpp | float64 | False Positive Probability |
+| fpp | float64 | Heuristik false-positive risk proxy'si (0-1). **Kalibre edilmiş Bayesyen FPP değildir** — vetting testlerinin ağırlıklı oyu, sıralama/tarama metriği olarak kullanın |
+| fpp_method | string | FPP tahmin metodunun kimliği (`heuristic_vetting_weighted_v1`, `followup_evidence_reported`, …) |
 | cascade_confirmed | bool | Cascade onayladı mı |
 | fit_method | string | "map" veya "mcmc" |
 | earth_similarity_profile | string | Dünya-benzerlik profili |
 | earth_similarity_definition_version | string | Tekrarlanabilir similarity tanım sürümü |
-| earth_similarity_score | float64 | Medyan Dünya-benzerlik skoru (0-100) |
+| earth_similarity_score | float64 | Medyan Dünya-benzerlik **indeksi** (0-100). Ağırlıklı Gaussian benzerlik metriği; **olasılık değildir** (bkz. "Epistemik sınırlar") |
 | earth_similarity_p05/p95 | float64 | Belirsizlik aralığı sınırları |
 | earth_similarity_completeness | float64 | Kullanılan ölçümlerin ağırlıklı tamlığı (0-1) |
 | earth_analog_class | string | Earth-twin/analog sınıflandırması |
@@ -48,7 +76,7 @@
 | followup_observation_ids | JSON string | Takip gözlemlerinin kimlikleri |
 | followup_evidence | JSON string | Takip kanıtı ayrıntıları |
 
-Tam şema `astrotransit/outputs/schemas.py` dosyasında, şema sürümü `1.6`
+Tam şema `astrotransit/outputs/schemas.py` dosyasında, şema sürümü `1.7`
 olarak tanımlıdır. Similarity hesabı ayrıca `definition_version="1.0"`
 ile etiketlenir.
 
@@ -130,7 +158,7 @@ transit doğrulaması değildir:
 ## Schema migration
 
 Eski flat veya bölümlenmiş JSON kayıtları ve Parquet katalogları güncel
-`1.6` sözleşmesine taşıma aracıyla yükseltilebilir:
+`1.7` sözleşmesine taşıma aracıyla yükseltilebilir:
 
 ```bash
 astrotransit migrate old_candidate.json --output migrated_candidate.json

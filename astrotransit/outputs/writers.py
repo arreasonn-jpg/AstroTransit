@@ -245,6 +245,9 @@ class OutputManager:
         if validation.false_positive_probability is not None:
             record.false_positive_probability = validation.false_positive_probability
             record.fpp = validation.false_positive_probability
+            # Follow-up FPP'i gözlem raporu üzerinden gelir; pipeline'ın
+            # heuristik vetting proxy'sinden farklı bir kaynaktır.
+            record.fpp_method = "followup_evidence_reported"
 
         self.json_writer.write_candidate(record)
         self.parquet_writer.upsert(record)

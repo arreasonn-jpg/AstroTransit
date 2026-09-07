@@ -8,6 +8,12 @@ class TestSNR:
     """SNR hesaplama testleri."""
 
     def test_snr_positive_for_transit(self, detrended_lc):
+        # Kaskad tespiti TLS gerektirir; zarif degradasyon tasarımına göre
+        # bağımlılık import edilemiyorsa bu test atlanır.
+        pytest.importorskip(
+            "transitleastsquares",
+            reason="transitleastsquares bu ortamda import edilemiyor",
+        )
         from astrotransit.quality.snr import SNRCalculator
         from astrotransit.detection.cascade import CascadeDetector
         from astrotransit.settings import Settings
@@ -85,3 +91,34 @@ class TestVetting:
 
         assert odd_even_test is not None
         assert odd_even_test.verdict == VettingVerdict.PASS
+
+    def test_fpp_method_label_present(self):
+        """FPP proxy'si metod kimliğiyle birlikte raporlanmalıdır."""
+        from astrotransit.quality.vetting import (
+            FPP_METHOD,
+            FalsePositiveVetter,
+        )
+        from astrotransit.quality.metrics import QualityMetrics, TransitMetrics
+        from astrotransit.detection.cascade import CascadeCandidate, CascadeStatus
+
+        vetter = FalsePositiveVetter()
+        metrics = QualityMetrics(target_id="TEST", sector=1)
+        metrics.transit = TransitMetrics(odd_even_mismatch=1.0)
+        candidate = CascadeCandidate(
+            target_id="TEST",
+            sector=1,
+            status=CascadeStatus.CONFIRMED,
+            confirmed=True,
+            bls_result=None,
+            tls_result=None,
+            period=3.5,
+            depth=0.01,
+            duration=0.1,
+            transit_times=np.array([1.0, 4.5, 8.0]),
+        )
+
+        report = vetter.vet(candidate, metrics)
+
+        assert report.fpp_method == FPP_METHOD
+        assert report.to_dict()["fpp_method"] == FPP_METHOD
+        assert report.summary()["fpp_method"] == FPP_METHOD

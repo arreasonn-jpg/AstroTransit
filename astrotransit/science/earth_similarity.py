@@ -4,6 +4,22 @@ Bu modül yaşanabilirliği veya yaşamı kanıtlamaz. Transit fotometrisi ve
 katalog/follow-up ölçümlerinden elde edilen fiziksel parametreleri, açıkça
 tanımlanmış profillere göre karşılaştırır. Eksik bir ölçüm Dünya değeriyle
 doldurulmaz; eksik ölçümler skor güvenilirliği ve sınıflandırmaya yansır.
+
+Epistemik sınır — lütfen okuyun:
+    Üretilen ``earth_similarity_score`` bir **ağırlıklı benzerlik
+    indeksi**dir (0-100). Bir olasılık değildir: ne "gezegenin Dünya gibi
+    olma olasılığı", ne yaşanabilirlik olasılığı, ne atmosfer/yaşam
+    olasılığı. ``"94.2 similarity"`` ifadesi "94% Earth-like" olarak
+    yorumlanmamalıdır.
+
+    Profil ağırlıkları (radius/insolation/T_eq/mass/orbit/teff) v1.0
+    **heuristik varsayılanlarıdır**: etiketli bir popülasyon üzerinde
+    kalibre edilmemiş, literatürden tek bir kaynakla türetilmiş ya da
+    optimize edilmiş değildir. Bu yüzden skorlar aday *sıralaması* için
+    uygundur; mutlak eşikler (ör. ``minimum_score=90``) bilimsel bir
+    "Dünya-twin sınırı" olarak değil, ayarlanabilir bir filtre eşiği
+    olarak yorumlanmalıdır. Ağırlık duyarlılık analizi (±10–20%)
+    `docs/validation.md` içindeki doğrulama kapılarından biridir.
 """
 
 from __future__ import annotations
@@ -87,7 +103,9 @@ class EarthSimilarityProfile:
 
 # Toleranslar bilimsel bir "kesin Dünya tanımı" değil, sıralama için
 # başlangıç profilleridir. Proje kullanıcıları kendi hedef örneklemleri için
-# profili kopyalayıp ağırlıkları değiştirebilir.
+# profili kopyalayıp ağırlıkları değiştirebilir. Ağırlıkların gerekçesi
+# modül docstring'inde belirtilen v1.0 heuristik varsayılanlardır; bir
+# kalibrasyon sonucu olarak okunmamalıdır.
 EARTH_SIMILARITY_PROFILES: dict[str, EarthSimilarityProfile] = {
     # v1.0: değerler, ağırlıklar ve sınıflandırma eşikleri bu profillerle
     # birlikte kaydedilir; yeni bilimsel tanımlar sürüm artırmalıdır.

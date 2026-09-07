@@ -17,6 +17,18 @@ Literatür:
     Morton (2012)              — VESPA
     Giacalone & Dressing (2020) — triceratops
     Mullally et al. (2016)     — Kepler Robovetter
+
+ÖNEMLİ — Epistemik sınır:
+    Bu modülün ürettiği `false_positive_probability` (FPP) değeri, yukarıdaki
+    metodolojilerden **esinlenen heuristik bir risk proxy'sidir**: test
+    sonuçlarının ağırlıklı bir toplamıdır. Popülasyon öncülleri (background
+    EB oranları, occurrence priors), yıldız parametre koşullu beğenilik
+    oranları veya kalibrasyon içermeyen bir değerdir; dolayısıyla
+    "FPP = 0.01 ⇒ adayın %1 olasılıkla false positive olduğu" anlamına
+    gelmez. Değer, aday sıralama ve tarama amaçlıdır. Kalibre edilmiş bir
+    FPP üretimi için etiketli veri üzerinde
+    `astrotransit.validation.fpp_benchmark` modülü kullanılmalıdır.
+    Metod kimliği `FPP_METHOD` sabitiyle çıktıya işlenir.
 """
 
 from __future__ import annotations
@@ -30,6 +42,10 @@ from loguru import logger
 
 from astrotransit.detection.cascade import CascadeCandidate
 from astrotransit.quality.metrics import QualityMetrics
+
+# Bu modülün FPP tahmin metodunun çıktıya işlenen kimliği.
+# Heuristik vetting ağırlıklı oy; kalibre edilmiş Bayesyen FPP değildir.
+FPP_METHOD = "heuristic_vetting_weighted_v1"
 
 
 # ──────────────────────────────────────
@@ -103,7 +119,10 @@ class VettingReport:
     n_warn : int
         Uyarı sayısı.
     false_positive_probability : float
-        Tahmini yanlış pozitif olasılığı (0-1).
+        Heuristik yanlış pozitif risk proxy'si (0-1). Kalibre edilmiş
+        Bayesyen bir olasılık değildir (bkz. modül docstring'i).
+    fpp_method : str
+        FPP tahmin metodunun kimliği (çıkıta işlenir).
     is_false_positive : bool
         Kesin FP kararı.
     fp_flags : list[str]
@@ -117,6 +136,7 @@ class VettingReport:
     n_fail: int = 0
     n_warn: int = 0
     false_positive_probability: float = 0.0
+    fpp_method: str = FPP_METHOD
     is_false_positive: bool = False
     fp_flags: list[str] = field(default_factory=list)
 
@@ -129,6 +149,7 @@ class VettingReport:
             "n_fail": self.n_fail,
             "n_warn": self.n_warn,
             "false_positive_probability": round(self.false_positive_probability, 4),
+            "fpp_method": self.fpp_method,
             "is_false_positive": self.is_false_positive,
             "fp_flags": self.fp_flags,
             "tests": [t.to_dict() for t in self.tests],
@@ -139,6 +160,7 @@ class VettingReport:
             "target_id": self.target_id,
             "sector": self.sector,
             "fpp": round(self.false_positive_probability, 4),
+            "fpp_method": self.fpp_method,
             "is_fp": self.is_false_positive,
             "flags": self.fp_flags,
             "pass/warn/fail": f"{self.n_pass}/{self.n_warn}/{self.n_fail}",
@@ -568,17 +590,22 @@ class FalsePositiveVetter:
     @staticmethod
     def _compute_fpp(tests: list[VettingTest]) -> float:
         """
-        Test sonuçlarından FPP tahmini üretir.
+        Test sonuçlarından **heuristik FPP proxy'si** üretir.
 
         Ağırlıklı ortalama yöntemi:
             Her FAIL test kendi fp_weight kadar FPP katkısı yapar.
             Her WARN test fp_weight × 0.3 kadar katkı yapar.
             PASS testler katkı yapmaz.
 
+        Epistemik uyarı: Bu, popülasyon modeli veya kalibrasyon içermeyen
+        bir risk indeksi değeridir (bkz. modül docstring'i). Sonucu
+        "P(false positive)" olasılığı olarak değil, sıralama/tarama
+        metriği olarak yorumlayın.
+
         Returns
         -------
         float
-            FPP tahmini (0-1).
+            FPP proxy değeri (0-1).
         """
 
         total_weight = sum(t.fp_weight for t in tests if t.verdict != VettingVerdict.SKIP)
