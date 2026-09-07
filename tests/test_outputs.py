@@ -7,7 +7,9 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from astrotransit.outputs.schemas import TransitCandidateRecord
+from astrotransit.data.catalog_client import StellarProperties
+from astrotransit.outputs.schemas import TransitCandidateRecord, build_record
+from astrotransit.validation.followup import FollowupEvidence
 from astrotransit.outputs.parquet_writer import ParquetWriter
 from astrotransit.outputs.json_writer import JSONWriter, NumpyEncoder
 from astrotransit.outputs.csv_export import CSVExporter
@@ -160,6 +162,49 @@ class TestCSVExporter:
 
         loaded = pd.read_csv(path)
         assert len(loaded) == 2
+
+    def test_followup_update_upserts_json_and_parquet(self, tmp_output_dir):
+        manager = OutputManager(output_dir=tmp_output_dir / "followup_manager")
+        candidate = {
+            "target_id": "TIC 777",
+            "sector": 14,
+            "period": 365.25,
+            "period_err": 0.1,
+            "t0": 1.0,
+            "rp_rs": 0.0092,
+            "depth": 0.000085,
+            "duration": 0.5,
+            "confirmed": True,
+            "transit_times": [],
+        }
+        record = build_record(
+            candidate=candidate,
+            stellar_props=StellarProperties(teff=5778.0, radius=1.0, mass=1.0),
+            earth_similarity_profile="strict_earth_twin",
+        )
+        manager.append(record)
+        manager.update_followup(
+            record,
+            FollowupEvidence(
+                source="RV campaign",
+                observation_type="radial_velocity",
+                observation_ids=("rv-777",),
+                confirmed=True,
+                mass_mearth=1.0,
+                false_positive_probability=0.01,
+            ),
+        )
+        manager.close()
+
+        loaded = ParquetWriter.read(manager.parquet_path)
+        assert len(loaded) == 1
+        assert bool(loaded.loc[0, "followup_confirmed"]) is True
+        assert loaded.loc[0, "earth_twin_status"] == "confirmed_earth_twin"
+        json_files = list((tmp_output_dir / "followup_manager" / "json").glob("*.json"))
+        assert len(json_files) == 1
+        payload = JSONWriter.read(json_files[0])
+        assert payload["followup"]["confirmed"] is True
+        assert payload["earth_similarity"]["status"] == "confirmed_earth_twin"
 
     def test_output_manager_exports_csv_while_open(self, tmp_output_dir):
         manager = OutputManager(output_dir=tmp_output_dir / "manager")

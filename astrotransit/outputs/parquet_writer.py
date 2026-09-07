@@ -158,6 +158,62 @@ class ParquetWriter:
         self._buffer.clear()
         logger.debug(f"Parquet batch yazıldı: {self.path}")
 
+    def upsert(
+        self,
+        record: TransitCandidateRecord | dict[str, Any],
+        *,
+        identity_fields: tuple[str, ...] = ("source_id", "sector"),
+    ) -> None:
+        """Aynı kimlikteki satırı değiştirir; yoksa yeni satır ekler.
+
+        Parquet row-group'ları yerinde düzenlenemediği için mevcut writer
+        güvenli biçimde kapatılır, tablo geçici dosyaya yeniden yazılır ve
+        writer yeni append'ler için tekrar açılabilir hale getirilir.
+        """
+
+        if self._closed:
+            raise RuntimeError("Kapatılmış ParquetWriter güncellenemez.")
+        if isinstance(record, TransitCandidateRecord):
+            replacement = record.to_flat_dict()
+        elif isinstance(record, dict):
+            replacement = dict(record)
+        else:
+            raise TypeError("record TransitCandidateRecord veya dict olmalıdır.")
+        if not identity_fields:
+            raise ValueError("identity_fields boş olamaz.")
+
+        self.close()
+        try:
+            import pyarrow as pa
+            import pyarrow.parquet as pq
+        except ImportError as exc:  # pragma: no cover - environment dependent
+            raise ImportError("Parquet güncellemesi için 'pyarrow' gereklidir.") from exc
+
+        rows: list[dict[str, Any]] = []
+        if self.path.exists():
+            rows = pq.read_table(self.path).to_pylist()
+        replacement = {name: replacement.get(name) for name in self.schema.names}
+        replaced = False
+        for index, row in enumerate(rows):
+            if all(row.get(name) == replacement.get(name) for name in identity_fields):
+                rows[index] = replacement
+                replaced = True
+                break
+        if not replaced:
+            rows.append(replacement)
+
+        temporary_path = self.path.with_suffix(self.path.suffix + ".tmp")
+        table = pa.Table.from_pylist(rows, schema=self.schema)
+        pq.write_table(table, temporary_path, compression=self.compression)
+        temporary_path.replace(self.path)
+
+        # Keep the logical writer open for later pipeline outputs.
+        self._buffer = []
+        self._existing_rows = rows
+        self._writer = None
+        self._closed = False
+        self.n_written = 0
+
     def close(self) -> None:
         """Kalan kayıtları yazar ve Parquet dosyasını kapatır."""
 

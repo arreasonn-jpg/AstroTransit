@@ -61,6 +61,8 @@ Ayarlar `configs/default.toml` içinden yüklenir. Farklı bir dosya vermek içi
 `priority_score` yalnızca takip gözlemi önceliğidir, doğrulama olasılığı
 değildir. Takip doğrulaması için `FollowupEvidence` kaydı ve gözlem kimliği
 kullanılmalıdır; çıplak `confirmed=true` değeri Earth twin onayı sayılmaz.
+Mevcut JSON/Parquet adayları için `OutputManager.update_followup()` aynı
+hedef/sektör satırını güncelleyerek follow-up sonucunu kalıcı kayda bağlar.
 
 Dashboard:
 

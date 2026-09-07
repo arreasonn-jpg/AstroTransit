@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+import json
 from typing import Any, Optional
 
 from loguru import logger
@@ -15,6 +16,8 @@ from astrotransit.outputs.schemas import (
     build_long_period_record,
     build_record,
 )
+from astrotransit.science.earth_similarity import score_earth_similarity
+from astrotransit.validation.followup import coerce_followup_result
 from astrotransit.settings import Settings, get_settings
 from astrotransit.utils.paths import ProjectPaths
 
@@ -127,6 +130,95 @@ class OutputManager:
         record.json_path = str(json_path)
         self.parquet_writer.append(record)
         self._records.append(record)
+        return record
+
+    def update_followup(
+        self,
+        record: TransitCandidateRecord,
+        followup_result: Any,
+    ) -> TransitCandidateRecord:
+        """Mevcut adaya doğrulanmış takip kanıtını bağlar ve upsert eder.
+
+        Bu yöntem JSON/Parquet'te aynı ``source_id`` + ``sector`` satırını
+        günceller; eski satırın yanına ikinci bir kopya eklemez. Similarity
+        yeniden hesaplanır, fakat detection confidence/FPP alanları yalnızca
+        takip payload'ı açıkça taşıyorsa güncellenir.
+        """
+
+        if self._closed:
+            raise RuntimeError("Kapatılmış OutputManager tekrar kullanılamaz.")
+        if not isinstance(record, TransitCandidateRecord):
+            raise TypeError("record TransitCandidateRecord olmalıdır.")
+
+        validation = coerce_followup_result(
+            followup_result,
+            target_id=record.source_id,
+        )
+        if validation.mass_mearth is not None and not (
+            record.planet_mass_mearth is not None and record.planet_mass_mearth > 0
+        ):
+            record.planet_mass_mearth = validation.mass_mearth
+            record.mass_status = "measured"
+        elif record.planet_mass_mearth is not None and record.planet_mass_mearth > 0:
+            record.mass_status = "measured"
+
+        similarity = score_earth_similarity(
+            record.earth_similarity_profile or self.earth_similarity_profile,
+            planet_radius_rearth=record.planet_radius_rearth,
+            planet_mass_mearth=record.planet_mass_mearth,
+            insolation_s_earth=record.insolation_s_earth,
+            equilibrium_temperature_k=record.equilibrium_temperature_k,
+            density_gcm3=record.planet_density_gcm3,
+            semi_major_axis_au=record.semi_major_axis_au,
+            stellar_teff_k=record.teff_k,
+        )
+        record.earth_similarity_profile = similarity.profile
+        record.earth_similarity_definition_version = similarity.definition_version
+        record.earth_similarity_score = similarity.score
+        record.earth_similarity_p05 = similarity.score_p05
+        record.earth_similarity_p50 = similarity.score_p50
+        record.earth_similarity_p95 = similarity.score_p95
+        record.earth_similarity_completeness = similarity.measurement_completeness
+        record.earth_similarity_components = json.dumps(
+            {key: component.to_dict() for key, component in similarity.components.items()},
+            ensure_ascii=False,
+            sort_keys=True,
+        )
+        record.earth_similarity_missing_dimensions = json.dumps(
+            list(similarity.missing_dimensions), ensure_ascii=False
+        )
+        record.earth_similarity_missing_required = json.dumps(
+            list(similarity.missing_required_dimensions), ensure_ascii=False
+        )
+        record.earth_similarity_notes = json.dumps(list(similarity.notes), ensure_ascii=False)
+        record.earth_similarity_uncertainty_available = similarity.uncertainty_available
+
+        if validation.confirmed and similarity.is_strict_candidate:
+            record.earth_analog_class = "CONFIRMED_EARTH_TWIN"
+            record.earth_twin_status = "confirmed_earth_twin"
+        else:
+            record.earth_analog_class = similarity.classification
+            record.earth_twin_status = {
+                "EARTH_TWIN_CANDIDATE": "earth_twin_candidate",
+                "PHOTOMETRIC_EARTH_ANALOG": "photometric_earth_like_candidate",
+            }.get(similarity.classification, similarity.classification.lower())
+
+        record.followup_confirmed = validation.confirmed
+        record.followup_status = validation.status
+        record.followup_evidence_quality = validation.evidence_quality
+        record.followup_sources = json.dumps(list(validation.sources), ensure_ascii=False)
+        record.followup_observation_ids = json.dumps(
+            list(validation.observation_ids), ensure_ascii=False
+        )
+        record.followup_evidence = json.dumps(validation.to_dict(), ensure_ascii=False)
+        if validation.false_positive_probability is not None:
+            record.false_positive_probability = validation.false_positive_probability
+            record.fpp = validation.false_positive_probability
+
+        self.json_writer.write_candidate(record)
+        self.parquet_writer.upsert(record)
+        if record not in self._records:
+            self._records.append(record)
         return record
 
     def flush(self) -> None:

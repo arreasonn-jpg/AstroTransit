@@ -52,6 +52,8 @@ Sıralama üç ayrı kategori taşır:
 RV kütlesi varsa `mass_mearth` olarak similarity hesabına girer; bilinmeyen
 kütle hiçbir zaman `1 M_earth` ile doldurulmaz. TESS cascade `confirmed` alanı
 ve çıplak `{"confirmed": true}` payload'ı doğrulanmış Earth twin statüsü
-üretmez.
+üretmez. Mevcut kayıtlar `OutputManager.update_followup()` ile JSON ve
+Parquet'te aynı hedef/sektör kimliği altında upsert edilerek güncellenebilir;
+kopya aday satırı oluşturulmaz.
 
 ### Cascade Karar Ağacı
