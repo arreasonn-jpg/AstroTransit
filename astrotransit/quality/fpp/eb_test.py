@@ -72,7 +72,7 @@ class EBIndicator:
 class EBScenarioReport:
     target_id: str
     sector: int
-    p_eb: float = 0.0
+    p_eb: Optional[float] = None
     eb_risk_flag: str = "UNKNOWN"
     recommended_action: str = "none"
     indicators: list[EBIndicator] = field(default_factory=list)
@@ -86,7 +86,7 @@ class EBScenarioReport:
         return {
             "target_id": self.target_id,
             "sector": self.sector,
-            "p_eb": round(float(self.p_eb), 4),
+            "p_eb": None if self.p_eb is None else round(float(self.p_eb), 4),
             "eb_risk_flag": self.eb_risk_flag,
             "recommended_action": self.recommended_action,
             "n_available": self.n_available,
@@ -98,9 +98,10 @@ class EBScenarioReport:
         }
 
     def summary(self) -> str:
+        p_eb = "NA" if self.p_eb is None else f"{self.p_eb:.3f}"
         return (
             f"{self.target_id} S{self.sector} | "
-            f"p_eb={self.p_eb:.3f} flag={self.eb_risk_flag} | "
+            f"p_eb={p_eb} flag={self.eb_risk_flag} | "
             f"available={self.n_available} warn={self.n_warn} fail={self.n_fail} | "
             f"action={self.recommended_action}"
         )
@@ -197,7 +198,7 @@ class EBScenarioEvaluator:
         report = EBScenarioReport(
             target_id=target_id_resolved,
             sector=sector_resolved,
-            p_eb=float(np.clip(p_eb, 0.0, _MAX_P_EB)),
+            p_eb=None if p_eb is None else float(np.clip(p_eb, 0.0, _MAX_P_EB)),
             eb_risk_flag=eb_risk_flag,
             recommended_action=recommended_action,
             indicators=indicators,
@@ -459,8 +460,11 @@ class EBScenarioEvaluator:
     @staticmethod
     def _compute_p_eb(
         indicators: list[EBIndicator],
-    ) -> float:
-        total = sum(float(ind.score_contribution) for ind in indicators if ind.available)
+    ) -> Optional[float]:
+        active = [ind for ind in indicators if ind.available]
+        if not active:
+            return None
+        total = sum(float(ind.score_contribution) for ind in active)
         return float(np.clip(total, 0.0, _MAX_P_EB))
 
     @staticmethod
@@ -471,9 +475,9 @@ class EBScenarioEvaluator:
         n_fail = sum(1 for ind in indicators if ind.verdict == VettingVerdict.FAIL)
         n_warn = sum(1 for ind in indicators if ind.verdict == VettingVerdict.WARN)
 
-        if n_fail >= 1 or p_eb >= 0.50:
+        if n_fail >= 1 or (p_eb is not None and p_eb >= 0.50):
             return "HIGH_EB_RISK"
-        if n_warn >= 1 or p_eb >= 0.20:
+        if n_warn >= 1 or (p_eb is not None and p_eb >= 0.20):
             return "MODERATE_EB_RISK"
 
         active = sum(1 for ind in indicators if ind.available)

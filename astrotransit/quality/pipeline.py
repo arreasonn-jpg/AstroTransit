@@ -84,14 +84,15 @@ class QualityEvaluationResult:
             if self.fpp_report is not None
             else self.vetting.false_positive_probability
         )
+        rounded_fpp = None if summary_fpp is None else round(summary_fpp, 4)
         return {
             "target_id": self.target_id,
             "sector": self.sector,
             "snr_adopted": round(self.snr.snr_adopted, 2),
             "total_score": round(self.score.total_score, 2),
             "candidate_class": self.score.candidate_class.value,
-            "fpp": round(summary_fpp, 4),
-            "false_positive_probability": round(summary_fpp, 4),
+            "fpp": rounded_fpp,
+            "false_positive_probability": rounded_fpp,
             "detection_confidence": (
                 self.fpp_report.confidence if self.fpp_report is not None else "UNKNOWN"
             ),
@@ -285,7 +286,7 @@ class QualityEvaluationPipeline:
             f"{target_id}: "
             f"skor={score.total_score:.1f}, "
             f"sınıf={score.candidate_class.value}, "
-            f"FPP={vetting.false_positive_probability:.3f}"
+            f"FPP={'NA' if vetting.false_positive_probability is None else f'{vetting.false_positive_probability:.3f}'}"
         )
 
         return result

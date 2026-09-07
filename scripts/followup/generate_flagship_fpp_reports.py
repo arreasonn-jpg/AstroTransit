@@ -1,5 +1,8 @@
 """
-Flagship Adaylar çin Bireysel FPP (False Positive Probability) Üretici
+Flagship adaylar için FPP rapor şablonu.
+
+Bu script kalibre edilmiş FPP hesaplamaz; veri yoksa FPP alanını null ve
+metodunu ``not_estimated`` olarak yazar. Sayısal posterior iddiası üretmez.
 """
 import json
 import numpy as np
@@ -8,6 +11,7 @@ from pathlib import Path
 targets_data = [
     {
         "target_id": "TIC 383353664",
+        "fpp_method": "not_estimated",
         "tic_id": 383353664,
         "sector": 66,
         "period": 11.0245,
@@ -15,14 +19,15 @@ targets_data = [
         "rp_rs": 0.0384,
         "crowding_ratio": 0.992,
         "nearest_neighbor_arcsec": 18.4,
-        "simple_fpp": 0.008,
-        "p_planet_proxy": 0.992,
-        "dominant_scenario": "planet",
-        "fp_confidence": "HIGH_CONFIDENCE_PLANET",
-        "triage_decision": "PROCEED_TO_FOLLOWUP"
+        "simple_fpp": None,
+        "p_planet_proxy": None,
+        "dominant_scenario": "not_estimated",
+        "fp_confidence": "NOT_CALIBRATED",
+        "triage_decision": "REQUIRES_LABELED_FPP_CALIBRATION"
     },
     {
         "target_id": "TIC 74401074",
+        "fpp_method": "not_estimated",
         "tic_id": 74401074,
         "sector": 39,
         "period": 11.0712,
@@ -30,14 +35,15 @@ targets_data = [
         "rp_rs": 0.0372,
         "crowding_ratio": 0.985,
         "nearest_neighbor_arcsec": 24.1,
-        "simple_fpp": 0.012,
-        "p_planet_proxy": 0.988,
-        "dominant_scenario": "planet",
-        "fp_confidence": "HIGH_CONFIDENCE_PLANET",
-        "triage_decision": "PROCEED_TO_FOLLOWUP"
+        "simple_fpp": None,
+        "p_planet_proxy": None,
+        "dominant_scenario": "not_estimated",
+        "fp_confidence": "NOT_CALIBRATED",
+        "triage_decision": "REQUIRES_LABELED_FPP_CALIBRATION"
     },
     {
         "target_id": "TIC 352179145",
+        "fpp_method": "not_estimated",
         "tic_id": 352179145,
         "sector": 84,
         "period": 12.6141,
@@ -45,14 +51,15 @@ targets_data = [
         "rp_rs": 0.00914,
         "crowding_ratio": 0.998,
         "nearest_neighbor_arcsec": 32.0,
-        "simple_fpp": 0.004,
-        "p_planet_proxy": 0.996,
-        "dominant_scenario": "planet",
-        "fp_confidence": "HIGH_CONFIDENCE_PLANET",
-        "triage_decision": "MCMC_VALIDATED_SUB_EARTH"
+        "simple_fpp": None,
+        "p_planet_proxy": None,
+        "dominant_scenario": "not_estimated",
+        "fp_confidence": "NOT_CALIBRATED",
+        "triage_decision": "REQUIRES_LABELED_FPP_CALIBRATION"
     },
     {
         "target_id": "TIC 152366332",
+        "fpp_method": "not_estimated",
         "tic_id": 152366332,
         "sector": 100,
         "period": 2.0884,
@@ -60,14 +67,15 @@ targets_data = [
         "rp_rs": 0.0241,
         "crowding_ratio": 0.978,
         "nearest_neighbor_arcsec": 14.8,
-        "simple_fpp": 0.018,
-        "p_planet_proxy": 0.982,
-        "dominant_scenario": "planet",
-        "fp_confidence": "HIGH_CONFIDENCE_PLANET",
-        "triage_decision": "PROCEED_TO_FOLLOWUP"
+        "simple_fpp": None,
+        "p_planet_proxy": None,
+        "dominant_scenario": "not_estimated",
+        "fp_confidence": "NOT_CALIBRATED",
+        "triage_decision": "REQUIRES_LABELED_FPP_CALIBRATION"
     },
     {
         "target_id": "TIC 320049266",
+        "fpp_method": "not_estimated",
         "tic_id": 320049266,
         "sector": 18,
         "period": 11.4017,
@@ -75,11 +83,11 @@ targets_data = [
         "rp_rs": 0.0421,
         "crowding_ratio": 0.994,
         "nearest_neighbor_arcsec": 28.5,
-        "simple_fpp": 0.009,
-        "p_planet_proxy": 0.991,
-        "dominant_scenario": "planet",
-        "fp_confidence": "HIGH_CONFIDENCE_PLANET",
-        "triage_decision": "PROCEED_TO_FOLLOWUP"
+        "simple_fpp": None,
+        "p_planet_proxy": None,
+        "dominant_scenario": "not_estimated",
+        "fp_confidence": "NOT_CALIBRATED",
+        "triage_decision": "REQUIRES_LABELED_FPP_CALIBRATION"
     }
 ]
 

@@ -78,6 +78,7 @@ astrotransit/utils/paths.py
 astrotransit/utils/time.py
 astrotransit/validation/__init__.py
 astrotransit/validation/adapters.py
+astrotransit/validation/benchmark_report.py
 astrotransit/validation/followup.py
 astrotransit/validation/fpp_benchmark.py
 astrotransit/validation/injection_recovery.py
@@ -93,11 +94,13 @@ cli/__init__.py
 cli/main.py
 dashboard/__init__.py
 dashboard/app.py
+tests/test_benchmark_report.py
 tests/test_cache.py
 tests/test_cli_contract.py
 tests/test_detection.py
 tests/test_discovery.py
 tests/test_followup.py
+tests/test_fpp_semantics.py
 tests/test_long_period.py
 tests/test_modeling.py
 tests/test_outputs.py

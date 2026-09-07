@@ -1,4 +1,4 @@
-# AstroTransit referans bağımlılık kilidi (reference lock)
+# AstroTransit v0.3.0 referans bağımlılık kilidi (reference lock)
 # Python 3.11, 2026-09-07 — bilimsel yeniden üretim için referans ortam snapshot'ı.
 # Not: Bu dosya platformlar arası 'doğru' bir lock değil; en son doğrulanan
 #       ortamın pip freeze çıktısıdır. Yeni ortam kurarken:
@@ -18,7 +18,7 @@ arrow==1.4.0
 astropy==8.0.1
 astropy-iers-data==0.2026.9.7.0.56.14
 astroquery==0.4.11
--e git+https://github.com/arreasonn-jpg/AstroTransit.git@f7f4e8bfbc17abcdb20757d27876f60895da170b#egg=astrotransit
+# Install the checked-out AstroTransit source separately with: pip install -e .
 asttokens==3.0.2
 async-lru==2.3.0
 attrs==26.1.0

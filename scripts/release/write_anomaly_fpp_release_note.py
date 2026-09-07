@@ -7,17 +7,21 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 from pathlib import Path
 from datetime import datetime, timezone
 
 
-def safe_float(x, default=0.0):
+def optional_float(x):
     try:
-        if x is None:
-            return default
-        return float(x)
-    except Exception:
-        return default
+        value = float(x)
+    except (TypeError, ValueError):
+        return None
+    return value if math.isfinite(value) else None
+
+
+def display_optional(value, digits: int = 3) -> str:
+    return "NA" if value is None else f"{value:.{digits}f}"
 
 
 def main():
@@ -83,7 +87,8 @@ def main():
         lines.append(
             f"| {r.get('human_priority_rank')} | {r.get('target_id')} | {r.get('sector')} | "
             f"{r.get('human_override_decision')} | {r.get('anomaly_flag')} | "
-            f"{safe_float(r.get('simple_fpp')):.3f} | {safe_float(r.get('p_planet_proxy')):.3f} | "
+            f"{display_optional(optional_float(r.get('simple_fpp')))} | "
+            f"{display_optional(optional_float(r.get('p_planet_proxy')))} | "
             f"{r.get('assessment_note')} |"
         )
     lines.append("")
@@ -96,7 +101,10 @@ def main():
             lines.append("")
             lines.append(f"- Decision: **{r['human_override_decision']}**")
             lines.append(f"- Anomaly: `{r['anomaly_flag']}`")
-            lines.append(f"- Simple FPP: `{safe_float(r['simple_fpp']):.3f}`")
+            lines.append(
+                f"- Simple FPP proxy: `{display_optional(optional_float(r.get('simple_fpp')))}` "
+                "(NA = not estimated)"
+            )
             lines.append(f"- CROWDSAP: `{r.get('crowding_ratio')}`")
             lines.append(f"- Gaia nearest neighbor: `{r.get('nearest_neighbor_arcsec')}` arcsec")
             lines.append(f"- Δmag: `{r.get('brightest_neighbor_delta_mag')}`")
@@ -112,7 +120,10 @@ def main():
             lines.append(f"- Decision: **{r['human_override_decision']}**")
             lines.append(f"- Timing flag: `{r.get('timing_flag')}`")
             lines.append(f"- Transit-consistency flag: `{r.get('transit_consistency_flag')}`")
-            lines.append(f"- Simple FPP: `{safe_float(r['simple_fpp']):.3f}`")
+            lines.append(
+                f"- Simple FPP proxy: `{display_optional(optional_float(r.get('simple_fpp')))}` "
+                "(NA = not estimated)"
+            )
             lines.append(f"- Environment note: CROWDSAP=`{r.get('crowding_ratio')}`, nearest Gaia neighbor=`{r.get('nearest_neighbor_arcsec')}` arcsec")
             lines.append(f"- Assessment: {r['assessment_note']}")
             lines.append("")
@@ -128,7 +139,10 @@ def main():
             lines.append(f"- Dominant FP scenario: `{r.get('dominant_scenario')}`")
             lines.append(f"- Nearest Gaia neighbor: `{r.get('nearest_neighbor_arcsec')}` arcsec")
             lines.append(f"- Brightest-neighbor Δmag: `{r.get('brightest_neighbor_delta_mag')}`")
-            lines.append(f"- Simple FPP: `{safe_float(r['simple_fpp']):.3f}`")
+            lines.append(
+                f"- Simple FPP proxy: `{display_optional(optional_float(r.get('simple_fpp')))}` "
+                "(NA = not estimated)"
+            )
             lines.append(f"- Assessment: {r['assessment_note']}")
             lines.append("")
 

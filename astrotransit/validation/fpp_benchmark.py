@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Iterable
+from typing import Any, Iterable, Optional
 
 import numpy as np
 
@@ -22,9 +22,9 @@ class FPPBenchmarkCase:
 @dataclass(frozen=True)
 class FPPBenchmarkReport:
     n_cases: int
-    brier_score: float
-    false_positive_recall: float
-    planet_precision: float
+    brier_score: Optional[float]
+    false_positive_recall: Optional[float]
+    planet_precision: Optional[float]
     threshold: float
     confusion_matrix: dict[str, int]
 
@@ -55,7 +55,7 @@ def evaluate_fpp_benchmark(
         raise ValueError("threshold 0 ile 1 arasında olmalıdır.")
     materialized = list(cases)
     if not materialized:
-        return FPPBenchmarkReport(0, 0.0, 0.0, 0.0, threshold, {})
+        return FPPBenchmarkReport(0, None, None, None, threshold, {})
     probabilities = np.asarray([case.fpp for case in materialized], dtype=float)
     labels = np.asarray([case.is_false_positive for case in materialized], dtype=float)
     predicted = probabilities >= threshold
@@ -69,8 +69,8 @@ def evaluate_fpp_benchmark(
     return FPPBenchmarkReport(
         n_cases=len(materialized),
         brier_score=float(np.mean((probabilities - labels) ** 2)),
-        false_positive_recall=float(tp / (tp + fn)) if tp + fn else 0.0,
-        planet_precision=float(tn / planet_predictions) if planet_predictions else 0.0,
+        false_positive_recall=float(tp / (tp + fn)) if tp + fn else None,
+        planet_precision=float(tn / planet_predictions) if planet_predictions else None,
         threshold=threshold,
         confusion_matrix={
             "tp": tp,

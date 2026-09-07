@@ -1,7 +1,7 @@
 # configs/exotic_habitable.toml (yeni config)
 [project]
 name = "AstroTransit"
-version = "0.1.0"
+version = "0.3.0"
 
 [general]
 log_level = "INFO"

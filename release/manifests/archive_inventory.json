@@ -1,0 +1,64 @@
+{
+  "policy": "large_release_artifacts_are_external",
+  "repository_cleanup": {
+    "release_tree_removed_from_source": true,
+    "campaign_runs_tree_removed_from_source": true,
+    "historical_git_objects_require_a_coordinated_history_rewrite": true
+  },
+  "artifacts": [
+    {
+      "name": "AstroTransitErdemEsa.zip",
+      "external_location": "GitHub Release or Zenodo",
+      "sha256": null,
+      "status": "metadata_only_sha256_pending"
+    },
+    {
+      "name": "AstroTransit_TESS_Candidate_Watchlist_v1.zip",
+      "external_location": "GitHub Release or Zenodo",
+      "sha256": null,
+      "status": "metadata_only_sha256_pending"
+    },
+    {
+      "name": "AstroTransit_TESS_Candidate_Watchlist_v4_final.zip",
+      "external_location": "GitHub Release or Zenodo",
+      "sha256": null,
+      "status": "metadata_only_sha256_pending"
+    },
+    {
+      "name": "AstroTransit_Zenodo_Cycle6_Discovery_Portfolio.zip",
+      "external_location": "GitHub Release or Zenodo",
+      "sha256": null,
+      "status": "metadata_only_sha256_pending"
+    },
+    {
+      "name": "AstroTransit_Zenodo_Cycle6_Discovery_Portfolio_v2.zip",
+      "external_location": "GitHub Release or Zenodo",
+      "sha256": null,
+      "status": "metadata_only_sha256_pending"
+    },
+    {
+      "name": "AstroTransit_Zenodo_Cycle6_Discovery_Portfolio_v3_rigorous.zip",
+      "external_location": "GitHub Release or Zenodo",
+      "sha256": null,
+      "status": "metadata_only_sha256_pending"
+    },
+    {
+      "name": "ERDEM ESA.zip",
+      "external_location": "GitHub Release or Zenodo",
+      "sha256": null,
+      "status": "metadata_only_sha256_pending"
+    },
+    {
+      "name": "tic417860263_zenodo_v1.zip",
+      "external_location": "GitHub Release or Zenodo",
+      "sha256": null,
+      "status": "metadata_only_sha256_pending",
+      "scientific_note": "Former manual fpp=0.0 summary is invalid and must not be republished."
+    }
+  ],
+  "campaign_runs": {
+    "external_location": "Zenodo or an immutable data archive",
+    "sha256": null,
+    "status": "metadata_only_sha256_pending"
+  }
+}

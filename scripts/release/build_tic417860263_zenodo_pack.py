@@ -190,7 +190,7 @@ def build_discovery_note() -> str:
         # Discovery Note: TIC 417860263 / HD 224792
 
         **Date:** {today}  
-        **Pipeline:** AstroTransit v0.1.0
+        **Pipeline:** AstroTransit v0.3.0
 
         ## Summary
 

@@ -16,6 +16,7 @@ from __future__ import annotations
 import argparse
 import json
 import csv
+import math
 from pathlib import Path
 from datetime import datetime, timezone
 
@@ -25,6 +26,18 @@ from loguru import logger
 # ──────────────────────────────────────────────────────────────
 # Triage kuralları
 # ──────────────────────────────────────────────────────────────
+
+def optional_float(value):
+    try:
+        parsed = float(value)
+    except (TypeError, ValueError):
+        return None
+    return parsed if math.isfinite(parsed) else None
+
+
+def display_optional(value, digits: int = 3) -> str:
+    return "NA" if value is None else f"{value:.{digits}f}"
+
 
 def compute_triage_decision(row: dict) -> tuple[str, str]:
     """
@@ -36,14 +49,14 @@ def compute_triage_decision(row: dict) -> tuple[str, str]:
     (triage_decision, risk_note)
     """
 
-    fpp = float(row.get("simple_fpp", 0.0))
+    fpp = optional_float(row.get("simple_fpp"))
     anomaly_flag = row.get("anomaly_flag", "UNKNOWN")
     crowdsap = row.get("crowding_ratio")
     delta_mag = row.get("brightest_neighbor_delta_mag")
     nearest = row.get("nearest_neighbor_arcsec")
-    p_neb = float(row.get("p_neb", 0.0))
-    p_eb = float(row.get("p_eb", 0.0))
-    p_beb = float(row.get("p_beb", 0.0))
+    p_neb = optional_float(row.get("p_neb"))
+    p_eb = optional_float(row.get("p_eb"))
+    p_beb = optional_float(row.get("p_beb"))
     dominant = row.get("dominant_scenario", "none")
     n_neighbors = row.get("gaia_neighbors_within_60arcsec")
 
@@ -67,27 +80,30 @@ def compute_triage_decision(row: dict) -> tuple[str, str]:
         return "FOLLOWUP_WITH_HOST_AMBIGUITY_WARNING", "; ".join(notes)
 
     # ── Anomaly CLEAN + düşük FPP ──
-    if anomaly_flag == "CLEAN" and fpp < 0.20:
+    if anomaly_flag == "CLEAN" and fpp is not None and fpp < 0.20:
         notes.append("CLEAN_PROFILE")
         return "TOP_CLEAN_FOLLOWUP", "; ".join(notes)
 
     # ── Anomaly CLEAN + orta FPP ──
-    if anomaly_flag == "CLEAN" and fpp < 0.50:
-        if dominant == "eb":
+    if anomaly_flag == "CLEAN" and fpp is not None and fpp < 0.50:
+        if dominant == "eb" and p_eb is not None:
             notes.append(f"EB_PROXY_ELEVATED(p_eb={p_eb:.2f})")
-        if dominant == "neb":
+        if dominant == "neb" and p_neb is not None:
             notes.append(f"NEB_PROXY_ELEVATED(p_neb={p_neb:.2f})")
-        if dominant == "beb":
+        if dominant == "beb" and p_beb is not None:
             notes.append(f"BEB_PROXY_ELEVATED(p_beb={p_beb:.2f})")
         return "FOLLOWUP_WITH_CAUTION", "; ".join(notes) if notes else "moderate_fpp"
 
     # ── Anomaly CLEAN + yüksek FPP ──
-    if anomaly_flag == "CLEAN" and fpp >= 0.50:
-        if p_neb >= 0.50:
+    if anomaly_flag == "CLEAN" and fpp is not None and fpp >= 0.50:
+        if p_neb is not None and p_neb >= 0.50:
             notes.append(f"HIGH_NEB_DESPITE_CLEAN_ANOMALY(p_neb={p_neb:.2f})")
-        if p_beb >= 0.20:
+        if p_beb is not None and p_beb >= 0.20:
             notes.append(f"BEB_CONCERN(p_beb={p_beb:.2f},CROWDSAP={crowdsap})")
         return "FOLLOWUP_WITH_HOST_AMBIGUITY_WARNING", "; ".join(notes) if notes else "high_fpp_anomaly_clean"
+
+    if fpp is None:
+        return "MANUAL_REVIEW_REQUIRED", "FPP proxy unavailable; no probabilistic claim made"
 
     # ── Anomaly REVIEW ──
     if anomaly_flag == "REVIEW":
@@ -174,11 +190,11 @@ def parse_anomaly_fpp_json(path: Path) -> dict | None:
         "anomaly_action": combined.get("recommended_action", ""),
 
         # FPP
-        "p_eb": fpp.get("p_eb", 0.0),
-        "p_beb": fpp.get("p_beb", 0.0),
-        "p_neb": fpp.get("p_neb", 0.0),
-        "simple_fpp": fpp.get("fpp", 0.0),
-        "p_planet_proxy": fpp.get("p_planet", 1.0),
+        "p_eb": fpp.get("p_eb"),
+        "p_beb": fpp.get("p_beb"),
+        "p_neb": fpp.get("p_neb"),
+        "simple_fpp": fpp.get("fpp"),
+        "p_planet_proxy": fpp.get("p_planet"),
         "dominant_scenario": fpp.get("dominant_scenario", ""),
         "fp_confidence": fpp.get("confidence", ""),
         "fp_action": fpp.get("recommended_action", ""),
@@ -233,7 +249,12 @@ def main():
             )
 
     # Sırala: p_planet_proxy azalan
-    rows.sort(key=lambda r: float(r.get("p_planet_proxy", 0.0)), reverse=True)
+    rows.sort(
+        key=lambda r: optional_float(r.get("p_planet_proxy"))
+        if optional_float(r.get("p_planet_proxy")) is not None
+        else -1.0,
+        reverse=True,
+    )
 
     # ── CSV yaz ──
     csv_columns = [
@@ -284,8 +305,8 @@ def main():
             f"{r['sector']:>3} "
             f"{r['anomaly_flag']:<10} "
             f"{float(r.get('anomaly_score',0)):>6.3f} "
-            f"{float(r.get('simple_fpp',0)):>6.3f} "
-            f"{float(r.get('p_planet_proxy',0)):>6.3f} "
+            f"{display_optional(optional_float(r.get('simple_fpp'))):>6} "
+            f"{display_optional(optional_float(r.get('p_planet_proxy'))):>6} "
             f"{str(r.get('dominant_scenario',''))[:5]:>5} "
             f"{float(r.get('crowding_ratio',0)) if r.get('crowding_ratio') else 0:>6.3f} "
             f"{float(r.get('nearest_neighbor_arcsec',0)) if r.get('nearest_neighbor_arcsec') else 0:>7.2f} "

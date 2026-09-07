@@ -71,7 +71,9 @@ def _theme_and_bucket(
     """
 
     crowding = 1.0 if crowding_ratio is None else float(crowding_ratio)
-    fpp = 0.0 if simple_fpp is None else float(simple_fpp)
+    # Eksik proxy, düşük risk değildir; bilinmeyen adayın önceliğini
+    # yapay biçimde artırmamak için muhafazakâr üst risk değeri kullanılır.
+    fpp = 1.0 if simple_fpp is None else float(simple_fpp)
     af = "" if anomaly_flag is None else str(anomaly_flag).upper()
 
     # Tema seçimi

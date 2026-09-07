@@ -28,7 +28,9 @@ SimpleFPPReport
 Not
 ---
 Bu formal bir Bayesian validasyon aracı değildir.
-Amaç, triceratops yokken tutarlı bir karar-proxy üretmektir.
+Amaç, triceratops yokken tutarlı bir karar-proxy üretmektir. Hiçbir senaryo
+kanıtı yoksa sonuç ``fpp=None`` olur; bu durum sıfır risk veya gezegen
+olasılığı olarak yorumlanamaz.
 """
 
 from __future__ import annotations
@@ -42,6 +44,9 @@ from loguru import logger
 from astrotransit.quality.fpp.eb_test import EBScenarioEvaluator, EBScenarioReport
 from astrotransit.quality.fpp.beb_test import BEBScenarioEvaluator, BEBScenarioReport
 from astrotransit.quality.fpp.neb_test import NEBScenarioEvaluator, NEBScenarioReport
+
+
+FPP_PROXY_METHOD = "scenario_based_proxy_uncalibrated_v1"
 
 
 @dataclass
@@ -66,11 +71,14 @@ class FPPComponent:
 class SimpleFPPReport:
     target_id: str
     sector: int
-    p_eb: float = 0.0
-    p_beb: float = 0.0
-    p_neb: float = 0.0
-    fpp: float = 0.0
-    p_planet: float = 1.0
+    # None means that no scenario evidence was available. It is deliberately
+    # different from a measured/calculated zero risk.
+    p_eb: Optional[float] = None
+    p_beb: Optional[float] = None
+    p_neb: Optional[float] = None
+    fpp: Optional[float] = None
+    p_planet: Optional[float] = None
+    fpp_method: str = "not_estimated"
     dominant_scenario: str = "none"
     confidence: str = "UNKNOWN"
     recommended_action: str = "none"
@@ -78,15 +86,20 @@ class SimpleFPPReport:
     n_available: int = 0
     details: dict = field(default_factory=dict)
 
+    @staticmethod
+    def _round_optional(value: Optional[float]) -> Optional[float]:
+        return None if value is None else round(float(value), 4)
+
     def to_dict(self) -> dict:
         return {
             "target_id": self.target_id,
             "sector": self.sector,
-            "p_eb": round(float(self.p_eb), 4),
-            "p_beb": round(float(self.p_beb), 4),
-            "p_neb": round(float(self.p_neb), 4),
-            "fpp": round(float(self.fpp), 4),
-            "p_planet": round(float(self.p_planet), 4),
+            "p_eb": self._round_optional(self.p_eb),
+            "p_beb": self._round_optional(self.p_beb),
+            "p_neb": self._round_optional(self.p_neb),
+            "fpp": self._round_optional(self.fpp),
+            "p_planet": self._round_optional(self.p_planet),
+            "fpp_method": self.fpp_method,
             "dominant_scenario": self.dominant_scenario,
             "confidence": self.confidence,
             "recommended_action": self.recommended_action,
@@ -96,9 +109,11 @@ class SimpleFPPReport:
         }
 
     def summary(self) -> str:
+        fpp = "NA" if self.fpp is None else f"{self.fpp:.3f}"
+        p_planet = "NA" if self.p_planet is None else f"{self.p_planet:.3f}"
         return (
             f"{self.target_id} S{self.sector} | "
-            f"FPP={self.fpp:.3f} Pplanet={self.p_planet:.3f} | "
+            f"FPP={fpp} Pplanet={p_planet} | "
             f"dominant={self.dominant_scenario} confidence={self.confidence} | "
             f"available={self.n_available} action={self.recommended_action}"
         )
@@ -204,52 +219,82 @@ class SimpleFPPCalculator:
                 nearest_neighbor_arcsec=nearest_neighbor_arcsec,
             )
 
-        p_eb = self._safe_prob(getattr(eb_report, "p_eb", 0.0) if eb_report else 0.0)
-        p_beb = self._safe_prob(getattr(beb_report, "p_beb", 0.0) if beb_report else 0.0)
-        p_neb = self._safe_prob(getattr(neb_report, "p_neb", 0.0) if neb_report else 0.0)
+        eb_available = self._report_has_evidence(eb_report, "p_eb")
+        beb_available = self._report_has_evidence(beb_report, "p_beb")
+        neb_available = self._report_has_evidence(neb_report, "p_neb")
 
-        fpp = self._combine_probabilities([p_eb, p_beb, p_neb])
-        p_planet = float(np.clip(1.0 - fpp, 0.0, 1.0))
+        p_eb = (
+            self._safe_prob(getattr(eb_report, "p_eb", None))
+            if eb_available
+            else None
+        )
+        p_beb = (
+            self._safe_prob(getattr(beb_report, "p_beb", None))
+            if beb_available
+            else None
+        )
+        p_neb = (
+            self._safe_prob(getattr(neb_report, "p_neb", None))
+            if neb_available
+            else None
+        )
+        has_probability = any(value is not None for value in (p_eb, p_beb, p_neb))
+        if has_probability:
+            fpp = self._combine_probabilities([p_eb, p_beb, p_neb])
+            p_planet = None if fpp is None else float(np.clip(1.0 - fpp, 0.0, 1.0))
+        else:
+            # No evidence is not evidence for a planet. Keep all summary
+            # probabilities null instead of manufacturing FPP=0/Pplanet=1.
+            fpp = None
+            p_planet = None
 
         components = [
             FPPComponent(
                 name="eb",
-                available=eb_report is not None,
-                probability=p_eb if eb_report is not None else None,
+                available=eb_available,
+                probability=p_eb,
                 risk_flag=getattr(eb_report, "eb_risk_flag", "UNKNOWN") if eb_report else "MISSING",
                 recommended_action=getattr(eb_report, "recommended_action", "none") if eb_report else "none",
             ),
             FPPComponent(
                 name="beb",
-                available=beb_report is not None,
-                probability=p_beb if beb_report is not None else None,
+                available=beb_available,
+                probability=p_beb,
                 risk_flag=getattr(beb_report, "beb_risk_flag", "UNKNOWN") if beb_report else "MISSING",
                 recommended_action=getattr(beb_report, "recommended_action", "none") if beb_report else "none",
             ),
             FPPComponent(
                 name="neb",
-                available=neb_report is not None,
-                probability=p_neb if neb_report is not None else None,
+                available=neb_available,
+                probability=p_neb,
                 risk_flag=getattr(neb_report, "neb_risk_flag", "UNKNOWN") if neb_report else "MISSING",
                 recommended_action=getattr(neb_report, "recommended_action", "none") if neb_report else "none",
             ),
         ]
 
         dominant_scenario = self._dominant_scenario(
-            p_eb=p_eb,
-            p_beb=p_beb,
-            p_neb=p_neb,
+            p_eb=0.0 if p_eb is None else p_eb,
+            p_beb=0.0 if p_beb is None else p_beb,
+            p_neb=0.0 if p_neb is None else p_neb,
             components=components,
         )
-        confidence = self._compute_confidence(fpp=fpp, components=components)
-        recommended_action = self._recommend_action(confidence=confidence, fpp=fpp, components=components)
+        if has_probability and fpp is not None:
+            confidence = self._compute_confidence(fpp=fpp, components=components)
+            recommended_action = self._recommend_action(
+                confidence=confidence,
+                fpp=fpp,
+                components=components,
+            )
+        else:
+            confidence = "UNKNOWN"
+            recommended_action = "collect_vetting_evidence"
 
         details = {
             "combination_method": "1 - product(1 - p_i)",
             "raw_probabilities": {
-                "p_eb": float(p_eb),
-                "p_beb": float(p_beb),
-                "p_neb": float(p_neb),
+                "p_eb": p_eb,
+                "p_beb": p_beb,
+                "p_neb": p_neb,
             },
             "component_flags": {
                 "eb": getattr(eb_report, "eb_risk_flag", "MISSING") if eb_report else "MISSING",
@@ -273,6 +318,7 @@ class SimpleFPPCalculator:
             p_neb=p_neb,
             fpp=fpp,
             p_planet=p_planet,
+            fpp_method=FPP_PROXY_METHOD if has_probability else "not_estimated",
             dominant_scenario=dominant_scenario,
             confidence=confidence,
             recommended_action=recommended_action,
@@ -302,20 +348,41 @@ class SimpleFPPCalculator:
         return target_id or "UNKNOWN_TARGET", int(sector if sector is not None else -1)
 
     @staticmethod
-    def _safe_prob(x: float) -> float:
+    def _report_has_evidence(report, probability_name: str) -> bool:
+        """Return whether a scenario report contains measurable evidence."""
+        if report is None:
+            return False
+
+        n_available = getattr(report, "n_available", None)
+        if n_available is not None:
+            try:
+                return int(n_available) > 0
+            except (TypeError, ValueError):
+                pass
+
+        indicators = getattr(report, "indicators", None)
+        if indicators is not None:
+            return any(bool(getattr(indicator, "available", False)) for indicator in indicators)
+
+        return getattr(report, probability_name, None) is not None
+
+    @staticmethod
+    def _safe_prob(x: Optional[float]) -> Optional[float]:
+        if x is None:
+            return None
         try:
             x = float(x)
         except Exception:
-            return 0.0
+            return None
         if not np.isfinite(x):
-            return 0.0
+            return None
         return float(np.clip(x, 0.0, 0.999))
 
     @staticmethod
-    def _combine_probabilities(probs: list[float]) -> float:
+    def _combine_probabilities(probs: list[Optional[float]]) -> Optional[float]:
         active = [float(np.clip(p, 0.0, 0.999)) for p in probs if p is not None]
         if not active:
-            return 0.0
+            return None
 
         survival = 1.0
         for p in active:

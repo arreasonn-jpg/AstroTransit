@@ -133,7 +133,7 @@ class QualityScore:
     components: list[ScoreComponent] = field(default_factory=list)
     is_anomalous: bool = False
     anomaly_flags: list[str] = field(default_factory=list)
-    fpp: float = 0.0
+    fpp: Optional[float] = None
     fpp_method: str = FPP_METHOD
     is_false_positive: bool = False
 
@@ -144,7 +144,7 @@ class QualityScore:
             "total_score": round(self.total_score, 2),
             "candidate_class": self.candidate_class.value,
             "class_description": self.class_description,
-            "fpp": round(self.fpp, 4),
+            "fpp": None if self.fpp is None else round(self.fpp, 4),
             "fpp_method": self.fpp_method,
             "is_false_positive": self.is_false_positive,
             "is_anomalous": self.is_anomalous,
@@ -158,7 +158,7 @@ class QualityScore:
             "sector": self.sector,
             "score": round(self.total_score, 2),
             "class": self.candidate_class.value,
-            "fpp": round(self.fpp, 4),
+            "fpp": None if self.fpp is None else round(self.fpp, 4),
             "fpp_method": self.fpp_method,
             "is_fp": self.is_false_positive,
             "is_anomalous": self.is_anomalous,
@@ -414,7 +414,7 @@ class CandidateScorer:
             f"{target_id}: "
             f"skor={total_score:.1f}/100, "
             f"sınıf={candidate_class.value}, "
-            f"FPP={vetting.false_positive_probability:.3f}"
+            f"FPP={'NA' if vetting.false_positive_probability is None else f'{vetting.false_positive_probability:.3f}'}"
         )
 
         return result
@@ -492,8 +492,12 @@ class CandidateScorer:
             + vetting.n_fail * 0
         ) / n_tests
 
-        # FPP penaltisi
-        fpp_penalty = vetting.false_positive_probability * 50
+        # FPP penaltisi; bilinmeyen FPP ek penalty üretmez.
+        fpp_penalty = (
+            vetting.false_positive_probability * 50
+            if vetting.false_positive_probability is not None
+            else 0.0
+        )
         score = max(0.0, score - fpp_penalty)
 
         return float(np.clip(score, 0.0, 100.0))

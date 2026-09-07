@@ -20,6 +20,7 @@ Performans metrikleri:
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+import json
 from pathlib import Path
 from typing import Optional
 
@@ -29,6 +30,13 @@ from loguru import logger
 
 from astrotransit.settings import Settings, get_settings
 from astrotransit.pipelines.tess_pipeline import TESSPipeline, TESSTargetResult
+from astrotransit.validation.benchmark_report import (
+    BenchmarkPerformanceReport,
+    VerifiedTarget,
+    evaluate_benchmark_results,
+    load_verified_targets,
+    normalize_target_id,
+)
 
 
 # ──────────────────────────────────────
@@ -74,11 +82,17 @@ class BenchmarkMetrics:
     false_positives: int = 0
     false_negatives: int = 0
     true_negatives: int = 0
-    precision: float = 0.0
-    recall: float = 0.0
-    f1_score: float = 0.0
-    recovery_rate: float = 0.0
-    false_alarm_rate: float = 0.0
+    n_evaluation_errors: int = 0
+    n_negative_not_evaluated: int = 0
+    precision: Optional[float] = None
+    recall: Optional[float] = None
+    f1_score: Optional[float] = None
+    recovery_rate: Optional[float] = None
+    false_alarm_rate: Optional[float] = None
+
+    @staticmethod
+    def _round_metric(value: Optional[float]) -> Optional[float]:
+        return None if value is None else round(value, 4)
 
     def compute(self) -> None:
         """İstatistikleri hesaplar."""
@@ -88,22 +102,22 @@ class BenchmarkMetrics:
         fn = self.false_negatives
         tn = self.true_negatives
 
-        self.precision = tp / (tp + fp) if (tp + fp) > 0 else 0.0
-        self.recall = tp / (tp + fn) if (tp + fn) > 0 else 0.0
+        self.precision = tp / (tp + fp) if (tp + fp) > 0 else None
+        self.recall = tp / (tp + fn) if (tp + fn) > 0 else None
 
-        if self.precision + self.recall > 0:
+        if self.precision is not None and self.recall is not None and self.precision + self.recall > 0:
             self.f1_score = (
                 2 * self.precision * self.recall /
                 (self.precision + self.recall)
             )
         else:
-            self.f1_score = 0.0
+            self.f1_score = None
 
         total_confirmed = tp + fn
-        self.recovery_rate = tp / total_confirmed if total_confirmed > 0 else 0.0
+        self.recovery_rate = tp / total_confirmed if total_confirmed > 0 else None
 
         total_negative = fp + tn
-        self.false_alarm_rate = fp / total_negative if total_negative > 0 else 0.0
+        self.false_alarm_rate = fp / total_negative if total_negative > 0 else None
 
     def to_dict(self) -> dict:
         return {
@@ -114,15 +128,20 @@ class BenchmarkMetrics:
             "false_positives": self.false_positives,
             "false_negatives": self.false_negatives,
             "true_negatives": self.true_negatives,
-            "precision": round(self.precision, 4),
-            "recall": round(self.recall, 4),
-            "f1_score": round(self.f1_score, 4),
-            "recovery_rate": round(self.recovery_rate, 4),
-            "false_alarm_rate": round(self.false_alarm_rate, 4),
+            "n_evaluation_errors": self.n_evaluation_errors,
+            "n_negative_not_evaluated": self.n_negative_not_evaluated,
+            "precision": self._round_metric(self.precision),
+            "recall": self._round_metric(self.recall),
+            "f1_score": self._round_metric(self.f1_score),
+            "recovery_rate": self._round_metric(self.recovery_rate),
+            "false_alarm_rate": self._round_metric(self.false_alarm_rate),
         }
 
     def report(self) -> str:
         """İnsan okunabilir performans raporu."""
+
+        def fmt(value: Optional[float]) -> str:
+            return "NA" if value is None else f"{value:.4f}"
 
         return (
             f"\n{'=' * 50}\n"
@@ -138,13 +157,14 @@ class BenchmarkMetrics:
             f"    False Positive:  {self.false_positives}\n"
             f"    False Negative:  {self.false_negatives}\n"
             f"    True Negative:   {self.true_negatives}\n"
+            f"    Evaluation error:{self.n_evaluation_errors}\n"
             f"\n"
             f"  Performans:\n"
-            f"    Precision:       {self.precision:.4f}\n"
-            f"    Recall:          {self.recall:.4f}\n"
-            f"    F1-Score:        {self.f1_score:.4f}\n"
-            f"    Recovery Rate:   {self.recovery_rate:.4f}\n"
-            f"    False Alarm:     {self.false_alarm_rate:.4f}\n"
+            f"    Precision:       {fmt(self.precision)}\n"
+            f"    Recall:          {fmt(self.recall)}\n"
+            f"    F1-Score:        {fmt(self.f1_score)}\n"
+            f"    Recovery Rate:   {fmt(self.recovery_rate)}\n"
+            f"    False Alarm:     {fmt(self.false_alarm_rate)}\n"
             f"{'=' * 50}"
         )
 
@@ -170,6 +190,17 @@ class BenchmarkResult:
     confirmed_results: list[TESSTargetResult] = field(default_factory=list)
     fp_results: list[TESSTargetResult] = field(default_factory=list)
     quiet_results: list[TESSTargetResult] = field(default_factory=list)
+    performance_report: Optional[BenchmarkPerformanceReport] = None
+
+    def to_dict(self) -> dict:
+        """Makine-okur benchmark özeti; ground-truth ve ölçüm ayrıdır."""
+
+        return {
+            "metrics": self.metrics.to_dict(),
+            "performance_report": (
+                self.performance_report.to_dict() if self.performance_report is not None else None
+            ),
+        }
 
 
 # ──────────────────────────────────────
@@ -225,15 +256,17 @@ class BenchmarkPipeline:
 
         benchmark_cfg = self.settings.benchmark
 
-        confirmed = self._load_target_list(
-            confirmed_path or Path(benchmark_cfg.confirmed_targets_file)
-        )
-        fp = self._load_target_list(
-            fp_path or Path(benchmark_cfg.false_positives_file)
-        )
-        quiet = self._load_target_list(
-            quiet_path or Path(benchmark_cfg.quiet_stars_file)
-        )
+        confirmed_source = confirmed_path or Path(benchmark_cfg.confirmed_targets_file)
+        fp_source = fp_path
+        if fp_source is None and benchmark_cfg.false_positives_file:
+            fp_source = Path(benchmark_cfg.false_positives_file)
+        quiet_source = quiet_path
+        if quiet_source is None and benchmark_cfg.quiet_stars_file:
+            quiet_source = Path(benchmark_cfg.quiet_stars_file)
+
+        confirmed = self._load_target_list(confirmed_source)
+        fp = self._load_target_list(fp_source) if fp_source is not None else []
+        quiet = self._load_target_list(quiet_source) if quiet_source is not None else []
 
         logger.info(
             f"Benchmark hedefleri yüklendi — "
@@ -244,18 +277,43 @@ class BenchmarkPipeline:
 
         return confirmed, fp, quiet
 
-    @staticmethod
-    def _load_target_list(path: Path) -> list[str]:
-        """Parquet veya CSV dosyasından TIC ID listesi okur."""
+    def load_verified_target_specs(self, path: Optional[Path] = None) -> list[VerifiedTarget]:
+        """Known-target ground truth kayıtlarını yükler."""
 
+        source = path or Path(self.settings.benchmark.verified_targets_file)
+        try:
+            specs = load_verified_targets(source)
+        except (OSError, ValueError, TypeError) as exc:
+            logger.error(f"Verified target dosyası okunamadı ({source}): {exc}")
+            return []
+        logger.info(f"Verified target ground truth yüklendi: {len(specs)} hedef")
+        return specs
+
+    @staticmethod
+    def _load_target_list(path: Optional[Path]) -> list[str]:
+        """JSON, Parquet veya CSV dosyasından TIC ID listesi okur."""
+
+        if path is None:
+            return []
         if not path.exists():
             logger.warning(f"Benchmark dosyası bulunamadı: {path}")
             return []
 
         try:
-            if path.suffix == ".parquet":
+            if path.suffix.lower() == ".json":
+                payload = json.loads(path.read_text(encoding="utf-8"))
+                rows = payload.get("targets", []) if isinstance(payload, dict) else payload
+                if not isinstance(rows, list):
+                    raise ValueError("JSON hedef listesi liste biçiminde olmalıdır")
+                return [
+                    normalize_target_id(row.get("tic_id", row.get("source_id", row)))
+                    if isinstance(row, dict)
+                    else normalize_target_id(row)
+                    for row in rows
+                ]
+            if path.suffix.lower() == ".parquet":
                 df = pd.read_parquet(path)
-            elif path.suffix == ".csv":
+            elif path.suffix.lower() == ".csv":
                 df = pd.read_csv(path)
             else:
                 logger.warning(f"Desteklenmeyen format: {path}")
@@ -263,14 +321,13 @@ class BenchmarkPipeline:
 
             # İlk sütundaki ID'leri kullan
             if "tic_id" in df.columns:
-                return [f"TIC {tid}" for tid in df["tic_id"].tolist()]
-            elif "source_id" in df.columns:
-                return df["source_id"].tolist()
-            else:
-                return [f"TIC {tid}" for tid in df.iloc[:, 0].tolist()]
+                return [normalize_target_id(tid) for tid in df["tic_id"].tolist()]
+            if "source_id" in df.columns:
+                return [normalize_target_id(value) for value in df["source_id"].tolist()]
+            return [normalize_target_id(tid) for tid in df.iloc[:, 0].tolist()]
 
-        except Exception as e:
-            logger.error(f"Benchmark dosyası okunamadı ({path}): {e}")
+        except Exception as exc:
+            logger.error(f"Benchmark dosyası okunamadı ({path}): {exc}")
             return []
 
     def run(
@@ -300,18 +357,21 @@ class BenchmarkPipeline:
             Benchmark sonuçları.
         """
 
-        # Hedef listeleri yoksa dosyalardan yükle
-        if confirmed_targets is None and fp_targets is None and quiet_targets is None:
-            confirmed_targets, fp_targets, quiet_targets = (
-                self.load_benchmark_targets()
-            )
+        verified_specs = self.load_verified_target_specs()
 
-        confirmed_targets = confirmed_targets or []
-        fp_targets = fp_targets or []
-        quiet_targets = quiet_targets or []
+        # Hedef listeleri yoksa dosyalardan yükle. Ground-truth JSON'u hem
+        # hedef kimliklerini hem de beklenen fiziksel parametreleri taşır.
+        if confirmed_targets is None and fp_targets is None and quiet_targets is None:
+            confirmed_targets, fp_targets, quiet_targets = self.load_benchmark_targets()
+
+        confirmed_targets = [normalize_target_id(target) for target in (confirmed_targets or [])]
+        fp_targets = [normalize_target_id(target) for target in (fp_targets or [])]
+        quiet_targets = [normalize_target_id(target) for target in (quiet_targets or [])]
 
         # Limit uygula
         if max_per_category is not None:
+            if max_per_category < 0:
+                raise ValueError("max_per_category negatif olamaz")
             confirmed_targets = confirmed_targets[:max_per_category]
             fp_targets = fp_targets[:max_per_category]
             quiet_targets = quiet_targets[:max_per_category]
@@ -364,7 +424,8 @@ class BenchmarkPipeline:
 
             except Exception as e:
                 logger.error(f"FP {target}: {e}")
-                metrics.true_negatives += 1
+                metrics.n_evaluation_errors += 1
+                metrics.n_negative_not_evaluated += 1
 
         metrics.n_false_positive_targets = len(fp_targets)
 
@@ -385,7 +446,8 @@ class BenchmarkPipeline:
 
             except Exception as e:
                 logger.error(f"Quiet {target}: {e}")
-                metrics.true_negatives += 1
+                metrics.n_evaluation_errors += 1
+                metrics.n_negative_not_evaluated += 1
 
         metrics.n_quiet_targets = len(quiet_targets)
 
@@ -395,6 +457,23 @@ class BenchmarkPipeline:
         metrics.compute()
 
         logger.info(metrics.report())
+
+        selected_ids = {normalize_target_id(target) for target in confirmed_targets}
+        selected_specs = [
+            spec for spec in verified_specs if normalize_target_id(spec.target_id) in selected_ids
+        ]
+        if selected_specs:
+            result.performance_report = evaluate_benchmark_results(
+                selected_specs,
+                result.confirmed_results,
+                period_tolerance_fraction=self.settings.benchmark.period_tolerance_fraction,
+                radius_tolerance_fraction=self.settings.benchmark.radius_tolerance_fraction,
+            )
+            logger.info(result.performance_report.summary())
+        else:
+            logger.warning(
+                "Performance benchmark raporu üretilemedi: ground-truth hedefi yok."
+            )
 
         # Pipeline'ı kapat
         self._pipeline.close()

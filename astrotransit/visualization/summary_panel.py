@@ -142,12 +142,14 @@ class SummaryPanelPlotter:
         self._draw_stellar(ax_stellar, stellar_props, detrended)
 
         # ── Ana Başlık ──
+        fpp = vetting.false_positive_probability
+        fpp_text = "NA" if fpp is None else f"{fpp:.3f}"
         class_color = Colors.class_color(score.candidate_class.value)
         fig.suptitle(
             f"{target_id}  |  Sektör {sector}  |  "
             f"Sınıf {score.candidate_class.value}  |  "
             f"Skor: {score.total_score:.0f}/100  |  "
-            f"FPP: {vetting.false_positive_probability:.3f}",
+            f"FPP: {fpp_text}",
             color=class_color,
             fontsize=13,
             fontweight="bold",
@@ -252,14 +254,17 @@ class SummaryPanelPlotter:
         )
 
         # FPP
+        fpp = vetting.false_positive_probability
+        fpp_text = "NA" if fpp is None else f"{fpp:.3f}"
         fpp_color = (
-            Colors.CLASS_A if vetting.false_positive_probability < 0.1 else
-            Colors.CLASS_C if vetting.false_positive_probability < 0.3 else
+            Colors.CLASS_A if fpp is not None and fpp < 0.1 else
+            Colors.CLASS_C if fpp is not None and fpp < 0.3 else
+            Colors.TEXT_SECONDARY if fpp is None else
             Colors.CLASS_D
         )
         ax.text(
             0.5, 0.44,
-            f"FPP: {vetting.false_positive_probability:.3f}",
+            f"FPP: {fpp_text}",
             transform=ax.transAxes,
             ha="center", va="center",
             color=fpp_color,

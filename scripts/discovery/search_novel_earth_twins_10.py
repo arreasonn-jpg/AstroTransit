@@ -91,7 +91,11 @@ for pat in json_patterns:
                 teq = float(d.get("derived", {}).get("equilibrium_temperature_k", 300.0))
                 period = float(d.get("parameters", {}).get("period_days", 0.0))
                 snr = float(d.get("quality", {}).get("snr_adopted", 10.0))
-                fpp = float(d.get("vetting", {}).get("fpp", 0.0))
+                raw_fpp = d.get("vetting", {}).get("fpp")
+                if raw_fpp is None:
+                    # Eksik FPP'yi sıfır risk sayıp aday seçme.
+                    continue
+                fpp = float(raw_fpp)
                 r_star = float(d.get("stellar", {}).get("radius_rsun", 0.5))
                 tmag = float(d.get("stellar", {}).get("tmag", 10.0))
                 j_mag = tmag - 0.8
@@ -153,7 +157,9 @@ for pat in csv_patterns:
                         teq = float(r[teq_c])
                         period = float(r[p_c]) if p_c and not pd.isna(r[p_c]) else 0.0
                         snr = float(r[snr_c]) if snr_c and not pd.isna(r[snr_c]) else 10.0
-                        fpp = float(r[fpp_c]) if fpp_c and not pd.isna(r[fpp_c]) else 0.0
+                        if not fpp_c or pd.isna(r[fpp_c]):
+                            continue
+                        fpp = float(r[fpp_c])
                         r_star = float(r[rstar_c]) if rstar_c and not pd.isna(r[rstar_c]) else 0.4
                         tmag = float(r[tmag_c]) if tmag_c and not pd.isna(r[tmag_c]) else 10.5
                         
