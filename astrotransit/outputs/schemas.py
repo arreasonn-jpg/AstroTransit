@@ -11,15 +11,17 @@ from __future__ import annotations
 
 from dataclasses import asdict, dataclass, fields
 from datetime import datetime, timezone
+import json
 import math
 from typing import Any, Optional
 
 import numpy as np
 
+from astrotransit.science.earth_similarity import score_earth_similarity
 from astrotransit.utils.identifiers import extract_tic_number
 
 
-SCHEMA_VERSION = "1.1"
+SCHEMA_VERSION = "1.2"
 
 
 def _finite_or_none(value: Any) -> Any:
@@ -138,8 +140,27 @@ class TransitCandidateRecord:
     semi_major_axis_au: Optional[float] = 0.0
     equilibrium_temperature_k: Optional[float] = 0.0
     insolation_flux: Optional[float] = 0.0
+    insolation_s_earth: Optional[float] = 0.0
     stellar_density_gcm3: Optional[float] = 0.0
+    planet_mass_mearth: Optional[float] = None
+    planet_density_gcm3: Optional[float] = None
     transit_depth_ppm: Optional[float] = 0.0
+
+    # Dünya-benzerlik ve bilimsel öncelik
+    earth_similarity_profile: str = ""
+    earth_similarity_score: Optional[float] = 0.0
+    earth_similarity_p05: Optional[float] = 0.0
+    earth_similarity_p50: Optional[float] = 0.0
+    earth_similarity_p95: Optional[float] = 0.0
+    earth_similarity_completeness: Optional[float] = 0.0
+    earth_analog_class: str = ""
+    earth_twin_status: str = "unverified"
+    earth_similarity_components: str = ""
+    earth_similarity_missing_dimensions: str = ""
+    earth_similarity_missing_required: str = ""
+    earth_similarity_notes: str = ""
+    earth_similarity_uncertainty_available: bool = False
+    mass_status: str = "unavailable"
 
     # Kalite
     snr_adopted: Optional[float] = 0.0
@@ -153,6 +174,10 @@ class TransitCandidateRecord:
     residual_rms_ppm: Optional[float] = 0.0
     transit_symmetry: Optional[float] = 0.0
     timing_rms_min: Optional[float] = 0.0
+
+    # Tespit güveni ve vetting (Earth similarity'den ayrı)
+    detection_confidence: str = "UNKNOWN"
+    false_positive_probability: Optional[float] = 0.0
 
     # Vetting
     fpp: Optional[float] = 0.0
@@ -289,9 +314,29 @@ class TransitCandidateRecord:
                 "semi_major_axis_au": flat["semi_major_axis_au"],
                 "equilibrium_temperature_k": flat["equilibrium_temperature_k"],
                 "insolation_flux": flat["insolation_flux"],
+                "insolation_s_earth": flat["insolation_s_earth"],
                 "stellar_density_gcm3": flat["stellar_density_gcm3"],
+                "planet_mass_mearth": flat["planet_mass_mearth"],
+                "planet_density_gcm3": flat["planet_density_gcm3"],
                 "transit_depth_ppm": flat["transit_depth_ppm"],
             },
+            "earth_similarity": {
+                "profile": flat["earth_similarity_profile"],
+                "score": flat["earth_similarity_score"],
+                "score_p05": flat["earth_similarity_p05"],
+                "score_p50": flat["earth_similarity_p50"],
+                "score_p95": flat["earth_similarity_p95"],
+                "measurement_completeness": flat["earth_similarity_completeness"],
+                "classification": flat["earth_analog_class"],
+                "status": flat["earth_twin_status"],
+                "mass_status": flat["mass_status"],
+                "missing_dimensions": _json_load_list_or_empty(flat["earth_similarity_missing_dimensions"]),
+                "missing_required_dimensions": _json_load_list_or_empty(flat["earth_similarity_missing_required"]),
+                "notes": _json_load_list_or_empty(flat["earth_similarity_notes"]),
+                "uncertainty_available": flat["earth_similarity_uncertainty_available"],
+                "components": _json_load_or_empty(flat["earth_similarity_components"]),
+            },
+            "detection_confidence": flat["detection_confidence"],
             "quality": {
                 "snr_adopted": flat["snr_adopted"],
                 "snr_tls": flat["snr_tls"],
@@ -307,6 +352,8 @@ class TransitCandidateRecord:
             },
             "vetting": {
                 "fpp": flat["fpp"],
+                "false_positive_probability": flat["false_positive_probability"],
+                "detection_confidence": flat["detection_confidence"],
                 "is_false_positive": flat["is_false_positive"],
                 "is_variable_star": flat["is_variable_star"],
                 "is_binary_suspect": flat["is_binary_suspect"],
@@ -349,6 +396,30 @@ class TransitCandidateRecord:
         }
 
 
+def _json_load_or_empty(value: Any) -> dict[str, Any]:
+    if not value:
+        return {}
+    if isinstance(value, dict):
+        return value
+    try:
+        parsed = json.loads(str(value))
+    except (TypeError, ValueError):
+        return {}
+    return parsed if isinstance(parsed, dict) else {}
+
+
+def _json_load_list_or_empty(value: Any) -> list[Any]:
+    if not value:
+        return []
+    if isinstance(value, list):
+        return value
+    try:
+        parsed = json.loads(str(value))
+    except (TypeError, ValueError):
+        return []
+    return parsed if isinstance(parsed, list) else []
+
+
 def _stellar_value(stellar_props: Any, attr: str, default: Any = 0.0) -> Any:
     return _finite_or_none(_get(stellar_props, attr, default))
 
@@ -359,8 +430,10 @@ def build_record(
     fit_result: Any = None,
     stellar_props: Any = None,
     *,
+    followup_result: Any = None,
     json_path: str = "",
     figure_dir: str = "",
+    earth_similarity_profile: str = "photometric_earth_analog",
 ) -> TransitCandidateRecord:
     """Pipeline nesnelerinden ``TransitCandidateRecord`` üretir.
 
@@ -426,6 +499,77 @@ def build_record(
             derived = None
 
     derived_dict = _dict_from_dataclass(derived)
+    planet_mass_mearth = _first_positive(
+        _get(fit_result, "planet_mass_mearth"),
+        derived_dict.get("planet_mass_mearth"),
+    )
+    planet_density_gcm3 = _first_positive(
+        _get(fit_result, "planet_density_gcm3"),
+        derived_dict.get("planet_density_gcm3"),
+        derived_dict.get("density_gcm3"),
+    )
+    earth_insolation = _first_positive(
+        derived_dict.get("insolation_flux"),
+        derived_dict.get("insolation_s_earth"),
+        _get(fit_result, "insolation_s_earth"),
+    )
+    planet_radius_rearth = _first_positive(
+        derived_dict.get("planet_radius_rearth"),
+        _get(fit_result, "planet_radius_rearth"),
+    )
+    equilibrium_temperature_k = _first_positive(
+        derived_dict.get("equilibrium_temperature_k"),
+        _get(fit_result, "equilibrium_temperature_k"),
+    )
+    semi_major_axis_au = _first_positive(
+        derived_dict.get("semi_major_axis_au"),
+        _get(fit_result, "semi_major_axis_au"),
+    )
+    earth_similarity = score_earth_similarity(
+        earth_similarity_profile,
+        planet_radius_rearth=planet_radius_rearth,
+        planet_mass_mearth=planet_mass_mearth,
+        insolation_s_earth=earth_insolation,
+        equilibrium_temperature_k=equilibrium_temperature_k,
+        density_gcm3=planet_density_gcm3,
+        semi_major_axis_au=semi_major_axis_au,
+        stellar_teff_k=_first_positive(
+            _get(stellar_props, "teff"),
+            _get(fit_result, "stellar_teff_k"),
+        ),
+    )
+    followup_confirmed = _followup_confirmed(
+        followup_result if isinstance(followup_result, bool) else False,
+        _get(followup_result, "confirmed", False),
+        _get(followup_result, "status", ""),
+        _get(candidate, "followup_confirmed", False),
+        _get(candidate, "followup_status", ""),
+        _get(quality_result, "followup_confirmed", False),
+        _get(quality_result, "followup_status", ""),
+    )
+    earth_analog_class = earth_similarity.classification
+    if followup_confirmed and earth_similarity.is_strict_candidate:
+        earth_analog_class = "CONFIRMED_EARTH_TWIN"
+    earth_twin_status = _earth_twin_status(
+        earth_analog_class,
+        followup_confirmed=followup_confirmed,
+    )
+    fpp_report = _get(quality_result, "fpp_report")
+    false_positive_probability = _first_value(
+        _get(fpp_report, "fpp"),
+        _get(vetting, "false_positive_probability", 0.0),
+    )
+    explicit_confidence = _first_value(
+        _get(fpp_report, "confidence"),
+        _get(vetting, "confidence"),
+    )
+    detection_confidence = (
+        str(explicit_confidence).upper()
+        if explicit_confidence
+        else _derive_detection_confidence(vetting, false_positive_probability)
+    )
+    mass_status = "measured" if _positive_finite(planet_mass_mearth) else "unavailable"
+
     candidate_class = _get(score, "candidate_class", "")
     candidate_class = getattr(candidate_class, "value", candidate_class) or ""
     anomaly_flags = _as_list(_get(score, "anomaly_flags", []))
@@ -502,9 +646,36 @@ def build_record(
         planet_radius_rjup=_finite_or_none(derived_dict.get("planet_radius_rjup", 0.0)),
         semi_major_axis_au=_finite_or_none(derived_dict.get("semi_major_axis_au", 0.0)),
         equilibrium_temperature_k=_finite_or_none(derived_dict.get("equilibrium_temperature_k", 0.0)),
-        insolation_flux=_finite_or_none(derived_dict.get("insolation_flux", 0.0)),
+        insolation_flux=_finite_or_none(earth_insolation),
+        insolation_s_earth=_finite_or_none(earth_insolation),
         stellar_density_gcm3=_finite_or_none(derived_dict.get("stellar_density_gcm3", 0.0)),
+        planet_mass_mearth=_finite_or_none(planet_mass_mearth),
+        planet_density_gcm3=_finite_or_none(planet_density_gcm3),
         transit_depth_ppm=_finite_or_none(derived_dict.get("transit_depth_ppm", candidate_depth_ppm)),
+        earth_similarity_profile=earth_similarity.profile,
+        earth_similarity_score=_finite_or_none(earth_similarity.score),
+        earth_similarity_p05=_finite_or_none(earth_similarity.score_p05),
+        earth_similarity_p50=_finite_or_none(earth_similarity.score_p50),
+        earth_similarity_p95=_finite_or_none(earth_similarity.score_p95),
+        earth_similarity_completeness=_finite_or_none(earth_similarity.measurement_completeness),
+        earth_analog_class=earth_analog_class,
+        earth_twin_status=earth_twin_status,
+        earth_similarity_components=json.dumps(
+            {key: component.to_dict() for key, component in earth_similarity.components.items()},
+            ensure_ascii=False,
+            sort_keys=True,
+        ),
+        earth_similarity_missing_dimensions=json.dumps(
+            list(earth_similarity.missing_dimensions), ensure_ascii=False
+        ),
+        earth_similarity_missing_required=json.dumps(
+            list(earth_similarity.missing_required_dimensions), ensure_ascii=False
+        ),
+        earth_similarity_notes=json.dumps(list(earth_similarity.notes), ensure_ascii=False),
+        earth_similarity_uncertainty_available=earth_similarity.uncertainty_available,
+        mass_status=mass_status,
+        detection_confidence=detection_confidence,
+        false_positive_probability=_finite_or_none(false_positive_probability),
         snr_adopted=_finite_or_none(_get(snr, "snr_adopted", _get(candidate, "snr", 0.0))),
         snr_tls=_finite_or_none(_get(snr, "snr_tls", _get(tls, "snr", 0.0))),
         snr_dutycycle=_finite_or_none(_get(snr, "snr_dutycycle", 0.0)),
@@ -523,7 +694,7 @@ def build_record(
         residual_rms_ppm=_finite_or_none((_get(transit_metrics, "residual_rms", 0.0) or 0.0) * 1e6),
         transit_symmetry=_finite_or_none(_get(transit_metrics, "transit_symmetry", 0.0)),
         timing_rms_min=_finite_or_none((_get(transit_metrics, "timing_rms", 0.0) or 0.0) * 1440),
-        fpp=_finite_or_none(_get(vetting, "false_positive_probability", 0.0)),
+        fpp=_finite_or_none(false_positive_probability),
         is_false_positive=bool(_get(vetting, "is_false_positive", False)),
         is_variable_star=bool(_get(stellar_metrics, "is_variable_star", False)),
         is_binary_suspect=bool(_get(stellar_metrics, "is_binary_suspect", False)),
@@ -557,6 +728,73 @@ def build_record(
         json_path=json_path,
         figure_dir=figure_dir,
     )
+
+
+def _first_value(*values: Any) -> Any:
+    for value in values:
+        if value is not None:
+            return value
+    return None
+
+
+def _first_positive(*values: Any) -> Any:
+    for value in values:
+        if _positive_finite(value):
+            return value
+    return None
+
+
+def _positive_finite(value: Any) -> bool:
+    try:
+        return math.isfinite(float(value)) and float(value) > 0
+    except (TypeError, ValueError):
+        return False
+
+
+def _followup_confirmed(*values: Any) -> bool:
+    """Sadece açık follow-up işaretini kabul eder; cascade confirmed yeterli değildir."""
+
+    for value in values:
+        if isinstance(value, bool) and value:
+            return True
+        if isinstance(value, str) and value.strip().lower() in {
+            "confirmed",
+            "followup_confirmed",
+            "validated",
+        }:
+            return True
+    return False
+
+
+def _earth_twin_status(classification: str, *, followup_confirmed: bool) -> str:
+    if classification == "CONFIRMED_EARTH_TWIN":
+        return "confirmed_earth_twin"
+    if classification == "EARTH_TWIN_CANDIDATE":
+        return "earth_twin_candidate"
+    if classification == "PHOTOMETRIC_EARTH_ANALOG":
+        return "photometric_earth_like_candidate"
+    if followup_confirmed:
+        return "followup_confirmed_non_earth_twin"
+    return classification.lower() if classification else "unverified"
+
+
+def _derive_detection_confidence(vetting: Any, fpp: Any) -> str:
+    """Operasyonel tespit güveni; Earth similarity skorundan bağımsızdır."""
+
+    if vetting is None:
+        return "UNKNOWN"
+    n_pass = int(_get(vetting, "n_pass", 0) or 0)
+    n_fail = int(_get(vetting, "n_fail", 0) or 0)
+    n_warn = int(_get(vetting, "n_warn", 0) or 0)
+    if n_pass == 0 and n_fail == 0 and n_warn == 0:
+        return "UNKNOWN"
+    if n_fail >= 2 or (_positive_finite(fpp) and float(fpp) >= 0.5):
+        return "LOW"
+    if n_fail == 0 and n_pass >= 6 and (not _positive_finite(fpp) or float(fpp) < 0.1):
+        return "HIGH"
+    if n_fail == 0 and n_pass >= 4:
+        return "MEDIUM"
+    return "LOW"
 
 
 def _tic_id_or_zero(value: Any) -> int:

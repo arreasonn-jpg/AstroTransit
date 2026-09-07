@@ -93,6 +93,7 @@ mcmc_snr_threshold = 10.0             # MCMC sadece SNR bu değerin üstündeyse
 min_snr = 5.0                          # minimum sinyal-gürültü oranı
 max_residual_rms = 0.005               # maksimum residual RMS
 min_data_completeness = 0.80           # minimum veri tamlığı (0-1)
+earth_similarity_profile = "photometric_earth_analog" # Dünya-benzerlik profili
 
 # ──────────────────────────────────────
 # Çıktı ayarları

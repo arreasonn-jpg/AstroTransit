@@ -79,13 +79,22 @@ class QualityEvaluationResult:
         }
 
     def summary(self) -> dict:
+        summary_fpp = (
+            self.fpp_report.fpp
+            if self.fpp_report is not None
+            else self.vetting.false_positive_probability
+        )
         return {
             "target_id": self.target_id,
             "sector": self.sector,
             "snr_adopted": round(self.snr.snr_adopted, 2),
             "total_score": round(self.score.total_score, 2),
             "candidate_class": self.score.candidate_class.value,
-            "fpp": round(self.vetting.false_positive_probability, 4),
+            "fpp": round(summary_fpp, 4),
+            "false_positive_probability": round(summary_fpp, 4),
+            "detection_confidence": (
+                self.fpp_report.confidence if self.fpp_report is not None else "UNKNOWN"
+            ),
             "is_false_positive": self.vetting.is_false_positive,
             "is_anomalous": self.score.is_anomalous,
         }

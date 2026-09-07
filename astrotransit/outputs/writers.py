@@ -37,6 +37,11 @@ class OutputManager:
             output_dir=str(configured_output),
             temp_dir=self.settings.general.temp_dir,
         )
+        self.earth_similarity_profile = getattr(
+            self.settings.quality,
+            "earth_similarity_profile",
+            "photometric_earth_analog",
+        )
         self.json_writer = JSONWriter(self.paths.json)
         self.parquet_writer = ParquetWriter(
             self.paths.parquet,
@@ -61,6 +66,7 @@ class OutputManager:
         quality_result: Any = None,
         fit_result: Any = None,
         stellar_props: Any = None,
+        followup_result: Any = None,
     ) -> TransitCandidateRecord:
         """Bir pipeline sonucunu JSON ve Parquet'e yazar."""
 
@@ -72,7 +78,9 @@ class OutputManager:
             quality_result=quality_result,
             fit_result=fit_result,
             stellar_props=stellar_props,
+            followup_result=followup_result,
             figure_dir=str(self.paths.target_figure_dir(str(getattr(candidate, "target_id", "target")))),
+            earth_similarity_profile=self.earth_similarity_profile,
         )
         json_path = self.json_writer.write_candidate(record)
         record.json_path = str(json_path)

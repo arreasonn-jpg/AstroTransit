@@ -255,11 +255,27 @@ class ModelingConfig(BaseModel):
 
 
 class QualityConfig(BaseModel):
-    """Kalite değerlendirme ayarları."""
+    """Kalite ve Dünya-benzerlik önceliklendirme ayarları."""
 
     min_snr: float = 5.0
     max_residual_rms: float = 0.005
     min_data_completeness: float = 0.80
+    earth_similarity_profile: str = "photometric_earth_analog"
+
+    @field_validator("earth_similarity_profile")
+    @classmethod
+    def validate_earth_similarity_profile(cls, v: str) -> str:
+        allowed = {
+            "strict_earth_twin",
+            "photometric_earth_analog",
+            "terrestrial_hz_analog",
+        }
+        value = v.strip().lower()
+        if value not in allowed:
+            raise ValueError(
+                f"earth_similarity_profile '{v}' geçersiz. İzin verilenler: {sorted(allowed)}"
+            )
+        return value
 
 
 class OutputsConfig(BaseModel):

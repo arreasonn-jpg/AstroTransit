@@ -11,6 +11,9 @@ projesidir.
 - BLS → TLS kademeli transit tespiti
 - MAP modelleme; kurulu ve güçlü adaylarda opsiyonel PyMC/exoplanet MCMC
 - SNR, vetting, false-positive, anomaly ve aday sınıfı değerlendirmesi
+- Configurable Dünya-benzerlik profilleri ve belirsizlikli aday sıralaması
+- Photometric aday, Earth-twin adayı ve follow-up ile confirmed Earth twin ayrımı
+- Similarity, detection confidence ve FPP'nin ayrı raporlanması
 - JSON, Parquet ve CSV çıktı sözleşmesi
 - CLI ve Streamlit dashboard
 

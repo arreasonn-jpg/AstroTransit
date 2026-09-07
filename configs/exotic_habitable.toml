@@ -28,6 +28,7 @@ period_search_window = 0.20
 min_snr = 7.0
 max_residual_rms = 0.003
 min_data_completeness = 0.85
+earth_similarity_profile = "terrestrial_hz_analog"
 
 [modeling]
 fit_method = "mcmc"        # HZ adayları için direkt MCMC

@@ -14,15 +14,42 @@
 | planet_radius_rearth | float64 | Gezegen yarıçapı (R⊕) |
 | semi_major_axis_au | float64 | Yarı-büyük eksen (AU) |
 | equilibrium_temperature_k | float64 | Denge sıcaklığı (K) |
+| insolation_s_earth | float64 | Dünya ışınımına oran |
+| planet_mass_mearth | float64 | Gezegen kütlesi (M⊕), varsa |
 | snr_adopted | float64 | Benimsenen SNR |
-| total_score | float64 | Kalite skoru (0-100) |
+| total_score | float64 | Genel kalite skoru (0-100) |
 | candidate_class | string | A/B/C/D/X sınıfı |
 | fpp | float64 | False Positive Probability |
 | cascade_confirmed | bool | Cascade onayladı mı |
 | fit_method | string | "map" veya "mcmc" |
+| earth_similarity_profile | string | Dünya-benzerlik profili |
+| earth_similarity_score | float64 | Medyan Dünya-benzerlik skoru (0-100) |
+| earth_similarity_p05/p95 | float64 | Belirsizlik aralığı sınırları |
+| earth_similarity_completeness | float64 | Kullanılan ölçümlerin ağırlıklı tamlığı (0-1) |
+| earth_analog_class | string | Earth-twin/analog sınıflandırması |
+| earth_twin_status | string | photometric / candidate / confirmed ayrımı |
+| earth_similarity_missing_dimensions | JSON string | Eksik similarity ölçümleri |
+| mass_status | string | Kütle ölçümünün durumu |
+| detection_confidence | string | Tespit/vetting güveni, similarity'den bağımsız |
+| false_positive_probability | float64 | FPP, similarity skorundan bağımsız |
 
-Tam şema `astrotransit/outputs/schemas.py` dosyasında
-55 alandan oluşmaktadır.
+Tam şema `astrotransit/outputs/schemas.py` dosyasında, şema sürümü `1.2`
+olarak tanımlıdır.
+
+## Dünya-benzerlik skoru
+
+`earth_similarity_profile` üç profilden biri olabilir:
+
+- `strict_earth_twin`: yarıçap, ışınım, denge sıcaklığı, yörünge, kütle ve yıldız sıcaklığı gerekir.
+- `photometric_earth_analog`: transit ve yıldız fotometrisiyle kütlesiz önceliklendirme.
+- `terrestrial_hz_analog`: daha geniş yaşanabilir bölge keşif profili.
+
+Eksik kütle veya yıldız parametresi Dünya değeriyle doldurulmaz. Böyle bir
+sonuç yüksek fotometrik skor alabilir, ancak `INCOMPLETE_EARTH_TWIN` olarak
+kalır ve strict aday kabul edilmez. `CONFIRMED_EARTH_TWIN` yalnızca açık bir
+follow-up doğrulaması (`followup_result.confirmed`) ve strict similarity
+adaylığı birlikte bulunduğunda üretilir; cascade'in `confirmed` alanı tek
+başına follow-up doğrulaması sayılmaz.
 
 ## JSON Rapor Yapısı
 
@@ -31,11 +58,25 @@ Tam şema `astrotransit/outputs/schemas.py` dosyasında
   "metadata": { "version": "...", "created_at": "..." },
   "target": { "source_id": "...", "sector": 14 },
   "stellar": { "radius_rsun": 1.0, "teff_k": 5500 },
-  "detection": { "bls": {...}, "tls": {...}, "cascade": {...} },
-  "parameters": { "period_days": 3.5, "rp_rs": 0.1, ... },
-  "derived": { "planet_radius_rearth": 1.1, ... },
-  "quality": { "snr_adopted": 12.5, ... },
-  "vetting": { "fpp": 0.03, "tests": [...] },
+  "detection": { "bls": {}, "tls": {}, "cascade": {} },
+  "parameters": { "period_days": 3.5, "rp_rs": 0.1 },
+  "derived": { "planet_radius_rearth": 1.1 },
+  "earth_similarity": {
+    "profile": "photometric_earth_analog",
+    "score_p50": 91.2,
+    "score_p05": 84.0,
+    "classification": "PHOTOMETRIC_EARTH_ANALOG",
+    "status": "photometric_earth_like_candidate",
+    "measurement_completeness": 0.76
+  },
+  "detection_confidence": "MEDIUM",
+  "quality": { "snr_adopted": 12.5 },
+  "vetting": {
+    "fpp": 0.03,
+    "false_positive_probability": 0.03,
+    "detection_confidence": "MEDIUM"
+  },
   "score": { "total_score": 82, "candidate_class": "A" },
-  "modeling": { "fit_method": "map", ... }
+  "modeling": { "fit_method": "map" }
 }
+```

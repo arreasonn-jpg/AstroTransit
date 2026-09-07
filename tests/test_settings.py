@@ -8,6 +8,7 @@ from astrotransit.settings import (
     GeneralConfig,
     TESSConfig,
     DetectionConfig,
+    QualityConfig,
     load_settings,
 )
 
@@ -46,6 +47,11 @@ class TestSettings:
         assert d.min_transits == 2
         assert d.bls.min_power_threshold == 7.0
         assert d.tls.min_sde_threshold == 6.0
+
+    def test_earth_similarity_profile_validation(self):
+        assert QualityConfig(earth_similarity_profile="STRICT_EARTH_TWIN").earth_similarity_profile == "strict_earth_twin"
+        with pytest.raises(ValueError):
+            QualityConfig(earth_similarity_profile="unknown_profile")
 
     def test_load_from_toml(self):
         config_path = Path("configs/default.toml")

@@ -65,6 +65,7 @@ mcmc_snr_threshold = 5.0
 min_snr = 5.0
 max_residual_rms = 0.005
 min_data_completeness = 0.80
+earth_similarity_profile = "photometric_earth_analog"
 
 [outputs]
 formats = ["parquet", "json"]
