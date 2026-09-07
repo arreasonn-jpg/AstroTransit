@@ -313,7 +313,8 @@ def score_earth_similarity(
     )
 
     sample_scores = _aggregate_sample_scores(selected_profile, sample_values, values)
-    if sample_scores is None:
+    has_multiple_samples = any(array.size > 1 for array in sample_values.values())
+    if sample_scores is None or not has_multiple_samples:
         score_p05 = score_p50 = score_p95 = _aggregate_scalar_scores(
             selected_profile, components
         )

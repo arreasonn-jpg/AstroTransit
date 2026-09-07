@@ -866,9 +866,11 @@ def build_long_period_record(
 
 
 def _serialise_list(value: Any) -> str:
-    if value is None or value == "":
+    if value is None:
         return "[]"
     if isinstance(value, str):
+        if not value:
+            return "[]"
         try:
             parsed = json.loads(value)
         except (TypeError, ValueError):

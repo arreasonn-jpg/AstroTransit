@@ -62,6 +62,15 @@ def test_photometric_profile_requires_all_non_mass_physical_dimensions():
     )
 
 
+def test_single_sample_does_not_claim_uncertainty():
+    result = score_earth_similarity(
+        "photometric_earth_analog",
+        samples={"radius": [1.0], "insolation": [1.0]},
+    )
+
+    assert result.uncertainty_available is False
+
+
 def test_sampled_scores_expose_uncertainty():
     result = score_earth_similarity(
         "photometric_earth_analog",
