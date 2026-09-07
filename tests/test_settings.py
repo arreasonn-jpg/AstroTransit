@@ -8,6 +8,7 @@ from astrotransit.settings import (
     GeneralConfig,
     TESSConfig,
     DetectionConfig,
+    LongPeriodConfig,
     QualityConfig,
     load_settings,
 )
@@ -52,6 +53,14 @@ class TestSettings:
         assert QualityConfig(earth_similarity_profile="STRICT_EARTH_TWIN").earth_similarity_profile == "strict_earth_twin"
         with pytest.raises(ValueError):
             QualityConfig(earth_similarity_profile="unknown_profile")
+
+    def test_long_period_defaults_and_validation(self):
+        cfg = LongPeriodConfig()
+        assert cfg.min_period_days == 20.0
+        assert cfg.max_period_days == 500.0
+        assert cfg.min_points_per_transit == 3
+        with pytest.raises(ValueError):
+            LongPeriodConfig(min_period_days=500.0, max_period_days=20.0)
 
     def test_load_from_toml(self):
         config_path = Path("configs/default.toml")

@@ -9,6 +9,7 @@ projesidir.
 - MAST/Lightkurve üzerinden TESS light curve arama ve kalite temizliği
 - Normalize etme, gap/segment tespiti ve Wotan detrending
 - BLS → TLS kademeli transit tespiti
+- Çok sektör stitching ve 20–500 gün uzun periyot / single-transit taraması
 - MAP modelleme; kurulu ve güçlü adaylarda opsiyonel PyMC/exoplanet MCMC
 - SNR, vetting, false-positive, anomaly ve aday sınıfı değerlendirmesi
 - Configurable Dünya-benzerlik profilleri ve belirsizlikli aday sıralaması

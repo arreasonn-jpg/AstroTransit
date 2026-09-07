@@ -67,6 +67,17 @@ period_search_window = 0.30   # 0.10 → 0.30 (%30 pencere)
 require_both = true
 period_tolerance = 0.02
 
+[detection.long_period]
+enabled = true
+min_period_days = 20.0
+max_period_days = 500.0
+min_power = 7.0
+min_depth = 0.0001
+max_depth = 0.5
+min_points_per_transit = 3
+n_durations = 8
+n_peaks = 5
+
 # ──────────────────────────────────────
 # Modelleme ayarları
 # ──────────────────────────────────────

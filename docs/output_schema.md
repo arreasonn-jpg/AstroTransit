@@ -32,8 +32,15 @@
 | mass_status | string | Kütle ölçümünün durumu |
 | detection_confidence | string | Tespit/vetting güveni, similarity'den bağımsız |
 | false_positive_probability | float64 | FPP, similarity skorundan bağımsız |
+| coverage_baseline_days | float64 | Sektörler arası toplam zaman baseline'ı |
+| observed_days | float64 | Gerçek gözlem günlerinin toplamı |
+| n_observed_transits | int64 | Gözlenen transit sayısı |
+| search_channel | string | `sector_cascade` veya `long_period` |
+| source_sectors | JSON string | Uzun periyot taramasına giren sektörler |
+| long_period_identifiability | string | Çok/tek transit tanımlanabilirliği |
+| long_period_screening | bool | Uzun periyot screening kaydı mı |
 
-Tam şema `astrotransit/outputs/schemas.py` dosyasında, şema sürümü `1.2`
+Tam şema `astrotransit/outputs/schemas.py` dosyasında, şema sürümü `1.3`
 olarak tanımlıdır.
 
 ## Dünya-benzerlik skoru
@@ -50,6 +57,26 @@ kalır ve strict aday kabul edilmez. `CONFIRMED_EARTH_TWIN` yalnızca açık bir
 follow-up doğrulaması (`followup_result.confirmed`) ve strict similarity
 adaylığı birlikte bulunduğunda üretilir; cascade'in `confirmed` alanı tek
 başına follow-up doğrulaması sayılmaz.
+
+## Uzun periyot arama özeti
+
+Hedef pipeline sonucu ayrıca `long_period` özeti taşıyabilir. Bu sonuç
+transit doğrulaması değildir:
+
+```json
+{
+  "source_sectors": [14, 40],
+  "coverage_baseline_days": 126.95,
+  "observed_days": 53.9,
+  "n_observed_transits": 1,
+  "identifiability": "single_transit_ambiguous",
+  "best_peak": {
+    "period_days": 87.4,
+    "period_err_days": 43.7,
+    "depth_ppm": 820.0
+  }
+}
+```
 
 ## JSON Rapor Yapısı
 

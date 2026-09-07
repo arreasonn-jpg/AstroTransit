@@ -10,7 +10,11 @@ from loguru import logger
 from astrotransit.outputs.csv_export import CSVExporter
 from astrotransit.outputs.json_writer import JSONWriter
 from astrotransit.outputs.parquet_writer import ParquetWriter
-from astrotransit.outputs.schemas import TransitCandidateRecord, build_record
+from astrotransit.outputs.schemas import (
+    TransitCandidateRecord,
+    build_long_period_record,
+    build_record,
+)
 from astrotransit.settings import Settings, get_settings
 from astrotransit.utils.paths import ProjectPaths
 
@@ -86,6 +90,28 @@ class OutputManager:
         record.json_path = str(json_path)
         # JSONWriter payload'a gerçek yolu kendisi yazdı; Parquet kaydında da
         # aynı provenance bilgisini tutuyoruz.
+        self.parquet_writer.append(record)
+        self._records.append(record)
+        return record
+
+    def write_long_period(
+        self,
+        long_period_result: Any,
+        stellar_props: Any = None,
+    ) -> Optional[TransitCandidateRecord]:
+        """Uzun periyot screening kaydını JSON/Parquet'e yazar."""
+
+        if self._closed:
+            raise RuntimeError("Kapatılmış OutputManager tekrar kullanılamaz.")
+        record = build_long_period_record(
+            long_period_result,
+            stellar_props=stellar_props,
+            earth_similarity_profile=self.earth_similarity_profile,
+        )
+        if record is None:
+            return None
+        json_path = self.json_writer.write_candidate(record)
+        record.json_path = str(json_path)
         self.parquet_writer.append(record)
         self._records.append(record)
         return record

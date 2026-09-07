@@ -9,7 +9,11 @@ tasarlanmıştır.
 from astrotransit.outputs.csv_export import CSVExporter
 from astrotransit.outputs.json_writer import JSONWriter, NumpyEncoder
 from astrotransit.outputs.parquet_writer import ParquetWriter
-from astrotransit.outputs.schemas import TransitCandidateRecord, build_record
+from astrotransit.outputs.schemas import (
+    TransitCandidateRecord,
+    build_long_period_record,
+    build_record,
+)
 from astrotransit.outputs.writers import OutputManager
 
 __all__ = [
@@ -19,5 +23,6 @@ __all__ = [
     "OutputManager",
     "ParquetWriter",
     "TransitCandidateRecord",
+    "build_long_period_record",
     "build_record",
 ]

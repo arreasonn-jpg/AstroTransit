@@ -21,7 +21,7 @@ from astrotransit.science.earth_similarity import score_earth_similarity
 from astrotransit.utils.identifiers import extract_tic_number
 
 
-SCHEMA_VERSION = "1.2"
+SCHEMA_VERSION = "1.3"
 
 
 def _finite_or_none(value: Any) -> Any:
@@ -145,6 +145,9 @@ class TransitCandidateRecord:
     planet_mass_mearth: Optional[float] = None
     planet_density_gcm3: Optional[float] = None
     transit_depth_ppm: Optional[float] = 0.0
+    coverage_baseline_days: Optional[float] = 0.0
+    observed_days: Optional[float] = 0.0
+    n_observed_transits: int = 0
 
     # Dünya-benzerlik ve bilimsel öncelik
     earth_similarity_profile: str = ""
@@ -161,6 +164,12 @@ class TransitCandidateRecord:
     earth_similarity_notes: str = ""
     earth_similarity_uncertainty_available: bool = False
     mass_status: str = "unavailable"
+
+    # Arama kanalı/provenance
+    search_channel: str = "sector_cascade"
+    source_sectors: str = ""
+    long_period_identifiability: str = ""
+    long_period_screening: bool = False
 
     # Kalite
     snr_adopted: Optional[float] = 0.0
@@ -319,6 +328,9 @@ class TransitCandidateRecord:
                 "planet_mass_mearth": flat["planet_mass_mearth"],
                 "planet_density_gcm3": flat["planet_density_gcm3"],
                 "transit_depth_ppm": flat["transit_depth_ppm"],
+                "coverage_baseline_days": flat["coverage_baseline_days"],
+                "observed_days": flat["observed_days"],
+                "n_observed_transits": flat["n_observed_transits"],
             },
             "earth_similarity": {
                 "profile": flat["earth_similarity_profile"],
@@ -337,6 +349,12 @@ class TransitCandidateRecord:
                 "components": _json_load_or_empty(flat["earth_similarity_components"]),
             },
             "detection_confidence": flat["detection_confidence"],
+            "search": {
+                "channel": flat["search_channel"],
+                "source_sectors": _json_load_list_or_empty(flat["source_sectors"]),
+                "long_period_identifiability": flat["long_period_identifiability"],
+                "long_period_screening": flat["long_period_screening"],
+            },
             "quality": {
                 "snr_adopted": flat["snr_adopted"],
                 "snr_tls": flat["snr_tls"],
@@ -652,6 +670,13 @@ def build_record(
         planet_mass_mearth=_finite_or_none(planet_mass_mearth),
         planet_density_gcm3=_finite_or_none(planet_density_gcm3),
         transit_depth_ppm=_finite_or_none(derived_dict.get("transit_depth_ppm", candidate_depth_ppm)),
+        coverage_baseline_days=_finite_or_none(
+            _get(candidate, "coverage_baseline_days", 0.0)
+        ),
+        observed_days=_finite_or_none(_get(candidate, "observed_days", 0.0)),
+        n_observed_transits=int(
+            _get(candidate, "n_observed_transits", len(_get(candidate, "transit_times", []))) or 0
+        ),
         earth_similarity_profile=earth_similarity.profile,
         earth_similarity_score=_finite_or_none(earth_similarity.score),
         earth_similarity_p05=_finite_or_none(earth_similarity.score_p05),
@@ -674,6 +699,10 @@ def build_record(
         earth_similarity_notes=json.dumps(list(earth_similarity.notes), ensure_ascii=False),
         earth_similarity_uncertainty_available=earth_similarity.uncertainty_available,
         mass_status=mass_status,
+        search_channel=str(_get(candidate, "search_channel", "sector_cascade") or "sector_cascade"),
+        source_sectors=_serialise_list(_get(candidate, "source_sectors", [])),
+        long_period_identifiability=str(_get(candidate, "long_period_identifiability", "") or ""),
+        long_period_screening=bool(_get(candidate, "long_period_screening", False)),
         detection_confidence=detection_confidence,
         false_positive_probability=_finite_or_none(false_positive_probability),
         snr_adopted=_finite_or_none(_get(snr, "snr_adopted", _get(candidate, "snr", 0.0))),
@@ -728,6 +757,87 @@ def build_record(
         json_path=json_path,
         figure_dir=figure_dir,
     )
+
+
+def build_long_period_record(
+    long_period_result: Any,
+    stellar_props: Any = None,
+    *,
+    earth_similarity_profile: str = "photometric_earth_analog",
+) -> Optional[TransitCandidateRecord]:
+    """Uzun periyot tarama sonucunu aynı kalıcı kayıt sözleşmesine çevirir.
+
+    Bu kayıt screening sonucudur; `long_period_screening=True` olduğu için
+    cascade/TLS ile doğrulanmış adayla karıştırılmaz. Tek transit kayıtlarında
+    periyot belirsizliği bilerek geniş tutulur.
+    """
+
+    peak = _get(long_period_result, "best")
+    if peak is None:
+        return None
+
+    transit_times = _get(peak, "transit_times", [])
+    depth = float(_get(peak, "depth", 0.0) or 0.0)
+    candidate = {
+        "target_id": _get(long_period_result, "target_id", ""),
+        "sector": -1,
+        "status": "LONG_PERIOD_SCREENING",
+        "confirmed": False,
+        "period": _get(peak, "period", 0.0),
+        "period_err": _get(peak, "period_err", 0.0),
+        "t0": _get(peak, "t0", 0.0),
+        "duration": _get(peak, "duration", 0.0),
+        "depth": depth,
+        "rp_rs": math.sqrt(depth) if depth > 0 else 0.0,
+        "transit_times": transit_times,
+        "coverage_baseline_days": _get(long_period_result, "coverage_baseline_days", 0.0),
+        "observed_days": _get(long_period_result, "observed_days", 0.0),
+        "n_observed_transits": _get(peak, "n_observed_transits", len(transit_times)),
+        "source_sectors": _get(long_period_result, "source_sectors", []),
+        "search_channel": "long_period",
+        "long_period_identifiability": _get(peak, "identifiability", ""),
+        "long_period_screening": True,
+    }
+    record = build_record(
+        candidate=candidate,
+        stellar_props=stellar_props,
+        earth_similarity_profile=earth_similarity_profile,
+    )
+    record.search_channel = "long_period"
+    record.long_period_screening = True
+    record.long_period_identifiability = str(
+        _get(peak, "identifiability", "") or ""
+    )
+    record.candidate_class = (
+        "LONG_PERIOD_SINGLE_TRANSIT"
+        if record.long_period_identifiability == "single_transit_ambiguous"
+        else "LONG_PERIOD_CANDIDATE"
+    )
+    record.fit_method = "long_period_bls"
+    record.fit_status = "screening_only"
+    result_notes = _as_list(_get(long_period_result, "notes", []))
+    if result_notes:
+        existing_notes = _json_load_list_or_empty(record.earth_similarity_notes)
+        record.earth_similarity_notes = json.dumps(
+            existing_notes + result_notes,
+            ensure_ascii=False,
+        )
+    return record
+
+
+def _serialise_list(value: Any) -> str:
+    if value is None or value == "":
+        return "[]"
+    if isinstance(value, str):
+        try:
+            parsed = json.loads(value)
+        except (TypeError, ValueError):
+            return json.dumps([value], ensure_ascii=False)
+        return json.dumps(parsed if isinstance(parsed, list) else [value], ensure_ascii=False)
+    try:
+        return json.dumps(list(value), ensure_ascii=False, default=str)
+    except TypeError:
+        return json.dumps([value], ensure_ascii=False, default=str)
 
 
 def _first_value(*values: Any) -> Any:

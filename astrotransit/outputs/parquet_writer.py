@@ -68,7 +68,7 @@ class ParquetWriter:
             "earth_similarity_profile", "earth_analog_class", "earth_twin_status",
             "earth_similarity_components", "earth_similarity_missing_dimensions",
             "earth_similarity_missing_required", "earth_similarity_notes", "mass_status",
-            "detection_confidence",
+            "search_channel", "source_sectors", "long_period_identifiability", "detection_confidence",
         }
         bool_fields = {
             "cascade_confirmed", "is_false_positive", "is_variable_star",
@@ -76,8 +76,12 @@ class ParquetWriter:
             "posterior_converged", "fallback_used", "mcmc_converged",
             "period_sampled", "rp_rs_sampled", "u1_sampled", "u2_sampled",
             "derived_errors_available", "earth_similarity_uncertainty_available",
+            "long_period_screening",
         }
-        int_fields = {"tic_id", "sector", "n_points", "n_transits", "n_pass", "n_fail", "n_warn", "n_divergences"}
+        int_fields = {
+            "tic_id", "sector", "n_points", "n_transits", "n_observed_transits",
+            "n_pass", "n_fail", "n_warn", "n_divergences",
+        }
 
         fields = []
         for name in TransitCandidateRecord.__dataclass_fields__:

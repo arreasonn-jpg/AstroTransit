@@ -11,7 +11,7 @@ import sys
 from pathlib import Path
 from typing import Optional
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 # ──────────────────────────────────────
 # Python 3.11+ tomllib, altı için tomli
@@ -207,6 +207,49 @@ class CascadeConfig(BaseModel):
     period_tolerance: float = 0.01
 
 
+class LongPeriodConfig(BaseModel):
+    """20-500 gün aralığı ve tek-transit taraması ayarları."""
+
+    enabled: bool = True
+    min_period_days: float = 20.0
+    max_period_days: float = 500.0
+    min_power: float = 7.0
+    min_depth: float = 1e-4
+    max_depth: float = 0.5
+    min_points_per_transit: int = 3
+    n_durations: int = 8
+    n_peaks: int = 5
+
+    @field_validator("min_period_days", "max_period_days")
+    @classmethod
+    def validate_periods(cls, v: float) -> float:
+        if v <= 0:
+            raise ValueError("long_period periyotları pozitif olmalıdır.")
+        return v
+
+    @field_validator("min_power", "min_depth", "max_depth")
+    @classmethod
+    def validate_positive_thresholds(cls, v: float) -> float:
+        if v <= 0:
+            raise ValueError("long_period eşikleri pozitif olmalıdır.")
+        return v
+
+    @field_validator("min_points_per_transit", "n_durations", "n_peaks")
+    @classmethod
+    def validate_counts(cls, v: int) -> int:
+        if v < 1:
+            raise ValueError("long_period sayısal ayarları en az 1 olmalıdır.")
+        return v
+
+    @model_validator(mode="after")
+    def validate_period_range(self):
+        if self.min_period_days >= self.max_period_days:
+            raise ValueError("long_period min_period_days < max_period_days olmalıdır.")
+        if self.min_depth >= self.max_depth:
+            raise ValueError("long_period min_depth < max_depth olmalıdır.")
+        return self
+
+
 class DetectionConfig(BaseModel):
     """Transit arama ayarları."""
 
@@ -217,6 +260,7 @@ class DetectionConfig(BaseModel):
     bls: BLSConfig = Field(default_factory=BLSConfig)
     tls: TLSConfig = Field(default_factory=TLSConfig)
     cascade: CascadeConfig = Field(default_factory=CascadeConfig)
+    long_period: LongPeriodConfig = Field(default_factory=LongPeriodConfig)
 
 
 class MAPConfig(BaseModel):

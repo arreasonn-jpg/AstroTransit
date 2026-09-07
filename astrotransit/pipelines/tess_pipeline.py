@@ -41,12 +41,19 @@ from astrotransit.preprocessing.pipeline import (
     TESSPreprocessingPipeline,
     PreprocessedLightCurve,
 )
+from astrotransit.preprocessing.stitching import stitch_detrended_light_curves
+from astrotransit.preprocessing.tess_detrend import DetrendedLightCurve
 
 # Tespit
 from astrotransit.detection.cascade import (
     CascadeDetector,
     CascadeCandidate,
     CascadeStatus,
+)
+from astrotransit.detection.long_period import (
+    LongPeriodResult,
+    LongPeriodSearchConfig,
+    LongPeriodTransitSearch,
 )
 
 # Modelleme
@@ -105,10 +112,12 @@ class TESSTargetResult:
     candidates_confirmed: int = 0
     sector_results: list = field(default_factory=list)
     stellar_props: Optional[StellarProperties] = None
+    long_period: Optional[LongPeriodResult] = None
+    long_period_record: Optional[TransitCandidateRecord] = None
     error: str = ""
 
     def summary(self) -> dict:
-        return {
+        result = {
             "target_id": self.target_id,
             "success": self.success,
             "sectors_processed": self.sectors_processed,
@@ -116,6 +125,11 @@ class TESSTargetResult:
             "candidates_confirmed": self.candidates_confirmed,
             "error": self.error,
         }
+        if self.long_period is not None:
+            result["long_period"] = self.long_period.summary()
+        if self.long_period_record is not None:
+            result["long_period_record"] = self.long_period_record.to_flat_dict()
+        return result
 
 
 @dataclass
@@ -154,6 +168,7 @@ class TESSSectorResult:
     success: bool = False
     has_candidate: bool = False
     candidate_confirmed: bool = False
+    detrended: Optional[DetrendedLightCurve] = None
     candidate: Optional[CascadeCandidate] = None
     fit_result: Optional[FitResult] = None
     quality: Optional[QualityEvaluationResult] = None
@@ -370,6 +385,50 @@ class TESSPipeline:
             result.sector_results.append(sector_result)
 
         # ═══════════════════════════════
+        # Çok sektörlü uzun periyot / single-transit araması
+        # ═══════════════════════════════
+        long_period_cfg = self.settings.detection.long_period
+        if long_period_cfg.enabled:
+            stitched_curves = [
+                sector_result.detrended
+                for sector_result in result.sector_results
+                if sector_result.detrended is not None
+            ]
+            if stitched_curves:
+                try:
+                    stitched = stitch_detrended_light_curves(
+                        stitched_curves,
+                        gap_threshold_days=self.settings.preprocessing.detrending.break_tolerance,
+                    )
+                    long_period_search = LongPeriodTransitSearch(
+                        LongPeriodSearchConfig.from_settings(self.settings),
+                        stellar_radius_rsun=stellar_radius,
+                        stellar_mass_msun=stellar_mass,
+                    )
+                    result.long_period = long_period_search.search(stitched.as_detrended())
+                    has_confirmed_sector_candidate = any(
+                        sector_result.candidate_confirmed
+                        for sector_result in result.sector_results
+                    )
+                    if result.long_period.has_candidate and not has_confirmed_sector_candidate:
+                        result.long_period_record = self._output.write_long_period(
+                            result.long_period,
+                            stellar_props=stellar_props,
+                        )
+                        logger.info(
+                            f"Uzun periyot adayı — {target_id}: "
+                            f"P≈{result.long_period.best.period:.2f}d, "
+                            f"tanımlanabilirlik={result.long_period.identifiability}"
+                        )
+                    elif result.long_period.has_candidate:
+                        logger.info(
+                            "Uzun periyot screening sonucu mevcut, ancak aynı hedefte "
+                            "cascade-confirmed aday olduğu için ayrı kayıt yazılmadı."
+                        )
+                except Exception as exc:
+                    logger.warning(f"Çok sektör uzun periyot araması başarısız: {exc}")
+
+        # ═══════════════════════════════
         # Özet istatistikler
         # ═══════════════════════════════
         result.sectors_processed = len(result.sector_results)
@@ -448,6 +507,7 @@ class TESSPipeline:
             preprocessed = self._preprocessing.run(lc_data)
             detrended = preprocessed.detrended
             normalized = preprocessed.normalized
+            sector_result.detrended = detrended
         except Exception as e:
             sector_result.error = f"Ön işleme hatası: {e}"
             logger.error(f"Sektör {sector} ön işleme: {e}")
