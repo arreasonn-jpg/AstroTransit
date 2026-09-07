@@ -46,8 +46,11 @@ class FPPReportWriter:
         lines.append("=" * 72)
         lines.append(f"Target           : {report.target_id}")
         lines.append(f"Sector           : {report.sector}")
-        lines.append(f"FPP              : {report.fpp:.4f}")
-        lines.append(f"P(planet)        : {report.p_planet:.4f}")
+        fpp = "not_available" if report.fpp is None else f"{report.fpp:.4f}"
+        p_planet = "not_available" if report.p_planet is None else f"{report.p_planet:.4f}"
+        lines.append(f"FPP              : {fpp}")
+        lines.append(f"P(planet)        : {p_planet}")
+        lines.append(f"Method           : {report.fpp_method}")
         lines.append(f"Dominant scenario: {report.dominant_scenario}")
         lines.append(f"Confidence       : {report.confidence}")
         lines.append(f"Recommended      : {report.recommended_action}")
@@ -56,9 +59,12 @@ class FPPReportWriter:
 
         lines.append("Scenario probabilities")
         lines.append("-" * 72)
-        lines.append(f"EB   : {report.p_eb:.4f}")
-        lines.append(f"BEB  : {report.p_beb:.4f}")
-        lines.append(f"NEB  : {report.p_neb:.4f}")
+        p_eb = "not_available" if report.p_eb is None else f"{report.p_eb:.4f}"
+        p_beb = "not_available" if report.p_beb is None else f"{report.p_beb:.4f}"
+        p_neb = "not_available" if report.p_neb is None else f"{report.p_neb:.4f}"
+        lines.append(f"EB   : {p_eb}")
+        lines.append(f"BEB  : {p_beb}")
+        lines.append(f"NEB  : {p_neb}")
         lines.append("")
 
         lines.append("Components")

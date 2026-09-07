@@ -215,23 +215,24 @@ def compute_fpp():
     print(f"  P(TP) = {tp_prob:.4f} ({tp_prob*100:.2f}%)")
     print(f"{'='*60}")
 
-    # Değerlendirme
+    # Değerlendirme: bu sınıflar kalibre edilmiş posterior değildir.
+    # Sadece senaryo-proxy sıralamasını anlatır; "validated" iddiası yasaktır.
     if fpp < 0.01:
-        verdict = "VALIDATED — FPP < 1%"
-        verdict_en = "Statistically validated planet candidate (FPP < 1%)"
-        verdict_tr = "İstatistiksel olarak doğrulanmış gezegen adayı (FPP < %1)"
+        verdict = "LOW_PROXY_RISK — not calibrated"
+        verdict_en = "Low heuristic false-positive proxy; not statistically validated"
+        verdict_tr = "Düşük heuristik yanlış-pozitif proxy'si; istatistiksel doğrulama değil"
     elif fpp < 0.05:
-        verdict = "STRONG CANDIDATE — FPP < 5%"
-        verdict_en = "Strong planet candidate (FPP < 5%)"
-        verdict_tr = "Güçlü gezegen adayı (FPP < %5)"
+        verdict = "STRONG_PROXY_CANDIDATE — not calibrated"
+        verdict_en = "Strong heuristic candidate; calibrated FPP is unavailable"
+        verdict_tr = "Güçlü heuristik aday; kalibre FPP mevcut değil"
     elif fpp < 0.10:
-        verdict = "GOOD CANDIDATE — FPP < 10%"
-        verdict_en = "Good planet candidate (FPP < 10%)"
-        verdict_tr = "İyi gezegen adayı (FPP < %10)"
+        verdict = "PROMISING_PROXY — not calibrated"
+        verdict_en = "Promising heuristic candidate; requires labeled calibration"
+        verdict_tr = "Umut verici heuristik aday; etiketli kalibrasyon gerekir"
     else:
-        verdict = "UNCERTAIN"
-        verdict_en = "Uncertain — requires further follow-up"
-        verdict_tr = "Belirsiz — ek gözlem gerektirir"
+        verdict = "UNCERTAIN — not calibrated"
+        verdict_en = "Uncertain heuristic proxy; requires further follow-up"
+        verdict_tr = "Belirsiz heuristik proxy; ek gözlem ve kalibrasyon gerekir"
 
     print(f"\n  Karar: {verdict}")
     print(f"  EN: {verdict_en}")
@@ -254,7 +255,9 @@ def compute_fpp():
             "n_gaia_neighbors_10arcsec": len(GAIA_NEIGHBORS),
         },
         "methodology": {
-            "method": "simplified_scenario_based_fpp",
+            "method": "simplified_scenario_based_fpp_proxy",
+            "calibration_status": "not_calibrated",
+            "is_calibrated": False,
             "scenarios": ["TP", "BEB", "NEB", "HEB"],
             "prior_tp": PRIOR_TP,
             "prior_beb": PRIOR_BEB,
@@ -264,8 +267,9 @@ def compute_fpp():
                 "Priors based on general occurrence rates and bright star context.",
                 "Likelihood modifiers derived from Gaia neighbor flux analysis, "
                 "contamination ratio, and rp/rs constraints.",
-                "This is a simplified FPP estimate; triceratops/vespa-level "
-                "full MCMC-based FPP recommended for formal publication.",
+                "This is an uncalibrated heuristic FPP proxy, not a posterior "
+                "probability; triceratops/vespa-level modeling and labeled "
+                "calibration are required for formal publication.",
             ],
         },
         "neighbor_analysis": [
@@ -296,6 +300,9 @@ def compute_fpp():
         "normalized_posteriors": normalized,
         "results": {
             "FPP": fpp,
+            "FPP_proxy": fpp,
+            "FPP_calibrated": False,
+            "P_TP_proxy": tp_prob,
             "P_TP": tp_prob,
             "verdict": verdict,
             "verdict_en": verdict_en,
@@ -311,10 +318,10 @@ def compute_fpp():
 
     with open(md_path, "w", encoding="utf-8") as f:
         f.write("# TIC 417860263 FPP Report\n\n")
-        f.write(f"## Verdict\n")
+        f.write("## Verdict\n")
         f.write(f"- **{verdict}**\n")
-        f.write(f"- FPP = **{fpp*100:.2f}%**\n")
-        f.write(f"- P(TP) = **{tp_prob*100:.2f}%**\n\n")
+        f.write(f"- Heuristic FPP proxy = **{fpp*100:.2f}%** (not calibrated)\n")
+        f.write(f"- P(TP) proxy = **{tp_prob*100:.2f}%** (not calibrated)\n\n")
         f.write(f"## Inputs\n")
         for k, v in report["inputs"].items():
             f.write(f"- **{k}**: {v}\n")

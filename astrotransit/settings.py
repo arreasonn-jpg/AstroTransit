@@ -334,11 +334,30 @@ class OutputsConfig(BaseModel):
 
 
 class BenchmarkConfig(BaseModel):
-    """Benchmark ayarları."""
+    """Bilinen hedef, false-positive ve rapor üretimi ayarları.
 
-    confirmed_targets_file: str = "benchmarks/tess/confirmed_targets.parquet"
-    false_positives_file: str = "benchmarks/tess/false_positives.parquet"
-    quiet_stars_file: str = "benchmarks/tess/quiet_stars.parquet"
+    ``verified_targets_file`` ground-truth kaynağıdır; tek başına performans
+    sonucu değildir. Pipeline çalıştırıldığında ``report_json`` ve
+    ``report_csv`` ölçülmüş expected/recovered karşılaştırmasını taşır.
+    Etiketli FP/quiet veri seti yoksa ilgili yollar boş bırakılır ve metrik
+    ``None``/``not_evaluated`` olarak raporlanır.
+    """
+
+    verified_targets_file: str = "benchmarks/verified_targets.json"
+    confirmed_targets_file: str = "benchmarks/verified_targets.json"
+    false_positives_file: str = ""
+    quiet_stars_file: str = ""
+    report_json: str = "outputs/benchmark/benchmark_performance.json"
+    report_csv: str = "outputs/benchmark/benchmark_targets.csv"
+    period_tolerance_fraction: float = 0.02
+    radius_tolerance_fraction: float = 0.20
+
+    @field_validator("period_tolerance_fraction", "radius_tolerance_fraction")
+    @classmethod
+    def validate_tolerances(cls, v: float) -> float:
+        if not 0.0 < v <= 1.0:
+            raise ValueError("benchmark toleransları 0 ile 1 arasında olmalıdır.")
+        return v
 
 
 # ──────────────────────────────────────

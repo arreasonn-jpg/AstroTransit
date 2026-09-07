@@ -26,8 +26,16 @@ MAP_SUMMARY = {
     "snr": 47.85,
     "candidate_class": "A",
     "score": 100,
-    "fpp": 0.0,
-    "source": "validated_followup_map_result_manual_summary",
+    # FPP is deliberately unavailable here. A manually written zero is not a
+    # statistical estimate and must never be published as evidence.
+    "fpp": None,
+    "fpp_method": "not_estimated",
+    "fpp_status": "not_calibrated",
+    "fpp_note": (
+        "No calibrated Bayesian FPP was computed for this candidate; use the "
+        "labeled FPP benchmark before making a probabilistic claim."
+    ),
+    "source": "followup_map_result_manual_summary_without_fpp",
 }
 
 
@@ -112,6 +120,10 @@ def main():
     r_hat_max = fit_summary.get("r_hat_max")
 
     cautions = [
+        (
+            "FPP is intentionally null: the former manually entered fpp=0.0 was "
+            "removed because no calibrated probabilistic FPP was computed."
+        ),
         "CTOI / ExoFOP-TESS cross-check is not yet included in this report.",
         (
             "A manual MCMC sidecar was initially exported during debugging; "

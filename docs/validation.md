@@ -9,13 +9,13 @@ Durum sembolü: ✅ mevcut altyapı | 🟧 iskelet var, veri/çalıştırma eksi
 | # | Kapı | Tanım | Durum | Araç |
 |---|------|-------|-------|------|
 | 1 | Injection-recovery | Enjekte edilmiş transitlerin (P, Rp/R*, derinlik, gürültü gridi) kaçta kaçı geri kazanılıyor; `completeness(P, Rp/Rs, duration, noise)` haritası | 🟧 | `astrotransit/validation/injection_recovery.py` |
-| 2 | Bilinen gezegen geri kazanımı | TESS'ten bilinen onaylı gezegenler (örn. WASP-18b, WASP-19b) pipeline'dan geçirilir; periyot/derinlik geri kazanımı raporlanır | 🟧 | `astrotransit benchmark` + `benchmarks/toi_catalog.csv` |
+| 2 | Bilinen gezegen geri kazanımı | TESS'ten bilinen onaylı gezegenler (örn. WASP-18b, WASP-19b) pipeline'dan geçirilir; beklenen/geri kazanılan periyot ve yarıçap hedef bazında raporlanır | 🟧 | `astrotransit benchmark` + `benchmarks/verified_targets.json` + `benchmark_report.py` |
 | 3 | Bilinen false positive'ler | Bilinen EB/sistematiği olayların ne oranında elendiği | ⬜ | vetting + etiketli FP seti |
 | 4 | Cross-sektör tutarlılığı | Tek sektör başarısı yetmez; aynı aday sektörler arası periyot/derinlik tutarlılığı | 🟧 | çok sektör stitching + `source_sectors` |
 | 5 | Parametre geri kazanımı | Enjekte edilen P, Rp/R*, T0, derinlik ile geri kazanılan değerlerin dağılımı (bias, scatter) | 🟧 | `RecoveryTrial.period_error_fraction` + modeling |
 | 6 | FPP kalibrasyonu | `fpp ≈ 0.01` denilen adayların gerçekten ~%1 false-positive çıkması; Brier skor + precision/recall e eğrisi | 🟧 | `astrotransit/validation/fpp_benchmark.py` |
 | 7 | Earth-similarity duyarlılık analizi | Ağırlıkların ±10–20% değişiminde sıralamanın ne kadar değiştiği (Kendall τ) | ⬜ | `EARTH_SIMILARITY_PROFILES` (profili kopyalayıp ağırlık vektörü değiştirerek) |
-| 8 | Tam provenance | Her sonuç: veri kaynağı, sektör, pipeline versiyonu, config hash, bağımlılık ortamı, model versiyonu, zaman damgası, random seed | 🟧 | `scripts/maintenance/make_environment_manifest.py`, `release/*/manifest.json` |
+| 8 | Tam provenance | Her sonuç: veri kaynağı, sektör, pipeline versiyonu, config hash, bağımlılık ortamı, model versiyonu, zaman damgası, random seed | 🟧 | `scripts/maintenance/make_environment_manifest.py`, `release/manifests/` |
 
 ## Nasıl çalıştırılır
 
@@ -28,9 +28,17 @@ completeness ve `completeness_by_label` verir. Gerçek benchmark seti
 
 ### 2. Bilinen gezegenler
 
-`astrotransit benchmark` komutu benchmark hedeflerini MAP-odaklı pipeline'dan
-geçirir. Bilinen gezegen doğrulamasında çıktıdaki `period`/`depth_ppm`
-değerleri katalog değerleriyle karşılaştırılmalı ve sapma raporlanmalıdır.
+`astrotransit benchmark` komutu `benchmarks/verified_targets.json` içindeki
+known-target listesini MAP-odaklı pipeline'dan geçirir. Çalışma tamamlandığında
+`outputs/benchmark/benchmark_performance.json` ve
+`outputs/benchmark/benchmark_targets.csv` içinde her hedef için şu alanlar
+üretilir: expected/recovered period, `ΔP`, expected/recovered radius, `ΔRp`,
+detection/recovery status ve sektör tutarlılığı. Bu dosyalar üretilmeden
+sadece ground-truth JSON'unun varlığı performans kanıtı değildir.
+
+Etiketli false-positive/quiet-star corpus'u yapılandırılmamışsa rapor
+`false_positive_rejection: null` ve `not_evaluated` durumu taşır; bu değer
+sıfır false-positive iddiası değildir.
 
 ### 3. FPP kalibrasyonu
 
@@ -49,7 +57,12 @@ sonuçlar "ağırlığa duyarlı" olarak etiketlenmelidir.
 
 ## Çıktı sözleşmesi
 
-Doğrulama çıktıları ana aday şemasından ayrıdır: benchmark raporları kendi
-JSON/CSV'lerinde üretilir ve `pipeline_version`, `seed`, `n_trials`,
-`completeness` alanlarını taşır. Kapı #8 (tam provenance) tüm bu raporlar
-için zorunludur.
+Doğrulama çıktıları ana aday şemasından ayrıdır: known-target benchmark
+raporu kendi JSON/CSV'sinde `pipeline_version`, toleranslar, hedef bazlı
+expected/recovered alanları ve ölçülmeyen metrikler için `null` durumunu taşır.
+Injection-recovery raporu ayrıca `seed`, `n_trials` ve `completeness` alanlarını
+taşır. Kapı #8 (tam provenance) tüm bu raporlar için zorunludur.
+
+Hiçbir benchmark çıktısı, pipeline çalıştırılmadan veya kalibrasyonlu etiketli
+veri olmadan "validated", "confirmed" ya da sayısal FPP posterioru olarak
+sunulamaz.

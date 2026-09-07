@@ -80,7 +80,7 @@ class NEBIndicator:
 class NEBScenarioReport:
     target_id: str
     sector: int
-    p_neb: float = 0.0
+    p_neb: Optional[float] = None
     neb_risk_flag: str = "UNKNOWN"
     recommended_action: str = "none"
     indicators: list[NEBIndicator] = field(default_factory=list)
@@ -94,7 +94,7 @@ class NEBScenarioReport:
         return {
             "target_id": self.target_id,
             "sector": self.sector,
-            "p_neb": round(float(self.p_neb), 4),
+            "p_neb": None if self.p_neb is None else round(float(self.p_neb), 4),
             "neb_risk_flag": self.neb_risk_flag,
             "recommended_action": self.recommended_action,
             "n_available": self.n_available,
@@ -106,9 +106,10 @@ class NEBScenarioReport:
         }
 
     def summary(self) -> str:
+        p_neb = "NA" if self.p_neb is None else f"{self.p_neb:.3f}"
         return (
             f"{self.target_id} S{self.sector} | "
-            f"p_neb={self.p_neb:.3f} flag={self.neb_risk_flag} | "
+            f"p_neb={p_neb} flag={self.neb_risk_flag} | "
             f"available={self.n_available} warn={self.n_warn} fail={self.n_fail} | "
             f"action={self.recommended_action}"
         )
@@ -184,7 +185,7 @@ class NEBScenarioEvaluator:
         report = NEBScenarioReport(
             target_id=target_id,
             sector=int(sector),
-            p_neb=float(np.clip(p_neb, 0.0, _MAX_P_NEB)),
+            p_neb=None if p_neb is None else float(np.clip(p_neb, 0.0, _MAX_P_NEB)),
             neb_risk_flag=neb_risk_flag,
             recommended_action=recommended_action,
             indicators=indicators,
@@ -378,8 +379,11 @@ class NEBScenarioEvaluator:
     @staticmethod
     def _compute_p_neb(
         indicators: list[NEBIndicator],
-    ) -> float:
-        total = sum(float(ind.score_contribution) for ind in indicators if ind.available)
+    ) -> Optional[float]:
+        active = [ind for ind in indicators if ind.available]
+        if not active:
+            return None
+        total = sum(float(ind.score_contribution) for ind in active)
         return float(np.clip(total, 0.0, _MAX_P_NEB))
 
     @staticmethod
@@ -390,9 +394,9 @@ class NEBScenarioEvaluator:
         n_fail = sum(1 for ind in indicators if ind.verdict == VettingVerdict.FAIL)
         n_warn = sum(1 for ind in indicators if ind.verdict == VettingVerdict.WARN)
 
-        if n_fail >= 1 or p_neb >= 0.50:
+        if n_fail >= 1 or (p_neb is not None and p_neb >= 0.50):
             return "HIGH_NEB_RISK"
-        if n_warn >= 1 or p_neb >= 0.20:
+        if n_warn >= 1 or (p_neb is not None and p_neb >= 0.20):
             return "MODERATE_NEB_RISK"
 
         active = sum(1 for ind in indicators if ind.available)

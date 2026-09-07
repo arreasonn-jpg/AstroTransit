@@ -17,6 +17,9 @@ pydantic>=2.0
 tqdm>=4.65
 loguru>=0.7
 
+[:python_version >= "3.12"]
+setuptools>=61
+
 [dev]
 pytest>=7.0
 pytest-cov>=4.0

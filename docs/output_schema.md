@@ -15,7 +15,8 @@ belirtir. Çıktı tüketen her araç ve rapor bu ayrımı korumak zorundadır.
   değildir.** `astrotransit.quality.vetting` içindeki testlerin ağırlıklı
   oylarından türeyen bir **risk proxy'sidir**. Metod kimliği `fpp_method`
   alanında tutulur (`heuristic_vetting_weighted_v1`, `followup_evidence_reported`).
-  Kalibre FPP üretimi için etiketli veri üzerinde
+  Ölçüm yoksa alan `null` kalır; `0.0` bilinmeyen/hesaplanmamış FPP yerine
+  kullanılamaz. Kalibre FPP üretimi için etiketli veri üzerinde
   `astrotransit.validation.fpp_benchmark` kullanılmalıdır.
 - **`confirmed` tek başına yetmez.** `CONFIRMED_EARTH_TWIN` / follow-up
   doğrulaması yalnızca `followup_evidence` (kaynak + gözlem kimliği) ve

@@ -76,7 +76,7 @@ class BEBIndicator:
 class BEBScenarioReport:
     target_id: str
     sector: int
-    p_beb: float = 0.0
+    p_beb: Optional[float] = None
     beb_risk_flag: str = "UNKNOWN"
     recommended_action: str = "none"
     indicators: list[BEBIndicator] = field(default_factory=list)
@@ -90,7 +90,7 @@ class BEBScenarioReport:
         return {
             "target_id": self.target_id,
             "sector": self.sector,
-            "p_beb": round(float(self.p_beb), 4),
+            "p_beb": None if self.p_beb is None else round(float(self.p_beb), 4),
             "beb_risk_flag": self.beb_risk_flag,
             "recommended_action": self.recommended_action,
             "n_available": self.n_available,
@@ -102,9 +102,10 @@ class BEBScenarioReport:
         }
 
     def summary(self) -> str:
+        p_beb = "NA" if self.p_beb is None else f"{self.p_beb:.3f}"
         return (
             f"{self.target_id} S{self.sector} | "
-            f"p_beb={self.p_beb:.3f} flag={self.beb_risk_flag} | "
+            f"p_beb={p_beb} flag={self.beb_risk_flag} | "
             f"available={self.n_available} warn={self.n_warn} fail={self.n_fail} | "
             f"action={self.recommended_action}"
         )
@@ -170,7 +171,7 @@ class BEBScenarioEvaluator:
         report = BEBScenarioReport(
             target_id=target_id,
             sector=int(sector),
-            p_beb=float(np.clip(p_beb, 0.0, _MAX_P_BEB)),
+            p_beb=None if p_beb is None else float(np.clip(p_beb, 0.0, _MAX_P_BEB)),
             beb_risk_flag=beb_risk_flag,
             recommended_action=recommended_action,
             indicators=indicators,
@@ -349,8 +350,11 @@ class BEBScenarioEvaluator:
     @staticmethod
     def _compute_p_beb(
         indicators: list[BEBIndicator],
-    ) -> float:
-        total = sum(float(ind.score_contribution) for ind in indicators if ind.available)
+    ) -> Optional[float]:
+        active = [ind for ind in indicators if ind.available]
+        if not active:
+            return None
+        total = sum(float(ind.score_contribution) for ind in active)
         return float(np.clip(total, 0.0, _MAX_P_BEB))
 
     @staticmethod
@@ -361,9 +365,9 @@ class BEBScenarioEvaluator:
         n_fail = sum(1 for ind in indicators if ind.verdict == VettingVerdict.FAIL)
         n_warn = sum(1 for ind in indicators if ind.verdict == VettingVerdict.WARN)
 
-        if n_fail >= 1 or p_beb >= 0.50:
+        if n_fail >= 1 or (p_beb is not None and p_beb >= 0.50):
             return "HIGH_BEB_RISK"
-        if n_warn >= 1 or p_beb >= 0.20:
+        if n_warn >= 1 or (p_beb is not None and p_beb >= 0.20):
             return "MODERATE_BEB_RISK"
 
         active = sum(1 for ind in indicators if ind.available)

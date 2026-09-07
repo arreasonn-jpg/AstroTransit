@@ -18,6 +18,7 @@ from typing import Any, Optional
 import numpy as np
 
 from astrotransit.quality.vetting import FPP_METHOD
+from astrotransit.version import __version__
 from astrotransit.science.earth_similarity import (
     EARTH_SIMILARITY_DEFINITION_VERSION,
     score_earth_similarity,
@@ -282,7 +283,7 @@ class TransitCandidateRecord:
         flat = self.to_flat_dict()
         return {
             "metadata": {
-                "astrotransit_version": "0.1.0",
+                "astrotransit_version": __version__,
                 "created_at": flat["created_at"],
                 "schema_version": flat["schema_version"],
             },

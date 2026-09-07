@@ -403,14 +403,17 @@ class DiagnosticPlotter:
             y -= dy
 
         # FPP
+        fpp = vetting.false_positive_probability
+        fpp_text = "NA" if fpp is None else f"{fpp:.3f}"
         fpp_color = (
-            Colors.CLASS_A if vetting.false_positive_probability < 0.1 else
-            Colors.CLASS_C if vetting.false_positive_probability < 0.3 else
+            Colors.CLASS_A if fpp is not None and fpp < 0.1 else
+            Colors.CLASS_C if fpp is not None and fpp < 0.3 else
+            Colors.TEXT_SECONDARY if fpp is None else
             Colors.CLASS_D
         )
         ax2.text(
             0.5, 0.04,
-            f"FPP = {vetting.false_positive_probability:.3f}",
+            f"FPP = {fpp_text}",
             transform=ax2.transAxes,
             ha="center", va="bottom",
             color=fpp_color,

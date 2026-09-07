@@ -491,10 +491,20 @@ def benchmark(
         "--max",
         help="Kategori başına maksimum hedef sayısı",
     ),
+    output: Optional[str] = typer.Option(
+        None,
+        "--output", "-o",
+        help="Performans JSON raporu (varsayılan: config içindeki benchmark.report_json)",
+    ),
+    csv_output: Optional[str] = typer.Option(
+        None,
+        "--csv-output",
+        help="Hedef bazlı CSV raporu (varsayılan: config içindeki benchmark.report_csv)",
+    ),
     config: Optional[str] = typer.Option(None, "--config", "-c"),
     log_level: str = typer.Option("INFO", "--log-level"),
 ):
-    """Benchmark doğrulama pipeline'ını çalıştırır."""
+    """Bilinen hedef benchmark'ını çalıştırır ve ölçülmüş performans raporu yazar."""
 
     from astrotransit.pipelines.orchestrator import AstroTransitOrchestrator
 
@@ -512,11 +522,26 @@ def benchmark(
         log_level=log_level,
     )
 
-    result = orchestrator.run_benchmark(
-        max_per_category=max_per_category,
-    )
-
-    orchestrator.close()
+    try:
+        result = orchestrator.run_benchmark(
+            max_per_category=max_per_category,
+        )
+        report = result.performance_report
+        if report is not None:
+            report_json = Path(output or orchestrator.settings.benchmark.report_json)
+            report_csv = Path(csv_output or orchestrator.settings.benchmark.report_csv)
+            report.write_json(report_json)
+            report.write_csv(report_csv)
+            console.print(f"[green]Performans JSON raporu:[/green] {report_json}")
+            console.print(f"[green]Hedef CSV raporu:[/green] {report_csv}")
+            console.print(report.summary())
+        else:
+            console.print(
+                "[yellow]Ground-truth performans raporu üretilemedi; "
+                "sonuçlar ölçülmüş kabul edilmemelidir.[/yellow]"
+            )
+    finally:
+        orchestrator.close()
 
     # Sonuçlar
     console.print(result.metrics.report())

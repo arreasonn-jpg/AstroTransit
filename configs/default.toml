@@ -1,6 +1,6 @@
 [project]
 name = "AstroTransit"
-version = "0.1.0"
+version = "0.3.0"
 
 # ──────────────────────────────────────
 # Genel ayarlar
@@ -121,6 +121,14 @@ generate_html_report = false           # HTML rapor üretilsin mi
 # Benchmark ayarları
 # ──────────────────────────────────────
 [benchmark]
-confirmed_targets_file = "benchmarks/tess/confirmed_targets.parquet"
-false_positives_file = "benchmarks/tess/false_positives.parquet"
-quiet_stars_file = "benchmarks/tess/quiet_stars.parquet"
+# Ground-truth corpus; benchmark çalıştırılmadan performans sonucu değildir.
+verified_targets_file = "benchmarks/verified_targets.json"
+confirmed_targets_file = "benchmarks/verified_targets.json"
+# Etiketli negatif veri setleri henüz sağlanmadı; boş değer metrikleri
+# "not_evaluated" olarak tutar, bilinmeyeni 0.0 kabul etmez.
+false_positives_file = ""
+quiet_stars_file = ""
+report_json = "outputs/benchmark/benchmark_performance.json"
+report_csv = "outputs/benchmark/benchmark_targets.csv"
+period_tolerance_fraction = 0.02
+radius_tolerance_fraction = 0.20

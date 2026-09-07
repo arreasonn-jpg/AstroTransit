@@ -14,17 +14,28 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 from pathlib import Path
 from datetime import datetime, timezone
 
 
-def safe_float(x, default=0.0):
+def optional_float(x):
+    """Eksik FPP'yi sıfır risk gibi göstermeden sayıya çevirir."""
+
     try:
-        if x is None:
-            return default
-        return float(x)
-    except Exception:
-        return default
+        value = float(x)
+    except (TypeError, ValueError):
+        return None
+    return value if math.isfinite(value) else None
+
+
+def display_optional(value, digits: int = 3) -> str:
+    return "NA" if value is None else f"{value:.{digits}f}"
+
+
+def planet_proxy_sort_value(row: dict) -> float:
+    value = optional_float(row.get("p_planet_proxy"))
+    return -1.0 if value is None else value
 
 
 def human_assessment(row: dict) -> tuple[str, int, str]:
@@ -43,16 +54,14 @@ def human_assessment(row: dict) -> tuple[str, int, str]:
     anomaly_flag = row.get("anomaly_flag", "UNKNOWN")
     timing_flag = row.get("timing_flag", "")
     transit_flag = row.get("transit_consistency_flag", "")
-    crowding = safe_float(row.get("crowding_ratio"), 0.0)
-    p_neb = safe_float(row.get("p_neb"), 0.0)
-    p_eb = safe_float(row.get("p_eb"), 0.0)
-    fpp = safe_float(row.get("simple_fpp"), 0.0)
-    nearest = safe_float(row.get("nearest_neighbor_arcsec"), 999.0)
-    dmag = row.get("brightest_neighbor_delta_mag")
-    dmag = None if dmag is None else safe_float(dmag, 0.0)
+    crowding = optional_float(row.get("crowding_ratio"))
+    p_neb = optional_float(row.get("p_neb"))
+    fpp = optional_float(row.get("simple_fpp"))
+    nearest = optional_float(row.get("nearest_neighbor_arcsec"))
+    dmag = optional_float(row.get("brightest_neighbor_delta_mag"))
 
     # 1) Kritik blending / ambiguous host
-    if crowding < 0.60:
+    if crowding is not None and crowding < 0.60:
         return (
             "DEPRIORITIZED_CONTAMINATION_RISK",
             6,
@@ -60,7 +69,9 @@ def human_assessment(row: dict) -> tuple[str, int, str]:
         )
 
     if (
-        p_neb >= 0.70
+        p_neb is not None
+        and p_neb >= 0.70
+        and nearest is not None
         and nearest < 5.0
         and dmag is not None
         and dmag < 0.0
@@ -74,8 +85,11 @@ def human_assessment(row: dict) -> tuple[str, int, str]:
     # 2) Temiz çevre + temiz anomaly
     if (
         anomaly_flag == "CLEAN"
+        and crowding is not None
         and crowding > 0.98
+        and p_neb is not None
         and p_neb < 0.25
+        and nearest is not None
         and nearest > 8.0
     ):
         return (
@@ -87,8 +101,11 @@ def human_assessment(row: dict) -> tuple[str, int, str]:
     # 3) Timing sorunu ama çevre temiz
     if (
         timing_flag == "TIMING_UNSTABLE"
+        and crowding is not None
         and crowding > 0.95
+        and p_neb is not None
         and p_neb < 0.25
+        and nearest is not None
         and nearest > 15.0
     ):
         return (
@@ -100,8 +117,11 @@ def human_assessment(row: dict) -> tuple[str, int, str]:
     # 4) Şekil sorunu ama çevre temiz
     if (
         transit_flag == "EB_SUSPECT"
+        and crowding is not None
         and crowding > 0.98
+        and p_neb is not None
         and p_neb < 0.10
+        and nearest is not None
         and nearest > 8.0
     ):
         return (
@@ -113,7 +133,9 @@ def human_assessment(row: dict) -> tuple[str, int, str]:
     # 5) REVIEW ama çok kirli değil
     if (
         anomaly_flag == "REVIEW"
+        and crowding is not None
         and crowding > 0.90
+        and p_neb is not None
         and p_neb < 0.50
     ):
         return (
@@ -123,7 +145,7 @@ def human_assessment(row: dict) -> tuple[str, int, str]:
         )
 
     # 6) CLEAN ama FPP orta
-    if anomaly_flag == "CLEAN" and fpp < 0.50:
+    if anomaly_flag == "CLEAN" and fpp is not None and fpp < 0.50:
         return (
             "FOLLOWUP_WITH_CAUTION",
             2,
@@ -151,26 +173,29 @@ def build_markdown(rows: list[dict]) -> str:
     lines.append("| Rank | TIC | Sector | Human decision | Auto triage | Anomaly | FPP | P(planet) | Note |")
     lines.append("|---:|---|---:|---|---|---|---:|---:|---|")
 
-    for r in sorted(rows, key=lambda x: (x["human_priority_rank"], -safe_float(x.get("p_planet_proxy"), 0.0))):
+    for r in sorted(rows, key=lambda x: (x["human_priority_rank"], -planet_proxy_sort_value(x))):
         lines.append(
             f"| {r['human_priority_rank']} | {r['target_id']} | {r['sector']} | "
             f"{r['human_override_decision']} | {r.get('triage_decision','')} | "
-            f"{r.get('anomaly_flag','')} | {safe_float(r.get('simple_fpp')):.3f} | "
-            f"{safe_float(r.get('p_planet_proxy')):.3f} | {r.get('assessment_note','')} |"
+            f"{r.get('anomaly_flag','')} | {display_optional(optional_float(r.get('simple_fpp')))} | "
+            f"{display_optional(optional_float(r.get('p_planet_proxy')))} | {r.get('assessment_note','')} |"
         )
 
     lines.append("")
     lines.append("## Candidate notes")
     lines.append("")
 
-    for r in sorted(rows, key=lambda x: (x["human_priority_rank"], -safe_float(x.get("p_planet_proxy"), 0.0))):
+    for r in sorted(rows, key=lambda x: (x["human_priority_rank"], -planet_proxy_sort_value(x))):
         lines.append(f"### {r['target_id']} (S{r['sector']})")
         lines.append("")
         lines.append(f"- Human decision: **{r['human_override_decision']}**")
         lines.append(f"- Auto triage: `{r.get('triage_decision','')}`")
-        lines.append(f"- Anomaly: `{r.get('anomaly_flag','')}` (score={safe_float(r.get('anomaly_score')):.3f})")
-        lines.append(f"- Simple FPP: `{safe_float(r.get('simple_fpp')):.3f}`")
-        lines.append(f"- P(planet) proxy: `{safe_float(r.get('p_planet_proxy')):.3f}`")
+        lines.append(f"- Anomaly: `{r.get('anomaly_flag','')}` (score={display_optional(optional_float(r.get('anomaly_score')))})")
+        lines.append(
+            f"- Simple FPP proxy: `{display_optional(optional_float(r.get('simple_fpp')))}` "
+            "(NA = not estimated)"
+        )
+        lines.append(f"- P(planet) proxy: `{display_optional(optional_float(r.get('p_planet_proxy')))}` (NA = not estimated)")
         lines.append(f"- Dominant scenario: `{r.get('dominant_scenario','')}`")
         lines.append(f"- CROWDSAP: `{r.get('crowding_ratio')}`")
         lines.append(f"- Nearest Gaia neighbor: `{r.get('nearest_neighbor_arcsec')}` arcsec")

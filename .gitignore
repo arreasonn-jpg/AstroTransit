@@ -26,8 +26,24 @@ dist/
 # Release artifacts and campaign run outputs.
 # These are evidence packages / analysis products: keep them locally, publish
 # them through GitHub Releases / Zenodo — never commit them to the source repo.
-/release/
+# Only small, human-auditable release metadata is versioned below.
+/release/*
+!/release/
+!/release/README.md
+!/release/manifests/
+!/release/manifests/**
+!/release/checksums/
+!/release/checksums/**
+!/release/release_notes/
+!/release/release_notes/**
 /campaign_runs/
+
+# Backup/dump files are not a substitute for Git history.
+**/*.backup
+**/*.backup_*
+**/*backup*
+**/*.bak
+**/*.orig
 
 # One-off tooling dumps (project tree listings generated for LLM context etc.)
 proje_yapisi*.txt

@@ -1,6 +1,0 @@
-rank,source_id,sector,status,rp_rearth,note
-1,TIC 347299560,24,MCMC_CONVERGED,0.7873,core small-cool
-2,TIC 439949948,17,MCMC_CONVERGED,0.7948,core small-cool
-3,TIC 352146741,17,MCMC_CONVERGED,0.8391,core small-cool
-4,TIC 407423779,18,MAP_FOLLOWUP_OK,1.1281,core small-cool
-5,TIC 201778444,57,MAP_FOLLOWUP_OK,1.4969,core small-cool

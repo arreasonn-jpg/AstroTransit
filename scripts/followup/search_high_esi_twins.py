@@ -69,7 +69,9 @@ for f in files:
                     period = float(row[p_col]) if p_col else 0.0
                     tic_id = str(row[id_col])
                     snr = float(row[snr_col]) if snr_col and not pd.isna(row[snr_col]) else 10.0
-                    fpp = float(row[fpp_col]) if fpp_col and not pd.isna(row[fpp_col]) else 0.0
+                    if not fpp_col or pd.isna(row[fpp_col]):
+                        continue
+                    fpp = float(row[fpp_col])
                     
                     # Düzenleme: Eğer Rp Earth cinsinden değilse dönüştür
                     if rp > 50: # ppm cinsinden depth geldiyse atla
@@ -104,10 +106,10 @@ for jf in json_files:
             period = data.get("parameters", {}).get("period_days", 0)
             tic_id = data.get("target", {}).get("source_id", "")
             snr = data.get("quality", {}).get("snr_adopted", 10.0)
-            fpp = data.get("vetting", {}).get("fpp", 0.0)
+            fpp = data.get("vetting", {}).get("fpp")
             
             esi_score = calc_esi(rp, teq)
-            if esi_score >= 0.70 and fpp < 0.05:
+            if fpp is not None and esi_score >= 0.70 and fpp < 0.05:
                 candidate_list.append({
                     "TIC_ID": tic_id,
                     "ESI_Score": esi_score,

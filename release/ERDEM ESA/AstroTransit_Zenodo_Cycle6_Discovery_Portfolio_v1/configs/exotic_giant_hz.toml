@@ -1,8 +1,0 @@
-fit_method = "map"
-mcmc_snr_threshold = 5.0
-
-tess.author = "SPOC"
-tess.exptime = 120
-
-detection.min_p = 1.0
-detection.max_p = 120.0

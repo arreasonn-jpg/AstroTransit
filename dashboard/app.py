@@ -520,7 +520,7 @@ def main():
         )
 
         st.divider()
-        st.caption("v0.1.0")
+        st.caption("v0.3.0")
 
     if page == "Ana Sayfa":
         page_home()

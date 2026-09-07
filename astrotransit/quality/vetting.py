@@ -118,9 +118,10 @@ class VettingReport:
         Başarısız test sayısı.
     n_warn : int
         Uyarı sayısı.
-    false_positive_probability : float
+    false_positive_probability : Optional[float]
         Heuristik yanlış pozitif risk proxy'si (0-1). Kalibre edilmiş
-        Bayesyen bir olasılık değildir (bkz. modül docstring'i).
+        Bayesyen bir olasılık değildir (bkz. modül docstring'i). Hiçbir
+        test ölçülebilir değilse ``None`` olur; bu sıfır risk değildir.
     fpp_method : str
         FPP tahmin metodunun kimliği (çıkıta işlenir).
     is_false_positive : bool
@@ -135,7 +136,7 @@ class VettingReport:
     n_pass: int = 0
     n_fail: int = 0
     n_warn: int = 0
-    false_positive_probability: float = 0.0
+    false_positive_probability: Optional[float] = None
     fpp_method: str = FPP_METHOD
     is_false_positive: bool = False
     fp_flags: list[str] = field(default_factory=list)
@@ -148,7 +149,11 @@ class VettingReport:
             "n_pass": self.n_pass,
             "n_fail": self.n_fail,
             "n_warn": self.n_warn,
-            "false_positive_probability": round(self.false_positive_probability, 4),
+            "false_positive_probability": (
+                None
+                if self.false_positive_probability is None
+                else round(self.false_positive_probability, 4)
+            ),
             "fpp_method": self.fpp_method,
             "is_false_positive": self.is_false_positive,
             "fp_flags": self.fp_flags,
@@ -159,7 +164,11 @@ class VettingReport:
         return {
             "target_id": self.target_id,
             "sector": self.sector,
-            "fpp": round(self.false_positive_probability, 4),
+            "fpp": (
+                None
+                if self.false_positive_probability is None
+                else round(self.false_positive_probability, 4)
+            ),
             "fpp_method": self.fpp_method,
             "is_fp": self.is_false_positive,
             "flags": self.fp_flags,
@@ -283,7 +292,7 @@ class FalsePositiveVetter:
             t.name for t in tests
             if t.verdict == VettingVerdict.FAIL
         ]
-        is_fp = n_fail >= 2 or fpp > 0.5
+        is_fp = n_fail >= 2 or (fpp is not None and fpp > 0.5)
 
         report = VettingReport(
             target_id=target_id,
@@ -301,7 +310,7 @@ class FalsePositiveVetter:
             f"Vetting tamamlandı — "
             f"{target_id}: "
             f"pass={n_pass}, warn={n_warn}, fail={n_fail}, "
-            f"FPP={fpp:.3f}, "
+            f"FPP={'NA' if fpp is None else f'{fpp:.3f}'}, "
             f"is_FP={is_fp}"
         )
 
@@ -588,7 +597,7 @@ class FalsePositiveVetter:
         )
 
     @staticmethod
-    def _compute_fpp(tests: list[VettingTest]) -> float:
+    def _compute_fpp(tests: list[VettingTest]) -> Optional[float]:
         """
         Test sonuçlarından **heuristik FPP proxy'si** üretir.
 
@@ -604,14 +613,14 @@ class FalsePositiveVetter:
 
         Returns
         -------
-        float
-            FPP proxy değeri (0-1).
+        Optional[float]
+            FPP proxy değeri (0-1); ölçülebilir test yoksa ``None``.
         """
 
         total_weight = sum(t.fp_weight for t in tests if t.verdict != VettingVerdict.SKIP)
 
         if total_weight <= 0:
-            return 0.0
+            return None
 
         fpp_contribution = 0.0
 

@@ -20,9 +20,11 @@ Scripts used for selected-candidate validation, multisector checks, ephemeris re
 Catalog and archive cross-check scripts used to verify novelty / known-status.
 
 ### `release/`
-Scripts used to generate candidate reports, release artifacts, and the Zenodo evidence package.
+Scripts used to generate candidate reports and release metadata. Large ZIPs,
+extracted evidence bundles and campaign outputs are published through Zenodo
+or GitHub Releases; they are intentionally not committed under `release/`.
 
-Reference DOI:
+Reference DOI (historical external artifact):
 - `10.5281/zenodo.21307889`
 - https://doi.org/10.5281/zenodo.21307889
 
@@ -38,8 +40,9 @@ Critical preserved patch:
   - fixed native WSL MCMC output persistence / downstream contract issues
 
 ### `archive/`
-Legacy, one-off, diagnostics, backups, and superseded patch scripts.
-Nothing here should be deleted without review.
+Legacy, one-off, diagnostics, and superseded patch scripts. Backup snapshots
+are not versioned; Git history and external release manifests are the recovery
+mechanisms.
 
 ## Current workflow
 

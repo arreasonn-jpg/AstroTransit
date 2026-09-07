@@ -22,7 +22,7 @@ sayılmaz).
 - Photometric aday, Earth-twin adayı ve follow-up ile confirmed Earth twin ayrımı
 - Similarity, detection confidence ve FPP proxy'sinin **ayrı** raporlanması
 - JSON, Parquet ve CSV çıktı sözleşmesi (şema v1.7, migration aracı)
-- Injection-recovery ve FPP benchmark iskeleti (`astrotransit/validation`)
+- Known-target performans raporu, injection-recovery ve FPP benchmark yardımcıları (`astrotransit/validation`)
 - CLI ve Streamlit dashboard
 
 ## Kurulum
@@ -56,7 +56,8 @@ astrotransit single "TIC 261136679" --force-map --no-viz
 astrotransit batch benchmarks/pilot_targets.csv --force-map --no-viz
 astrotransit earth-search targets.csv --min-similarity 90 --limit 50 \
   --output outputs/earth_search_ranked.json
-astrotransit benchmark --max 5
+astrotransit benchmark --max 5 \
+  --output outputs/benchmark/benchmark_performance.json
 ```
 
 Ayarlar `configs/default.toml` içinden yüklenir. Farklı bir dosya vermek için
@@ -138,10 +139,16 @@ framework'ü; ancak pipeline'ın bilimsel doğrulama kanıtı (completeness
 haritaları, kalibre FPP, bilinen gezegen/FP benchmark'ları) henüz tam
 kapalı çevrimde değildir.** Bu bilinçli bir sınır olarak raporlanır.
 
-- Injection-recovery iskeleti: `astrotransit/validation/injection_recovery.py`
+- Known-target performans raporu: `astrotransit/validation/benchmark_report.py`;
+  `astrotransit benchmark` çalıştırıldığında hedef bazında expected period/radius,
+  recovered değerler, detection recall, parametre hataları ve sektör tutarlılığı
+  `outputs/benchmark/` altında JSON/CSV olarak yazılır. Ground-truth dosyasının
+  mevcut olması tek başına ölçüm sonucu değildir.
+- Injection-recovery altyapısı: `astrotransit/validation/injection_recovery.py`
   (completeness, periyot hatası ölçümleri)
-- FPP proxy kalibrasyonu iskeleti: `astrotransit/validation/fpp_benchmark.py`
-  (Brier skor, false-positive recall, planet precision)
+- FPP proxy kalibrasyonu: `astrotransit/validation/fpp_benchmark.py`
+  (Brier skor, false-positive recall, planet precision). Etiketli veri yoksa
+  FPP değeri `null`/`not_available` kalır; `0.0` bilinmeyen değer yerine kullanılmaz.
 - Benchmark CLI'ı: `astrotransit benchmark`
 - Kapalı çevrim için gereken 8 doğrulama kapısı (injection-recovery,
   bilinen gezegen geri kazanımı, bilinen FP'lerin elenmesi, cross-sektör
@@ -152,9 +159,12 @@ kapalı çevrimde değildir.** Bu bilinçli bir sınır olarak raporlanır.
 TOI/Arşiv kataloglarında eşleşmesi bulunmayan, pipeline'dan uçtan uca geçmiş
 başlıca TOI-dışı referans adaydır: P ≈ 2.854 gün, Rp/R* ≈ 0.0251
 (~3.07 R⊕), SNR ≈ 47.9; MAP + WSL MCMC (r-hat 1.04, 0 divergence).
-Tekrarlanabilirlik için yerel kanıt paketi `release/tic417860263_zenodo_v1/`
-(Git'te **tutulmaz**; Zenodo/Release üzerinden dağıtılır). Not: paket içindeki
-elde özetlenmiş `fpp: 0.0` değeri hakkında bakınız `release/ERRATUM.md`.
+Tekrarlanabilirlik için kanıt paketi GitHub Release/Zenodo üzerinde tutulur;
+Git kaynak ağacına büyük ZIP veya campaign çıktısı eklenmez. TIC 417860263 için
+kalibre edilmiş bir FPP hesaplanmadığından FPP iddiası yapılmamalıdır; eski
+manuel `fpp: 0.0` özeti geçersizdir. Release metadata politikası
+[`release/release_notes/reproducibility_policy.md`](release/release_notes/reproducibility_policy.md)
+ile belgelenir.
 
 ## Çıktılar
 
