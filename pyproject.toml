@@ -1,13 +1,13 @@
 [build-system]
-requires = ["setuptools>=68.0", "wheel"]
+requires = ["setuptools>=77.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "astrotransit"
 version = "0.1.0"
-description = "TESS ve JWST verilerinden transit tespiti, filtreleme ve kategorizasyon platformu"
+description = "TESS verilerinden transit tespiti ve aday karakterizasyon platformu (JWST takip arayüzü)"
 readme = "README.md"
-license = {text = "Proprietary"}
+license = "MIT"
 requires-python = ">=3.11"
 authors = [
     {name = "AstroTransit Team"}
