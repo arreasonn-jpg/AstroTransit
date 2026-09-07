@@ -25,7 +25,7 @@ from astrotransit.validation.followup import coerce_followup_result
 from astrotransit.utils.identifiers import extract_tic_number
 
 
-SCHEMA_VERSION = "1.5"
+SCHEMA_VERSION = "1.6"
 
 
 def _finite_or_none(value: Any) -> Any:
@@ -143,6 +143,7 @@ class TransitCandidateRecord:
     planet_radius_rjup: Optional[float] = 0.0
     semi_major_axis_au: Optional[float] = 0.0
     equilibrium_temperature_k: Optional[float] = 0.0
+    equilibrium_temperature_albedo: Optional[float] = 0.3
     insolation_flux: Optional[float] = 0.0
     insolation_s_earth: Optional[float] = 0.0
     stellar_density_gcm3: Optional[float] = 0.0
@@ -335,6 +336,7 @@ class TransitCandidateRecord:
                 "planet_radius_rjup": flat["planet_radius_rjup"],
                 "semi_major_axis_au": flat["semi_major_axis_au"],
                 "equilibrium_temperature_k": flat["equilibrium_temperature_k"],
+                "equilibrium_temperature_albedo": flat["equilibrium_temperature_albedo"],
                 "insolation_flux": flat["insolation_flux"],
                 "insolation_s_earth": flat["insolation_s_earth"],
                 "stellar_density_gcm3": flat["stellar_density_gcm3"],
@@ -697,6 +699,9 @@ def build_record(
         planet_radius_rjup=_finite_or_none(derived_dict.get("planet_radius_rjup", 0.0)),
         semi_major_axis_au=_finite_or_none(derived_dict.get("semi_major_axis_au", 0.0)),
         equilibrium_temperature_k=_finite_or_none(derived_dict.get("equilibrium_temperature_k", 0.0)),
+        equilibrium_temperature_albedo=_finite_or_none(
+            derived_dict.get("equilibrium_temperature_albedo", 0.3)
+        ),
         insolation_flux=_finite_or_none(earth_insolation),
         insolation_s_earth=_finite_or_none(earth_insolation),
         stellar_density_gcm3=_finite_or_none(derived_dict.get("stellar_density_gcm3", 0.0)),

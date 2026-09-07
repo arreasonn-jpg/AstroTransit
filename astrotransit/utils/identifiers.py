@@ -7,6 +7,7 @@ TIC ID, TOI numarası gibi tanımlayıcıları ayrıştırır ve standartlaştı
 from __future__ import annotations
 
 import re
+from numbers import Integral
 
 
 def normalize_tic_id(raw: str | int) -> str:
@@ -23,8 +24,8 @@ def normalize_tic_id(raw: str | int) -> str:
     'TIC 123456789'
     """
 
-    if isinstance(raw, int):
-        return f"TIC {raw}"
+    if isinstance(raw, Integral):
+        return f"TIC {int(raw)}"
 
     cleaned = raw.strip().upper().replace("TIC", "").replace("-", "").strip()
     digits = re.sub(r"\D", "", cleaned)

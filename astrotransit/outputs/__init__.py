@@ -15,6 +15,12 @@ from astrotransit.outputs.schemas import (
     build_record,
 )
 from astrotransit.outputs.writers import OutputManager
+from astrotransit.outputs.migration import (
+    flatten_nested_record,
+    migrate_json,
+    migrate_parquet,
+    upgrade_flat_record,
+)
 
 __all__ = [
     "CSVExporter",
@@ -25,4 +31,8 @@ __all__ = [
     "TransitCandidateRecord",
     "build_long_period_record",
     "build_record",
+    "flatten_nested_record",
+    "migrate_json",
+    "migrate_parquet",
+    "upgrade_flat_record",
 ]

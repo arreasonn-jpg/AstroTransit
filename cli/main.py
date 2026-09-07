@@ -183,6 +183,71 @@ def batch(
     )
 
 
+@app.command("target-pool")
+def target_pool(
+    input_file: str = typer.Argument(
+        ...,
+        help="TIC ID/TIC-benzeri katalog CSV veya JSON dosyası",
+    ),
+    output: str = typer.Option(
+        "outputs/target_pool.json",
+        "--output", "-o",
+        help="Hedef havuzu JSON/CSV çıktı yolu",
+    ),
+    query_mast: bool = typer.Option(
+        False,
+        "--query-mast/--no-query-mast",
+        help="TESS coverage için MAST sorgusu yap",
+    ),
+    min_teff: float = typer.Option(3500.0, "--min-teff"),
+    max_teff: float = typer.Option(6500.0, "--max-teff"),
+    max_tmag: float = typer.Option(13.0, "--max-tmag"),
+):
+    """TIC/MAST metadata'dan Earth-twin hedef havuzu üretir."""
+
+    from astrotransit.discovery.target_pool import EarthTargetPoolBuilder, TargetPoolConfig
+
+    source = Path(input_file)
+    if not source.exists():
+        console.print(f"[red]Dosya bulunamadı: {source}[/red]")
+        raise typer.Exit(1)
+    try:
+        if source.suffix.lower() == ".csv":
+            import pandas as pd
+
+            rows = pd.read_csv(source).to_dict(orient="records")
+        elif source.suffix.lower() == ".json":
+            rows = json.loads(source.read_text(encoding="utf-8"))
+            if isinstance(rows, dict):
+                rows = rows.get("targets", rows.get("data", [rows]))
+        else:
+            rows = [
+                {"tic_id": line.strip()}
+                for line in source.read_text(encoding="utf-8").splitlines()
+                if line.strip() and not line.lstrip().startswith("#")
+            ]
+        if not isinstance(rows, list):
+            raise ValueError("Girdi listesi veya katalog satırları içeren JSON olmalıdır.")
+        builder = EarthTargetPoolBuilder(
+            TargetPoolConfig(min_teff_k=min_teff, max_teff_k=max_teff, max_tmag=max_tmag)
+        )
+        entries = builder.build_from_rows(rows, query_coverage=query_mast)
+        destination = Path(output)
+        if destination.suffix.lower() == ".csv":
+            builder.write_csv(entries, destination)
+        else:
+            builder.write_json(entries, destination)
+    except (OSError, ValueError, TypeError, json.JSONDecodeError) as exc:
+        console.print(f"[red]Hedef havuzu oluşturulamadı: {exc}[/red]")
+        raise typer.Exit(1)
+
+    n_eligible = sum(entry.eligible for entry in entries)
+    console.print(
+        f"[green]{n_eligible}/{len(entries)} hedef uygun bulundu.[/green] "
+        f"Çıktı: {destination}"
+    )
+
+
 @app.command("earth-search")
 def earth_search(
     targets_file: str = typer.Argument(
@@ -378,6 +443,47 @@ def followup_update(
     )
 
 
+@app.command("migrate")
+def migrate_outputs(
+    input_path: str = typer.Argument(
+        ...,
+        help="Eski JSON veya Parquet dosyası",
+    ),
+    output_path: Optional[str] = typer.Option(
+        None,
+        "--output", "-o",
+        help="Yeni dosya yolu; verilmezse dosya yerinde güncellenir",
+    ),
+):
+    """Eski JSON/Parquet çıktısını schema 1.6'ya taşır."""
+
+    from astrotransit.outputs.migration import migrate_json, migrate_parquet
+
+    source = Path(input_path)
+    if not source.exists():
+        console.print(f"[red]Dosya bulunamadı: {source}[/red]")
+        raise typer.Exit(1)
+    suffix = source.suffix.lower()
+    try:
+        if suffix == ".json":
+            destination = migrate_json(source, output_path)
+        elif suffix in {".parquet", ".pq"}:
+            destination = migrate_parquet(source, output_path)
+        else:
+            console.print("[red]Yalnızca .json, .parquet veya .pq desteklenir.[/red]")
+            raise typer.Exit(2)
+    except (OSError, ValueError, TypeError, ImportError, json.JSONDecodeError) as exc:
+        console.print(f"[red]Migration başarısız: {exc}[/red]")
+        raise typer.Exit(1)
+    console.print(
+        Panel(
+            f"[bold green]Schema migration tamamlandı[/bold green]\\n"
+            f"Kaynak: {source}\\nHedef: {destination}\\nSchema: 1.6",
+            border_style="green",
+        )
+    )
+
+
 @app.command()
 def benchmark(
     max_per_category: Optional[int] = typer.Option(
@@ -394,7 +500,7 @@ def benchmark(
 
     console.print(
         Panel(
-            f"[bold cyan]AstroTransit — Benchmark Doğrulama[/bold cyan]",
+            "[bold cyan]AstroTransit — Benchmark Doğrulama[/bold cyan]",
             border_style="cyan",
         )
     )

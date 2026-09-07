@@ -14,6 +14,7 @@
 | planet_radius_rearth | float64 | Gezegen yarıçapı (R⊕) |
 | semi_major_axis_au | float64 | Yarı-büyük eksen (AU) |
 | equilibrium_temperature_k | float64 | Denge sıcaklığı (K) |
+| equilibrium_temperature_albedo | float64 | `T_eq` hesabında kullanılan Bond albedosu |
 | insolation_s_earth | float64 | Dünya ışınımına oran |
 | planet_mass_mearth | float64 | Gezegen kütlesi (M⊕), varsa |
 | snr_adopted | float64 | Benimsenen SNR |
@@ -47,7 +48,7 @@
 | followup_observation_ids | JSON string | Takip gözlemlerinin kimlikleri |
 | followup_evidence | JSON string | Takip kanıtı ayrıntıları |
 
-Tam şema `astrotransit/outputs/schemas.py` dosyasında, şema sürümü `1.5`
+Tam şema `astrotransit/outputs/schemas.py` dosyasında, şema sürümü `1.6`
 olarak tanımlıdır. Similarity hesabı ayrıca `definition_version="1.0"`
 ile etiketlenir.
 
@@ -125,3 +126,36 @@ transit doğrulaması değildir:
   "modeling": { "fit_method": "map" }
 }
 ```
+
+## Schema migration
+
+Eski flat veya bölümlenmiş JSON kayıtları ve Parquet katalogları güncel
+`1.6` sözleşmesine taşıma aracıyla yükseltilebilir:
+
+```bash
+astrotransit migrate old_candidate.json --output migrated_candidate.json
+astrotransit migrate old_catalog.parquet --output migrated_catalog.parquet
+```
+
+`--output` verilmezse kaynak dosya yerinde güncellenir. Migration eksik yeni
+alanları güvenli varsayılanlarla tamamlar; eksik ölçüm değerlerini Dünya
+ölçümüyle doldurmaz. JSON ve Parquet çıktıları aynı
+`TransitCandidateRecord` alan kümesini kullanır.
+
+## Dashboard alanları
+
+Katalog Gezgini ve Aday Detayı sayfalarında Earth similarity skoru ve P05–P95
+aralığı, `earth_analog_class`, `earth_twin_status`, detection confidence/FPP
+ve follow-up status/observation kimlikleri ayrı gösterilir. Böylece
+Earth-benzerliği ile tespit güveni veya follow-up doğrulaması tek bir skor
+olarak birleştirilmez.
+
+## JWST ürün sözleşmesi
+
+JWST metadata araması bir veri ürünü işlenmiş sayılmaz. Gerçek ürün akışı
+`JWSTProductContract` ile Stage 2/3 FITS dosya yolunu, hedef/observation ve
+program kimliklerini, enstrümanı ve `TIME`, `FLUX`, `FLUX_ERR` sütunlarını
+belirtir. `load_jwst_product()` artan zaman, hizalı ve sonlu pozitif flux/error
+serilerini doğrular. Detrending başarılı olsa dahi transit fit'i açıkça
+`transit_confirmed` üretmedikçe `JWSTFollowUpResult.to_followup_evidence`
+`confirmed=True` kabul etmez.

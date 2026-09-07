@@ -5,9 +5,17 @@ from astrotransit.discovery.earth_search import (
     EarthCandidateRanker,
     EarthSearchSummary,
 )
+from astrotransit.discovery.target_pool import (
+    EarthTargetPoolBuilder,
+    TargetPoolConfig,
+    TargetPoolEntry,
+)
 
 __all__ = [
     "EarthCandidatePriority",
     "EarthCandidateRanker",
     "EarthSearchSummary",
+    "EarthTargetPoolBuilder",
+    "TargetPoolConfig",
+    "TargetPoolEntry",
 ]

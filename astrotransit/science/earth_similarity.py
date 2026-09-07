@@ -254,6 +254,9 @@ def score_earth_similarity(
     semi_major_axis_au: Optional[float] = None,
     stellar_teff_k: Optional[float] = None,
     samples: Optional[Mapping[str, Sequence[float] | np.ndarray]] = None,
+    errors: Optional[Mapping[str, float]] = None,
+    n_samples: int = 2000,
+    random_seed: int = 42,
 ) -> EarthSimilarityResult:
     """Parametrelerden Earth similarity skorunu hesaplar.
 
@@ -262,7 +265,9 @@ def score_earth_similarity(
     geçmez. ``samples`` verilirse anahtarlar dimension isimleri (ör.
     ``"radius"`` veya ``"insolation"``) ya da public parametre isimleri
     olabilir. Sample dizileri aynı uzunlukta olmalı; tek elemanlı diziler tüm
-    örneklere yayınlanır.
+    örneklere yayınlanır. ``errors`` verilirse scalar ölçümlerden sabit seed'li
+    Monte Carlo örnekleri üretilir; pozitif boyutlar log-normal, sıcaklık
+    boyutları normal dağılımla örneklenir.
     """
 
     selected_profile = get_similarity_profile(profile)
@@ -278,6 +283,15 @@ def score_earth_similarity(
         "semi_major_axis": semi_major_axis_au,
         "host_teff": stellar_teff_k,
     }
+    if errors is not None and samples is not None:
+        raise ValueError("samples ve errors aynı anda verilmemelidir.")
+    if errors is not None:
+        samples = _samples_from_errors(
+            values,
+            errors,
+            n_samples=n_samples,
+            random_seed=random_seed,
+        )
     sample_values = _normalise_samples(samples, values)
     components: dict[str, SimilarityComponent] = {}
     available_keys: set[str] = set()
@@ -360,6 +374,57 @@ def score_earth_similarity(
         notes=tuple(notes),
         definition_version=EARTH_SIMILARITY_DEFINITION_VERSION,
     )
+
+
+def _samples_from_errors(
+    values: Mapping[str, Any],
+    errors: Mapping[str, float],
+    *,
+    n_samples: int,
+    random_seed: int,
+) -> dict[str, np.ndarray]:
+    if n_samples < 2:
+        raise ValueError("n_samples en az 2 olmalıdır.")
+    rng = np.random.default_rng(random_seed)
+    normalised_errors: dict[str, float] = {}
+    for key, error in errors.items():
+        dimension_key = key
+        if key in _INPUT_DIMENSIONS.values():
+            dimension_key = next(
+                name for name, public in _INPUT_DIMENSIONS.items() if public == key
+            )
+        if dimension_key not in values:
+            raise ValueError(f"Bilinmeyen Earth similarity uncertainty dimensionı: {key}")
+        try:
+            sigma = float(error)
+        except (TypeError, ValueError) as exc:
+            raise ValueError(f"{key} uncertainty sayısal olmalıdır.") from exc
+        if not np.isfinite(sigma) or sigma < 0:
+            raise ValueError(f"{key} uncertainty sonlu ve negatif olmayan bir değer olmalıdır.")
+        normalised_errors[dimension_key] = sigma
+
+    samples: dict[str, np.ndarray] = {}
+    for dimension_key, sigma in normalised_errors.items():
+        value = values.get(dimension_key)
+        try:
+            center = float(value)
+        except (TypeError, ValueError):
+            continue
+        if not np.isfinite(center) or center <= 0:
+            continue
+        if sigma == 0:
+            samples[dimension_key] = np.full(n_samples, center, dtype=float)
+            continue
+        # Relative sigma for positive quantities keeps radius/flux/mass
+        # samples positive while preserving a reproducible approximate error.
+        relative_sigma = sigma / center
+        if dimension_key in {"equilibrium_temperature", "host_teff"}:
+            samples[dimension_key] = rng.normal(center, sigma, n_samples)
+        else:
+            log_sigma = float(np.sqrt(np.log1p(relative_sigma**2)))
+            log_center = float(np.log(center) - 0.5 * log_sigma**2)
+            samples[dimension_key] = rng.lognormal(log_center, log_sigma, n_samples)
+    return samples
 
 
 def _normalise_samples(
