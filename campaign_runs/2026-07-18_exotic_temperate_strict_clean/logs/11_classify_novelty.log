@@ -1,0 +1,43 @@
+========================================================================
+  Kesif Sonuclari Yenilik Siniflandirmasi
+========================================================================
+OK 22 aday yuklendi
+OK TOI katalogu: 7753 TIC ID
+
+Yenilik dagilimi:
+novelty_status
+NOVEL_CANDIDATE    22
+Name: count, dtype: int64
+
+YENI ADAYLAR: 22
+
+    source_id  sector    period   depth_ppm  planet_radius_rearth  snr_adopted candidate_class  total_score  novelty_status
+TIC 303241161      57  0.754877 1020.799192              2.205903    27.959815               A   100.000000 NOVEL_CANDIDATE
+TIC 150970759      57  0.342548  651.762494              1.333161    14.504193               A   100.000000 NOVEL_CANDIDATE
+TIC 257303702      43  1.403225  720.068053              1.956991    10.169360               A   100.000000 NOVEL_CANDIDATE
+TIC 191080974      17  9.904819  927.904855              2.003730     8.706336               A   100.000000 NOVEL_CANDIDATE
+TIC 150816111      57  6.893678  806.944516              1.379177     8.370205               A   100.000000 NOVEL_CANDIDATE
+TIC 439949946      17  6.704066  542.255323              0.708945     7.266490               A   100.000000 NOVEL_CANDIDATE
+TIC 283859631      17  6.636395  618.442960              1.457780     6.582437               A   100.000000 NOVEL_CANDIDATE
+TIC 405230222      42  4.419095  848.760474              1.604319     5.767389               A   100.000000 NOVEL_CANDIDATE
+TIC 352179145      17 11.439335  860.009878              2.053441    18.873119               C    50.000000 NOVEL_CANDIDATE
+TIC 365961623      17 11.431964 1333.698023              2.886354    12.244388               C    50.000000 NOVEL_CANDIDATE
+TIC 407393440      18 11.681307 1881.503811              2.482448    11.632636               C    50.000000 NOVEL_CANDIDATE
+TIC 150908292      17 11.563212 1047.504939              2.164242     7.378797               C    50.000000 NOVEL_CANDIDATE
+TIC 115480517      17  3.910887  655.228415              1.794629     6.226376               C    50.000000 NOVEL_CANDIDATE
+TIC 461590771      18  8.130528  757.447464              1.751263     6.069124               C    50.000000 NOVEL_CANDIDATE
+TIC 357370384      57 13.493918  415.532719              1.118307     5.577353               C    50.000000 NOVEL_CANDIDATE
+TIC 405210193      42  8.703013  675.006739              2.152441     5.522776               C    50.000000 NOVEL_CANDIDATE
+TIC 415779282      17 10.631570 1023.139115              2.328222     5.247562               C    50.000000 NOVEL_CANDIDATE
+ TIC 44453366      17  7.286217  617.991996              1.660985     4.641554               C    50.000000 NOVEL_CANDIDATE
+TIC 327000122      17  0.000000    0.000000              0.000000     0.000000               C    50.000000 NOVEL_CANDIDATE
+TIC 405189795      42 10.162978  603.225651              1.841837     5.843320               C    49.766511 NOVEL_CANDIDATE
+
+Yeni adaylar CSV: /mnt/c/Users/Gamze/Desktop/projects/AstroTransit/outputs_discovery/novel_candidates.csv
+Yeni adaylar Parquet: /mnt/c/Users/Gamze/Desktop/projects/AstroTransit/outputs_discovery/novel_candidates.parquet
+
+Tum sonuclar: /mnt/c/Users/Gamze/Desktop/projects/AstroTransit/outputs_discovery/discovery_classified.parquet
+
+========================================================================
+  22 POTANSIYEL YENI GEZEGEN ADAYI BULUNDU
+========================================================================

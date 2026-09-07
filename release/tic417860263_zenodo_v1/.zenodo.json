@@ -1,0 +1,22 @@
+{
+  "title": "AstroTransit Discovery Note: TIC 417860263 / HD 224792 as a Strong Non-TOI Transit Candidate",
+  "upload_type": "dataset",
+  "publication_date": "2026-07-11",
+  "access_right": "open",
+  "license": "cc-by-4.0",
+  "description": "Evidence package for TIC 417860263 (HD 224792), a strong non-TOI transit candidate identified by the AstroTransit pipeline. The deposit includes MAP and WSL-based MCMC outputs, catalog cross-check reports, simplified false-positive probability analysis, refined multi-sector forced-ephemeris validation products, figures, config files, and an environment snapshot. Current status: strong candidate, not formally validated.",
+  "keywords": [
+    "exoplanets",
+    "TESS",
+    "transit photometry",
+    "planet candidate",
+    "sub-Neptune",
+    "MCMC",
+    "Bayesian inference",
+    "AstroTransit",
+    "TIC 417860263",
+    "HD 224792"
+  ],
+  "notes": "Fill in creators manually on Zenodo before publishing. This candidate is not formally validated and not confirmed.",
+  "version": "1.0.0"
+}

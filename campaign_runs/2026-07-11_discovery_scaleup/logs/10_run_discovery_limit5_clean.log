@@ -1,0 +1,46 @@
+========================================================================
+  TOI-Disi Kesif Taramasi v2
+========================================================================
+  Toplam hedef: 5
+  Gorsel: kapali
+  Output: outputs_discovery/
+========================================================================
+
+[1/5] TIC 238432056 S17 Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 37 durations
+Searching 13021 data points, 2083 periods from 0.601 to 11.741 days
+Using 1 of 8 CPU threads
+Searching for best T0 for period 3.84735 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 37 durations
+Searching 13021 data points, 2083 periods from 0.601 to 11.741 days
+Using 1 of 8 CPU threads
+Searching for best T0 for period 3.84735 days
+| aday yok
+[2/5] TIC 117927293 S57 | aday yok
+[3/5] TIC 194236179 S17 | aday yok
+[4/5] TIC 378534800 S17 Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 37 durations
+Searching 14579 data points, 2069 periods from 0.602 to 11.679 days
+Using 1 of 8 CPU threads
+Searching for best T0 for period 0.64465 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 37 durations
+Searching 14579 data points, 2069 periods from 0.602 to 11.679 days
+Using 1 of 8 CPU threads
+Searching for best T0 for period 0.64465 days
+| aday yok
+[5/5] TIC 395318337 S83 | aday yok
+
+========================================================================
+  KESIF TARAMASI TAMAMLANDI
+========================================================================
+  Sure: 4.1 dk
+  Basarili: 5
+  Basarisiz: 0
+  Aday bulunan: 0
+  Onayli: 0
+
+  Sonraki adim:
+    python scripts/discovery/classify_novelty.py
+========================================================================

@@ -1,0 +1,21 @@
+=== TIC 354532520 S17 ===
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 30 durations
+Searching 13019 data points, 109 periods from 8.937 to 10.895 days
+Using 1 of 8 CPU threads
+Searching for best T0 for period 9.90566 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 30 durations
+Searching 13019 data points, 109 periods from 8.937 to 10.895 days
+Using 1 of 8 CPU threads
+Searching for best T0 for period 9.90566 days
+========================================================================
+Novel Follow-up Sonucu
+========================================================================
+{'target_id': 'TIC 354532520', 'success': True, 'sectors_processed': 1, 'candidates_found': 1, 'candidates_confirmed': 1, 'error': ''}
+{'target_id': 'TIC 354532520', 'sector': 17, 'success': True, 'has_candidate': True, 'candidate_confirmed': True, 'error': '', 'score': 100.0, 'class': 'A'}
+========================================================================
+Cikti dizini: outputs_novel_followup
+Gorseller: outputs_novel_followup/figures
+JSON: outputs_novel_followup/json
+Parquet: outputs_novel_followup/parquet

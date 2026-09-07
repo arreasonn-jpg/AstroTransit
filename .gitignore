@@ -1,0 +1,4 @@
+﻿.venv-validate/
+.venv/
+.venv-wsl/
+outputs*/

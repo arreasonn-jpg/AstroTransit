@@ -1,0 +1,659 @@
+"""
+TESS uçtan uca transit arama pipeline'ı.
+
+Tek bir hedef veya sektör için tam iş akışını çalıştırır:
+
+    Light Curve İndirme
+        ↓
+    Normalize → Temizle → Detrend
+        ↓
+    BLS Tarama → TLS Doğrulama
+        ↓
+    MAP Fit (→ opsiyonel PyMC)
+        ↓
+    Kalite Değerlendirme
+        ↓
+    Görselleştirme
+        ↓
+    Parquet + JSON + CSV Çıktı
+"""
+
+from __future__ import annotations
+
+from dataclasses import dataclass, field
+from typing import Optional, Union
+
+from loguru import logger
+
+from astrotransit.settings import Settings, get_settings
+
+# Veri erişimi
+from astrotransit.data.tess_client import (
+    TESSClient,
+    TESSLightCurveData,
+    TESSMultiSectorData,
+    TESSNoDataError,
+)
+from astrotransit.data.catalog_client import CatalogClient, StellarProperties
+
+# Ön işleme
+from astrotransit.preprocessing.pipeline import (
+    TESSPreprocessingPipeline,
+    PreprocessedLightCurve,
+)
+
+# Tespit
+from astrotransit.detection.cascade import (
+    CascadeDetector,
+    CascadeCandidate,
+    CascadeStatus,
+)
+
+# Modelleme
+from astrotransit.modeling.fitter import ModelingOrchestrator, FitResult
+from astrotransit.modeling.parameters import TransitPriors
+
+# Kalite
+from astrotransit.quality.pipeline import (
+    QualityEvaluationPipeline,
+    QualityEvaluationResult,
+)
+
+# Çıktı
+from astrotransit.outputs.writers import OutputManager
+from astrotransit.outputs.schemas import TransitCandidateRecord
+
+# Görselleştirme
+from astrotransit.visualization.report_generator import (
+    VisualizationReportGenerator,
+    VisualizationReport,
+)
+
+
+# ──────────────────────────────────────
+# Pipeline sonuç veri modeli
+# ──────────────────────────────────────
+@dataclass
+class TESSTargetResult:
+    """
+    Tek bir TESS hedefinin pipeline sonucu.
+
+    Attributes
+    ----------
+    target_id : str
+        Hedef TIC ID.
+    success : bool
+        Pipeline başarılı tamamlandı mı?
+    sectors_processed : int
+        İşlenen sektör sayısı.
+    candidates_found : int
+        Bulunan transit adayı sayısı.
+    candidates_confirmed : int
+        Onaylanan transit adayı sayısı.
+    sector_results : list[TESSSectorResult]
+        Sektör bazlı sonuçlar.
+    stellar_props : Optional[StellarProperties]
+        Yıldız özellikleri.
+    error : str
+        Hata mesajı (başarısızsa).
+    """
+
+    target_id: str
+    success: bool = False
+    sectors_processed: int = 0
+    candidates_found: int = 0
+    candidates_confirmed: int = 0
+    sector_results: list = field(default_factory=list)
+    stellar_props: Optional[StellarProperties] = None
+    error: str = ""
+
+    def summary(self) -> dict:
+        return {
+            "target_id": self.target_id,
+            "success": self.success,
+            "sectors_processed": self.sectors_processed,
+            "candidates_found": self.candidates_found,
+            "candidates_confirmed": self.candidates_confirmed,
+            "error": self.error,
+        }
+
+
+@dataclass
+class TESSSectorResult:
+    """
+    Tek bir sektörün pipeline sonucu.
+
+    Attributes
+    ----------
+    target_id : str
+        Hedef TIC ID.
+    sector : int
+        Sektör numarası.
+    success : bool
+        Sektör başarılı mı?
+    has_candidate : bool
+        Transit adayı var mı?
+    candidate_confirmed : bool
+        Cascade onayladı mı?
+    candidate : Optional[CascadeCandidate]
+        Cascade sonucu.
+    fit_result : Optional[FitResult]
+        Fit sonucu (MAP veya MCMC).
+    quality : Optional[QualityEvaluationResult]
+        Kalite değerlendirmesi.
+    record : Optional[TransitCandidateRecord]
+        Çıktı kaydı.
+    viz : Optional[VisualizationReport]
+        Görsel rapor.
+    error : str
+        Hata mesajı.
+    """
+
+    target_id: str
+    sector: int
+    success: bool = False
+    has_candidate: bool = False
+    candidate_confirmed: bool = False
+    candidate: Optional[CascadeCandidate] = None
+    fit_result: Optional[FitResult] = None
+    quality: Optional[QualityEvaluationResult] = None
+    record: Optional[TransitCandidateRecord] = None
+    viz: Optional[VisualizationReport] = None
+    error: str = ""
+
+    def summary(self) -> dict:
+        base = {
+            "target_id": self.target_id,
+            "sector": self.sector,
+            "success": self.success,
+            "has_candidate": self.has_candidate,
+            "candidate_confirmed": self.candidate_confirmed,
+            "error": self.error,
+        }
+        if self.quality is not None:
+            base["score"] = self.quality.score.total_score
+            base["class"] = self.quality.score.candidate_class.value
+        return base
+
+
+# ──────────────────────────────────────
+# Ana TESS Pipeline sınıfı
+# ──────────────────────────────────────
+class TESSPipeline:
+    """
+    TESS uçtan uca transit arama pipeline'ı.
+
+    Tek bir hedef için tüm sektörleri işler.
+    Her sektör bağımsız olarak analiz edilir.
+
+    Parameters
+    ----------
+    settings : Settings, opsiyonel
+        Proje konfigürasyonu.
+    output_manager : OutputManager, opsiyonel
+        Çıktı yöneticisi. Verilmezse yeni oluşturulur.
+    force_mcmc : bool
+        Tüm adaylara MCMC uygula.
+    force_map : bool
+        Sadece MAP kullan.
+    skip_visualization : bool
+        Görselleştirme adımını atla.
+    skip_catalog : bool
+        Katalog sorgulamasını atla.
+    """
+
+    def __init__(
+        self,
+        settings: Optional[Settings] = None,
+        output_manager: Optional[OutputManager] = None,
+        force_mcmc: bool = False,
+        force_map: bool = False,
+        skip_visualization: bool = False,
+        skip_catalog: bool = False,
+    ):
+        if settings is None:
+            settings = get_settings()
+
+        self.settings = settings
+        self.skip_visualization = skip_visualization
+        self.skip_catalog = skip_catalog
+
+        # ── Alt modüller ──
+        tess_cfg = settings.tess
+
+        self._tess_client = TESSClient(
+            author=tess_cfg.author,
+            exptime=tess_cfg.exptime,
+            quality_bitmask=tess_cfg.quality_bitmask,
+            cache_dir=settings.general.temp_dir + "/tess",
+            cache_ttl_hours=tess_cfg.cache_ttl_hours,
+            use_cache=tess_cfg.use_cache,
+        )
+
+        self._catalog = CatalogClient() if not skip_catalog else None
+
+        self._preprocessing = TESSPreprocessingPipeline(
+            settings=settings,
+        )
+
+        self._owns_output_manager = output_manager is None
+        self._output = output_manager or OutputManager(settings=settings)
+
+        self._viz = (
+            VisualizationReportGenerator(settings=settings)
+            if not skip_visualization
+            else None
+        )
+
+        # Cascade ve modelleme per-target oluşturulur
+        # (yıldız parametreleri gerektiğinden)
+        self._force_mcmc = force_mcmc
+        self._force_map = force_map
+
+        logger.info(
+            f"TESSPipeline başlatıldı — "
+            f"author: {tess_cfg.author}, "
+            f"exptime: {tess_cfg.exptime}s, "
+            f"MCMC: {'zorla' if force_mcmc else 'otomatik'}, "
+            f"görsel: {'açık' if not skip_visualization else 'kapalı'}"
+        )
+
+    def run_target(
+        self,
+        target: str | int,
+        sectors: Optional[list[int]] = None,
+    ) -> TESSTargetResult:
+        """
+        Tek bir hedef için tam pipeline'ı çalıştırır.
+
+        Parameters
+        ----------
+        target : str veya int
+            TIC ID veya hedef adı.
+        sectors : list[int], opsiyonel
+            İşlenecek sektörler. Verilmezse tüm mevcut sektörler.
+
+        Returns
+        -------
+        TESSTargetResult
+            Hedef bazlı pipeline sonucu.
+        """
+
+        from astrotransit.utils.identifiers import normalize_tic_id
+
+        target_id = normalize_tic_id(target)
+
+        logger.info(
+            f"{'=' * 60}\n"
+            f"TESS Pipeline başlıyor — {target_id}\n"
+            f"{'=' * 60}"
+        )
+
+        result = TESSTargetResult(target_id=target_id)
+
+        # ═══════════════════════════════
+        # ADIM 1: Yıldız özellikleri
+        # ═══════════════════════════════
+        stellar_props = self._get_stellar_properties(target_id)
+        result.stellar_props = stellar_props
+
+        stellar_radius = stellar_props.radius if stellar_props.is_valid() else 1.0
+        stellar_mass = stellar_props.mass if stellar_props.is_valid() else 1.0
+        stellar_teff = stellar_props.teff if stellar_props.teff > 0 else 5778.0
+
+        # ═══════════════════════════════
+        # ADIM 2: Light curve indirme
+        # ═══════════════════════════════
+        try:
+            if sectors:
+                lc_data_list = []
+                for sec in sectors:
+                    try:
+                        lc = self._tess_client.get_lightcurve(target_id, sector=sec)
+                        lc_data_list.append(lc)
+                    except TESSNoDataError:
+                        logger.warning(f"{target_id} sektör {sec}: veri yok.")
+                    except Exception as e:
+                        logger.error(f"{target_id} sektör {sec}: {e}")
+
+                if not lc_data_list:
+                    result.error = "Hiçbir sektörde veri bulunamadı."
+                    return result
+            else:
+                multi = self._tess_client.get_all_sectors(target_id)
+                lc_data_list = multi.sectors
+
+        except TESSNoDataError as e:
+            result.error = str(e)
+            logger.error(f"{target_id}: {e}")
+            return result
+        except Exception as e:
+            result.error = f"Veri indirme hatası: {e}"
+            logger.error(f"{target_id}: {e}")
+            return result
+
+        # ═══════════════════════════════
+        # ADIM 3-7: Sektör bazlı işleme
+        # ═══════════════════════════════
+        cascade_detector = CascadeDetector(
+            settings=self.settings,
+            stellar_radius=stellar_radius,
+            stellar_mass=stellar_mass,
+        )
+
+        modeling = ModelingOrchestrator(
+            settings=self.settings,
+            stellar_radius=stellar_radius,
+            stellar_mass=stellar_mass,
+            stellar_teff=stellar_teff,
+            force_mcmc=self._force_mcmc,
+            force_map=self._force_map,
+        )
+
+        quality_pipeline = QualityEvaluationPipeline(
+            settings=self.settings,
+            cadence_sec=float(self.settings.tess.exptime),
+        )
+
+        for lc_data in lc_data_list:
+            sector_result = self._process_sector(
+                lc_data=lc_data,
+                cascade_detector=cascade_detector,
+                modeling=modeling,
+                quality_pipeline=quality_pipeline,
+                stellar_props=stellar_props,
+                stellar_radius=stellar_radius,
+                stellar_mass=stellar_mass,
+                stellar_teff=stellar_teff,
+            )
+
+            result.sector_results.append(sector_result)
+
+        # ═══════════════════════════════
+        # Özet istatistikler
+        # ═══════════════════════════════
+        result.sectors_processed = len(result.sector_results)
+        result.candidates_found = sum(
+            1 for s in result.sector_results if s.has_candidate
+        )
+        result.candidates_confirmed = sum(
+            1 for s in result.sector_results if s.candidate_confirmed
+        )
+        result.success = result.sectors_processed > 0
+
+        # Flush çıktılar
+        self._output.flush()
+
+        logger.info(
+            f"{'=' * 60}\n"
+            f"TESS Pipeline tamamlandı — {target_id}\n"
+            f"  Sektör: {result.sectors_processed}\n"
+            f"  Aday: {result.candidates_found}\n"
+            f"  Onaylı: {result.candidates_confirmed}\n"
+            f"{'=' * 60}"
+        )
+
+        return result
+
+    def _process_sector(
+        self,
+        lc_data: TESSLightCurveData,
+        cascade_detector: CascadeDetector,
+        modeling: ModelingOrchestrator,
+        quality_pipeline: QualityEvaluationPipeline,
+        stellar_props: StellarProperties,
+        stellar_radius: float,
+        stellar_mass: float,
+        stellar_teff: float,
+    ) -> TESSSectorResult:
+        """
+        Tek bir sektörü işler.
+
+        Parameters
+        ----------
+        lc_data : TESSLightCurveData
+            Ham light curve.
+        cascade_detector : CascadeDetector
+            Transit tespit motoru.
+        modeling : ModelingOrchestrator
+            Modelleme orkestratörü.
+        quality_pipeline : QualityEvaluationPipeline
+            Kalite değerlendirme pipeline'ı.
+        stellar_props : StellarProperties
+            Yıldız özellikleri.
+        stellar_radius, stellar_mass, stellar_teff : float
+            Yıldız fiziksel parametreleri.
+
+        Returns
+        -------
+        TESSSectorResult
+            Sektör pipeline sonucu.
+        """
+
+        target_id = lc_data.target_id
+        sector = lc_data.sector
+
+        logger.info(
+            f"── Sektör {sector} işleniyor — "
+            f"{target_id} ({lc_data.n_points_clean} nokta)"
+        )
+
+        sector_result = TESSSectorResult(
+            target_id=target_id,
+            sector=sector,
+        )
+
+        # ── Ön işleme ──
+        try:
+            preprocessed = self._preprocessing.run(lc_data)
+            detrended = preprocessed.detrended
+            normalized = preprocessed.normalized
+        except Exception as e:
+            sector_result.error = f"Ön işleme hatası: {e}"
+            logger.error(f"Sektör {sector} ön işleme: {e}")
+            return sector_result
+
+        # ── Transit tespiti ──
+        try:
+            candidate = cascade_detector.detect(detrended)
+        except Exception as e:
+            sector_result.error = f"Tespit hatası: {e}"
+            logger.error(f"Sektör {sector} tespit: {e}")
+            return sector_result
+
+        sector_result.candidate = candidate
+        sector_result.has_candidate = (
+            candidate.status != CascadeStatus.BLS_FAILED
+        )
+        sector_result.candidate_confirmed = candidate.confirmed
+
+        # ── Aday yoksa erken çık ──
+        if candidate.status == CascadeStatus.BLS_FAILED:
+            sector_result.success = True
+            logger.info(
+                f"Sektör {sector}: transit adayı bulunamadı."
+            )
+
+            # Yine de grafik üretebiliriz (boş sonuç)
+            if self._viz is not None:
+                try:
+                    sector_result.viz = self._viz.generate(
+                        detrended=detrended,
+                        normalized=normalized,
+                    )
+                except Exception as e:
+                    logger.warning(f"Sektör {sector} görsel: {e}")
+
+            return sector_result
+
+        # ── Modelleme (onaylı adaylar için) ──
+        fit_result = None
+
+        if candidate.confirmed:
+            try:
+                fit_result = modeling.fit(detrended, candidate)
+                sector_result.fit_result = fit_result
+            except Exception as e:
+                logger.warning(f"Sektör {sector} modelleme: {e}")
+
+        # ── Kalite değerlendirmesi ──
+        quality_result = None
+
+        try:
+            quality_result = quality_pipeline.evaluate(
+                detrended, candidate, fit_result
+            )
+            sector_result.quality = quality_result
+        except Exception as e:
+            logger.warning(f"Sektör {sector} kalite: {e}")
+
+        # ── Çıktılar ──
+        try:
+            record = self._output.write(
+                candidate=candidate,
+                quality_result=quality_result,
+                fit_result=fit_result,
+                stellar_props=stellar_props,
+            )
+            sector_result.record = record
+        except Exception as e:
+            logger.error(f"Sektör {sector} çıktı: {e}")
+
+        # ── Görselleştirme ──
+        if self._viz is not None:
+            try:
+                bls_result = candidate.bls_result
+                tls_result = candidate.tls_result
+
+                score = quality_result.score if quality_result else None
+                vetting = quality_result.vetting if quality_result else None
+
+                sector_result.viz = self._viz.generate(
+                    detrended=detrended,
+                    normalized=normalized,
+                    candidate=candidate,
+                    bls_result=bls_result,
+                    tls_result=tls_result,
+                    score=score,
+                    vetting=vetting,
+                    fit_result=fit_result,
+                    stellar_props=stellar_props,
+                )
+            except Exception as e:
+                logger.warning(f"Sektör {sector} görsel: {e}")
+
+        sector_result.success = True
+
+        # Özet log
+        if quality_result is not None:
+            logger.info(
+                f"Sektör {sector} tamamlandı — "
+                f"durum: {candidate.status.value}, "
+                f"sınıf: {quality_result.score.candidate_class.value}, "
+                f"skor: {quality_result.score.total_score:.0f}"
+            )
+        else:
+            logger.info(
+                f"Sektör {sector} tamamlandı — "
+                f"durum: {candidate.status.value}"
+            )
+
+        return sector_result
+
+    def _get_stellar_properties(
+        self,
+        target_id: str,
+    ) -> StellarProperties:
+        """Yıldız özelliklerini sorgular."""
+
+        if self._catalog is None:
+            return StellarProperties(source="skipped")
+
+        try:
+            props = self._catalog.get_stellar_properties(target_id)
+            if props.is_valid():
+                logger.info(
+                    f"Yıldız özellikleri — "
+                    f"Teff={props.teff:.0f}K, "
+                    f"R={props.radius:.3f}Rs, "
+                    f"M={props.mass:.3f}Ms"
+                )
+            return props
+        except Exception as e:
+            logger.warning(f"Katalog sorgusu başarısız: {e}")
+            return StellarProperties(source="failed")
+
+    def run_batch(
+        self,
+        targets: list[str | int],
+        sectors: Optional[list[int]] = None,
+    ) -> list[TESSTargetResult]:
+        """
+        Birden fazla hedef için pipeline'ı sırayla çalıştırır.
+
+        Parameters
+        ----------
+        targets : list
+            Hedef listesi (TIC ID'ler).
+        sectors : list[int], opsiyonel
+            İşlenecek sektörler (tüm hedefler için aynı).
+
+        Returns
+        -------
+        list[TESSTargetResult]
+            Hedef bazlı sonuçlar.
+        """
+
+        logger.info(
+            f"Toplu pipeline başlıyor — {len(targets)} hedef"
+        )
+
+        results = []
+
+        for i, target in enumerate(targets, 1):
+            logger.info(
+                f"[{i}/{len(targets)}] "
+                f"Hedef: {target}"
+            )
+
+            try:
+                result = self.run_target(target, sectors=sectors)
+                results.append(result)
+            except Exception as e:
+                logger.error(f"Hedef {target} kritik hata: {e}")
+                from astrotransit.utils.identifiers import normalize_tic_id
+                results.append(TESSTargetResult(
+                    target_id=normalize_tic_id(target) if isinstance(target, (str, int)) else str(target),
+                    success=False,
+                    error=str(e),
+                ))
+
+        # Toplu çıktı
+        self._output.flush()
+
+        # Özet
+        n_success = sum(1 for r in results if r.success)
+        n_candidates = sum(r.candidates_confirmed for r in results)
+
+        logger.info(
+            f"Toplu pipeline tamamlandı — "
+            f"{n_success}/{len(results)} başarılı, "
+            f"{n_candidates} onaylı aday"
+        )
+
+        return results
+
+    def close(self) -> None:
+        """Pipeline'ı kapatır ve çıktıları finalize eder."""
+
+        if getattr(self, "_owns_output_manager", False):
+            self._output.close()
+            logger.info("TESSPipeline kapatildi (own output manager kapatildi).")
+        else:
+            logger.info("TESSPipeline kapatildi (shared output manager korunuyor).")
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *args):
+        self.close()

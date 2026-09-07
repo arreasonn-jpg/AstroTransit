@@ -1,0 +1,7 @@
+source_id,sector,period,planet_radius_rearth,equilibrium_temperature_k,snr_adopted,n_transits,candidate_class,discovery_priority,science_priority_bucket,science_priority_score,science_priority_reason
+TIC 352146741,17,5.002255216470168,0.7972532258784599,989.1396613415776,12.23799555851196,5,A,FOLLOWUP,SMALL_COOL_CORE,95,followup; class A; snr>=10; multi-transit; small-cool-core
+TIC 347299560,24,4.767362724798655,0.7291940451543587,859.8956968038264,10.804278558282869,6,A,FOLLOWUP,SMALL_COOL_CORE,95,followup; class A; snr>=10; multi-transit; small-cool-core
+TIC 238432056,17,3.8473474971877732,2.1005441513178473,1048.7869055529106,28.399098464563668,7,C,WATCHLIST,SMALL_COOL_CORE,62,watchlist; class C; snr>=20; multi-transit; moderate odd-even mismatch; small-cool-core
+TIC 83959472,17,9.706017820272947,1.697106686982524,709.0756600209581,9.668669177189093,3,A,REJECT,SMALL_COOL_CORE,60,class A; snr>=7.5; 3+ transits; small-cool-core
+TIC 439949948,17,6.741638752115444,0.7609852432817136,559.0586091384658,7.9693993731543165,3,A,REJECT,SMALL_COOL_CORE,60,class A; snr>=7.5; 3+ transits; small-cool-core
+TIC 117929446,57,13.794193046854224,0.7887513953703436,616.2741009221679,7.90884832835533,3,A,REJECT,SMALL_COOL_CORE,52,class A; snr>=7.5; 3+ transits; moderate odd-even mismatch; small-cool-core

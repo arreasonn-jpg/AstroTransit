@@ -1,0 +1,9 @@
+    source_id  sector period  planet_radius_rearth  equilibrium_temperature_k  snr_adopted candidate_class  total_score   fit_method is_false_positive is_binary_suspect            status
+TIC 238432056      17   None              2.100544                1048.786906    28.399098               C         50.0 cascade_only              None              None MAP_FOLLOWUP_DONE
+TIC 352179145      17   None              2.053441                 512.611537    18.873119               C         50.0 cascade_only              None              None MAP_FOLLOWUP_DONE
+TIC 439946042      17   None              0.979078                 797.701192     7.452918               A        100.0          map              None              None MAP_FOLLOWUP_DONE
+TIC 427332476      42   None              1.121718                 651.530537     7.207004               A        100.0          map              None              None MAP_FOLLOWUP_DONE
+TIC 373513128      18   None              1.378364                 856.148821     6.566776               A        100.0          map              None              None MAP_FOLLOWUP_DONE
+TIC 354532520      17   None              0.719979                 704.744471     6.401414               A        100.0          map              None              None MAP_FOLLOWUP_DONE
+TIC 283858887      57   None              0.722934                 769.177918     5.690487               A        100.0          map              None              None MAP_FOLLOWUP_DONE
+TIC 411524787      17   None              0.974041                 743.091258     6.802850               A        100.0          map              None              None MAP_FOLLOWUP_DONE

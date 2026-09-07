@@ -1,0 +1,15 @@
+{
+  "target_id": "TIC 152366332",
+  "tic_id": 152366332,
+  "sector": 100,
+  "period": 2.0884,
+  "depth_ppm": 1282.9,
+  "rp_rs": 0.0241,
+  "crowding_ratio": 0.978,
+  "nearest_neighbor_arcsec": 14.8,
+  "simple_fpp": 0.018,
+  "p_planet_proxy": 0.982,
+  "dominant_scenario": "planet",
+  "fp_confidence": "HIGH_CONFIDENCE_PLANET",
+  "triage_decision": "PROCEED_TO_FOLLOWUP"
+}

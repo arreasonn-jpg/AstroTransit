@@ -1,0 +1,2 @@
+[console_scripts]
+astrotransit = cli.main:app

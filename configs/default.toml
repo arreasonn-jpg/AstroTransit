@@ -1,0 +1,114 @@
+﻿[project]
+name = "AstroTransit"
+version = "0.1.0"
+
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# Genel ayarlar
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+[general]
+log_level = "INFO"                     # DEBUG, INFO, WARNING, ERROR
+temp_dir = ".cache/astrotransit"       # geÃ§ici dosyalar
+output_dir = "outputs"                 # sonuÃ§ dizini
+random_seed = 42
+
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# TESS veri eriÅŸim ayarlarÄ±
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+[tess]
+use_cache = true                       # indirilen light curve geÃ§ici olarak saklanÄ±r
+cache_ttl_hours = 24                   # cache sÃ¼resi (saat)
+author = "SPOC"                        # SPOC veya TESS-SPOC
+exptime = 120                          # kadans (saniye): 20, 120, 600
+quality_bitmask = "default"            # "default", "hard", "hardest" veya Ã¶zel int
+
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# JWST veri eriÅŸim ayarlarÄ±
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+[jwst]
+use_cache = true
+cache_ttl_hours = 48
+product_type = "stage3"                # "stage2" veya "stage3"
+instruments = ["NIRSpec", "NIRISS", "MIRI", "NIRCam"]
+
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# Ã–n iÅŸleme ayarlarÄ±
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+[preprocessing]
+sigma_clip_upper = 5.0                 # Ã¼st sigma kesimi
+sigma_clip_lower = 5.0                 # alt sigma kesimi
+nan_fill_method = "interpolate"        # "interpolate", "median", "drop"
+
+[preprocessing.detrending]
+method = "biweight"                    # "biweight", "cosine", "gp", "spline"
+window_length = 0.5                    # gÃ¼n cinsinden pencere geniÅŸliÄŸi
+break_tolerance = 0.5                  # veri boÅŸluk toleransÄ± (gÃ¼n)
+
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# Transit arama ayarlarÄ±
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+[detection]
+min_period = 0.3                       # minimum arama periyodu (gÃ¼n)
+max_period = 30.0                      # maksimum arama periyodu (gÃ¼n)
+min_transits = 2                       # minimum transit sayÄ±sÄ±
+frequency_factor = 2.0                 # frekans Ã¶rnekleme faktÃ¶rÃ¼
+
+[detection.bls]
+duration_range = [0.01, 0.2]           # transit sÃ¼re aralÄ±ÄŸÄ± (gÃ¼n cinsinden, periyodun kesri)
+n_durations = 20                       # test edilecek sÃ¼re sayÄ±sÄ±
+min_power_threshold = 7.0              # minimum BLS gÃ¼Ã§ eÅŸiÄŸi (SDE)
+
+[detection.tls]
+min_sde_threshold = 6.0                # minimum TLS SDE eÅŸiÄŸi
+use_transit_template = true            # gerÃ§ekÃ§i transit ÅŸekli kullanÄ±lsÄ±n mÄ±
+oversampling_factor = 3                # frekans oversampling
+period_search_window = 0.30   # 0.10 â†’ 0.30 (%30 pencere)
+
+[detection.cascade]
+require_both = true
+period_tolerance = 0.02
+
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# Modelleme ayarlarÄ±
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+[modeling]
+fit_method = "map"                     # "map" veya "mcmc"
+mcmc_auto_upgrade = true               # gÃ¼Ã§lÃ¼ adaylarda otomatik MCMC'ye geÃ§
+
+[modeling.map]
+optimizer = "scipy"                    # scipy L-BFGS-B
+max_iterations = 2000
+
+[modeling.mcmc]
+sampler = "nuts"                       # PyMC NUTS sampler
+chains = 2
+draws = 1500
+tune = 1500
+target_accept = 0.99
+mcmc_snr_threshold = 10.0             # MCMC sadece SNR bu deÄŸerin Ã¼stÃ¼ndeyse Ã§alÄ±ÅŸÄ±r
+
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# Kalite ve doÄŸrulama ayarlarÄ±
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+[quality]
+min_snr = 5.0                          # minimum sinyal-gÃ¼rÃ¼ltÃ¼ oranÄ±
+max_residual_rms = 0.005               # maksimum residual RMS
+min_data_completeness = 0.80           # minimum veri tamlÄ±ÄŸÄ± (0-1)
+
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# Ã‡Ä±ktÄ± ayarlarÄ±
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+[outputs]
+formats = ["parquet", "json"]          # ana Ã§Ä±ktÄ± formatlarÄ±
+extra_formats = ["csv"]                # ek dÄ±ÅŸa aktarma formatlarÄ±
+save_figures = true
+figure_format = "png"                  # "png", "pdf", "svg"
+figure_dpi = 150
+generate_html_report = false           # HTML rapor Ã¼retilsin mi
+
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# Benchmark ayarlarÄ±
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+[benchmark]
+confirmed_targets_file = "benchmarks/tess/confirmed_targets.parquet"
+false_positives_file = "benchmarks/tess/false_positives.parquet"
+quiet_stars_file = "benchmarks/tess/quiet_stars.parquet"

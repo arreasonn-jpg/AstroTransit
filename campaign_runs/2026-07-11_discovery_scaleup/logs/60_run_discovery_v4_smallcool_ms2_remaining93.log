@@ -1,0 +1,675 @@
+========================================================================
+  TOI-Disi Kesif Taramasi v2
+========================================================================
+  Toplam hedef: 93
+  Gorsel: kapali
+  Output: outputs_discovery/
+========================================================================
+
+[1/93] TIC 373236404 S18 Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 37 durations
+Searching 15118 data points, 2097 periods from 0.601 to 11.808 days
+Using 1 of 8 CPU threads
+Searching for best T0 for period 11.36081 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 37 durations
+Searching 15118 data points, 2097 periods from 0.601 to 11.808 days
+Using 1 of 8 CPU threads
+Searching for best T0 for period 11.36081 days
+| aday yok
+[2/93] TIC 468255882 S19 Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 30 durations
+Searching 16953 data points, 132 periods from 9.88 to 12.528 days
+Using 1 of 8 CPU threads
+Searching for best T0 for period 10.12479 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 30 durations
+Searching 16953 data points, 132 periods from 9.88 to 12.528 days
+Using 1 of 8 CPU threads
+Searching for best T0 for period 10.12479 days
+| aday yok
+[3/93] TIC 373062137 S18 Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 37 durations
+Searching 14981 data points, 2091 periods from 0.602 to 11.783 days
+Using 1 of 8 CPU threads
+Searching for best T0 for period 11.52828 days
+| ADAY BULUNDU | Sinif A | Skor 100
+[4/93] TIC 461408984 S17 | aday yok
+[5/93] TIC 461585810 S18 Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 37 durations
+Searching 14320 data points, 2044 periods from 0.601 to 11.558 days
+Using 1 of 8 CPU threads
+Searching for best T0 for period 3.48975 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 37 durations
+Searching 14320 data points, 2044 periods from 0.601 to 11.558 days
+Using 1 of 8 CPU threads
+Searching for best T0 for period 3.48975 days
+| aday yok
+[6/93] TIC 461593015 S19 | aday yok
+[7/93] TIC 407430919 S18 Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 37 durations
+Searching 15123 data points, 2097 periods from 0.601 to 11.808 days
+Using 1 of 8 CPU threads
+Searching for best T0 for period 11.58173 days
+| ADAY BULUNDU | Sinif A | Skor 100
+[8/93] TIC 347304330 S57 | aday yok
+[9/93] TIC 428737024 S18 Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 37 durations
+Searching 15122 data points, 2097 periods from 0.601 to 11.808 days
+Using 1 of 8 CPU threads
+Searching for best T0 for period 3.51127 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 37 durations
+Searching 15122 data points, 2097 periods from 0.601 to 11.808 days
+Using 1 of 8 CPU threads
+Searching for best T0 for period 3.51127 days
+| aday yok
+[10/93] TIC 326682209 S57 Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 17979 data points, 2648 periods from 0.601 to 14.376 days
+Using 1 of 8 CPU threads
+Searching for best T0 for period 14.13345 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 17979 data points, 2648 periods from 0.601 to 14.376 days
+Using 1 of 8 CPU threads
+Searching for best T0 for period 14.13345 days
+| ADAY BULUNDU | Sinif A | Skor 100
+
+  === ILERLEME (10/93) ===
+  Tamamlanan:   10
+  Basarisiz:    0
+  Aday bulunan: 3
+  Onayli:       3
+  Sure:         9.9 dk
+  ETA:          82.0 dk
+
+[11/93] TIC 373149896 S18 | aday yok
+[12/93] TIC 369730972 S57 | aday yok
+[13/93] TIC 439949948 S17 Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 32 durations
+Searching 13085 data points, 343 periods from 6.72 to 11.651 days
+Using 1 of 8 CPU threads
+Searching for best T0 for period 6.71989 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 32 durations
+Searching 13085 data points, 343 periods from 6.72 to 11.651 days
+Using 1 of 8 CPU threads
+Searching for best T0 for period 6.71989 days
+| ADAY BULUNDU | Sinif A | Skor 100
+[14/93] TIC 468258403 S18 Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 32 durations
+Searching 14188 data points, 210 periods from 7.03 to 11.498 days
+Using 1 of 8 CPU threads
+Searching for best T0 for period 7.94105 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 32 durations
+Searching 14188 data points, 210 periods from 7.03 to 11.498 days
+Using 1 of 8 CPU threads
+Searching for best T0 for period 7.94105 days
+| aday yok
+[15/93] TIC 461579208 S18 | aday yok
+[16/93] TIC 352179145 S17 Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 33 durations
+Searching 13086 data points, 314 periods from 6.531 to 11.651 days
+Using 1 of 8 CPU threads
+Searching for best T0 for period 11.43934 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 33 durations
+Searching 13086 data points, 314 periods from 6.531 to 11.651 days
+Using 1 of 8 CPU threads
+Searching for best T0 for period 11.43934 days
+| aday yok
+[17/93] TIC 388605264 S18 | aday yok
+[18/93] TIC 407459603 S18 Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 32 durations
+Searching 15064 data points, 241 periods from 6.87 to 11.808 days
+Using 1 of 8 CPU threads
+Searching for best T0 for period 9.37481 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 32 durations
+Searching 15064 data points, 241 periods from 6.87 to 11.808 days
+Using 1 of 8 CPU threads
+Searching for best T0 for period 9.37481 days
+| aday yok
+[19/93] TIC 388633928 S18 | aday yok
+[20/93] TIC 407393440 S18 Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 37 durations
+Searching 14625 data points, 2070 periods from 0.601 to 11.681 days
+Using 1 of 8 CPU threads
+Searching for best T0 for period 11.68131 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 37 durations
+Searching 14625 data points, 2070 periods from 0.601 to 11.681 days
+Using 1 of 8 CPU threads
+Searching for best T0 for period 11.68131 days
+| aday yok
+
+  === ILERLEME (20/93) ===
+  Tamamlanan:   20
+  Basarisiz:    0
+  Aday bulunan: 4
+  Onayli:       4
+  Sure:         16.8 dk
+  ETA:          61.3 dk
+
+[21/93] TIC 468282175 S18 | aday yok
+[22/93] TIC 403021108 S42 | aday yok
+[23/93] TIC 461342461 S24 Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 18194 data points, 2402 periods from 0.602 to 13.238 days
+Using 1 of 8 CPU threads
+Searching for best T0 for period 9.82908 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 18194 data points, 2402 periods from 0.602 to 13.238 days
+Using 1 of 8 CPU threads
+Searching for best T0 for period 9.82908 days
+| aday yok
+[24/93] TIC 388637626 S18 Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 37 durations
+Searching 13406 data points, 1982 periods from 0.602 to 11.268 days
+Using 1 of 8 CPU threads
+Searching for best T0 for period 11.23931 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 37 durations
+Searching 13406 data points, 1982 periods from 0.602 to 11.268 days
+Using 1 of 8 CPU threads
+Searching for best T0 for period 11.23931 days
+| aday yok
+[25/93] TIC 327000122 S17 | aday yok
+[26/93] TIC 407423779 S18 Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 37 durations
+Searching 15115 data points, 2097 periods from 0.601 to 11.808 days
+Using 1 of 8 CPU threads
+Searching for best T0 for period 10.58084 days
+| ADAY BULUNDU | Sinif A | Skor 100
+[27/93] TIC 238432056 S17 Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 37 durations
+Searching 13021 data points, 2083 periods from 0.601 to 11.741 days
+Using 1 of 8 CPU threads
+Searching for best T0 for period 3.84735 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 37 durations
+Searching 13021 data points, 2083 periods from 0.601 to 11.741 days
+Using 1 of 8 CPU threads
+Searching for best T0 for period 3.84735 days
+| aday yok
+[28/93] TIC 461591456 S18 | aday yok
+[29/93] TIC 331928059 S52 Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 31 durations
+Searching 14691 data points, 160 periods from 9.131 to 12.216 days
+Using 1 of 8 CPU threads
+Searching for best T0 for period 12.09949 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 31 durations
+Searching 14691 data points, 160 periods from 9.131 to 12.216 days
+Using 1 of 8 CPU threads
+Searching for best T0 for period 12.09949 days
+| aday yok
+[30/93] TIC 468258381 S18 | aday yok
+
+  === ILERLEME (30/93) ===
+  Tamamlanan:   30
+  Basarisiz:    0
+  Aday bulunan: 5
+  Onayli:       5
+  Sure:         24.5 dk
+  ETA:          51.4 dk
+
+[31/93] TIC 461590771 S18 Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 37 durations
+Searching 14163 data points, 2029 periods from 0.601 to 11.488 days
+Using 1 of 8 CPU threads
+Searching for best T0 for period 8.13053 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 37 durations
+Searching 14163 data points, 2029 periods from 0.601 to 11.488 days
+Using 1 of 8 CPU threads
+Searching for best T0 for period 8.13053 days
+| aday yok
+[32/93] TIC 437739969 S17 Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 30 durations
+Searching 13014 data points, 108 periods from 8.929 to 10.902 days
+Using 1 of 8 CPU threads
+Searching for best T0 for period 10.23617 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 30 durations
+Searching 13014 data points, 108 periods from 8.929 to 10.902 days
+Using 1 of 8 CPU threads
+Searching for best T0 for period 10.23617 days
+| aday yok
+[33/93] TIC 373150657 S18 Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 37 durations
+Searching 15121 data points, 2097 periods from 0.601 to 11.808 days
+Using 1 of 8 CPU threads
+Searching for best T0 for period 0.62289 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 37 durations
+Searching 15121 data points, 2097 periods from 0.601 to 11.808 days
+Using 1 of 8 CPU threads
+Searching for best T0 for period 0.62289 days
+| ADAY BULUNDU | Sinif A | Skor 100
+[34/93] TIC 437752575 S17 Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 31 durations
+Searching 13013 data points, 259 periods from 7.85 to 11.741 days
+Using 1 of 8 CPU threads
+Searching for best T0 for period 10.55383 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 31 durations
+Searching 13013 data points, 259 periods from 7.85 to 11.741 days
+Using 1 of 8 CPU threads
+Searching for best T0 for period 10.55383 days
+| aday yok
+[35/93] TIC 57916666 S17 Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 24 durations
+Searching 13021 data points, 186 periods from 1.599 to 1.953 days
+Using 1 of 8 CPU threads
+Searching for best T0 for period 1.77289 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 24 durations
+Searching 13021 data points, 186 periods from 1.599 to 1.953 days
+Using 1 of 8 CPU threads
+Searching for best T0 for period 1.77289 days
+| ADAY BULUNDU | Sinif A | Skor 100
+[36/93] TIC 407120936 S24 | aday yok
+[37/93] TIC 388583017 S18 Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 31 durations
+Searching 14253 data points, 175 periods from 8.533 to 11.525 days
+Using 1 of 8 CPU threads
+Searching for best T0 for period 11.29777 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 31 durations
+Searching 14253 data points, 175 periods from 8.533 to 11.525 days
+Using 1 of 8 CPU threads
+Searching for best T0 for period 11.29777 days
+| aday yok
+[38/93] TIC 320049266 S17 | aday yok
+[39/93] TIC 405305758 S42 | aday yok
+[40/93] TIC 468269135 S18 | aday yok
+
+  === ILERLEME (40/93) ===
+  Tamamlanan:   40
+  Basarisiz:    0
+  Aday bulunan: 7
+  Onayli:       7
+  Sure:         31.9 dk
+  ETA:          42.2 dk
+
+[41/93] TIC 468266262 S18 | aday yok
+[42/93] TIC 274805229 S18 Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 37 durations
+Searching 14833 data points, 2088 periods from 0.601 to 11.767 days
+Using 1 of 8 CPU threads
+Searching for best T0 for period 11.68112 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 37 durations
+Searching 14833 data points, 2088 periods from 0.601 to 11.767 days
+Using 1 of 8 CPU threads
+Searching for best T0 for period 11.68112 days
+| ADAY BULUNDU | Sinif A | Skor 100
+[43/93] TIC 468264605 S18 Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 37 durations
+Searching 13046 data points, 1958 periods from 0.601 to 11.15 days
+Using 1 of 8 CPU threads
+Searching for best T0 for period 11.15014 days
+| ADAY BULUNDU | Sinif A | Skor 100
+[44/93] TIC 407315823 S58 | aday yok
+[45/93] TIC 117956546 S57 Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 31 durations
+Searching 17964 data points, 150 periods from 10.629 to 14.375 days
+Using 1 of 8 CPU threads
+Searching for best T0 for period 13.35415 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 31 durations
+Searching 17964 data points, 150 periods from 10.629 to 14.375 days
+Using 1 of 8 CPU threads
+Searching for best T0 for period 13.35415 days
+| aday yok
+[46/93] TIC 347299560 S24 Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 17170 data points, 2402 periods from 0.602 to 13.238 days
+Using 1 of 8 CPU threads
+Searching for best T0 for period 4.73898 days
+| ADAY BULUNDU | Sinif A | Skor 100
+[47/93] TIC 407516437 S18 | aday yok
+[48/93] TIC 365963199 S17 Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 37 durations
+Searching 13021 data points, 2083 periods from 0.601 to 11.741 days
+Using 1 of 8 CPU threads
+Searching for best T0 for period 11.74147 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 37 durations
+Searching 13021 data points, 2083 periods from 0.601 to 11.741 days
+Using 1 of 8 CPU threads
+Searching for best T0 for period 11.74147 days
+| aday yok
+[49/93] TIC 194528489 S17 | aday yok
+[50/93] TIC 194531699 S17 Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 29 durations
+Searching 13075 data points, 141 periods from 2.893 to 3.53 days
+Using 1 of 8 CPU threads
+Searching for best T0 for period 3.21329 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 29 durations
+Searching 13075 data points, 141 periods from 2.893 to 3.53 days
+Using 1 of 8 CPU threads
+Searching for best T0 for period 3.21329 days
+| ADAY BULUNDU | Sinif A | Skor 100
+
+  === ILERLEME (50/93) ===
+  Tamamlanan:   50
+  Basarisiz:    0
+  Aday bulunan: 11
+  Onayli:       11
+  Sure:         40.4 dk
+  ETA:          34.8 dk
+
+[51/93] TIC 306119022 S17 Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 16 durations
+Searching 13019 data points, 255 periods from 0.514 to 0.628 days
+Using 1 of 8 CPU threads
+Searching for best T0 for period 0.57091 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 16 durations
+Searching 13019 data points, 255 periods from 0.514 to 0.628 days
+Using 1 of 8 CPU threads
+Searching for best T0 for period 0.57091 days
+| ADAY BULUNDU | Sinif X | Skor 20
+[52/93] TIC 22527304 S17 Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 37 durations
+Searching 13021 data points, 2083 periods from 0.601 to 11.741 days
+Using 1 of 8 CPU threads
+Searching for best T0 for period 11.74145 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 37 durations
+Searching 13021 data points, 2083 periods from 0.601 to 11.741 days
+Using 1 of 8 CPU threads
+Searching for best T0 for period 11.74145 days
+| aday yok
+[53/93] TIC 201503102 S17 | aday yok
+[54/93] TIC 468869378 S42 | aday yok
+[55/93] TIC 373150643 S18 Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 37 durations
+Searching 15121 data points, 2097 periods from 0.601 to 11.808 days
+Using 1 of 8 CPU threads
+Searching for best T0 for period 11.66601 days
+| ADAY BULUNDU | Sinif A | Skor 100
+[56/93] TIC 320043679 S57 | aday yok
+[57/93] TIC 373278642 S18 Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 37 durations
+Searching 14448 data points, 2063 periods from 0.601 to 11.647 days
+Using 1 of 8 CPU threads
+Searching for best T0 for period 10.65050 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 37 durations
+Searching 14448 data points, 2063 periods from 0.601 to 11.647 days
+Using 1 of 8 CPU threads
+Searching for best T0 for period 10.65050 days
+| aday yok
+[58/93] TIC 403308552 S17 | aday yok
+[59/93] TIC 238305920 S17 Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 37 durations
+Searching 13001 data points, 2083 periods from 0.601 to 11.741 days
+Using 1 of 8 CPU threads
+Searching for best T0 for period 5.67762 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 37 durations
+Searching 13001 data points, 2083 periods from 0.601 to 11.741 days
+Using 1 of 8 CPU threads
+Searching for best T0 for period 5.67762 days
+| aday yok
+[60/93] TIC 405187645 S42 Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 37 durations
+Searching 11090 data points, 2035 periods from 0.601 to 11.514 days
+Using 1 of 8 CPU threads
+Searching for best T0 for period 6.87019 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 37 durations
+Searching 11090 data points, 2035 periods from 0.601 to 11.514 days
+Using 1 of 8 CPU threads
+Searching for best T0 for period 6.87019 days
+| aday yok
+
+  === ILERLEME (60/93) ===
+  Tamamlanan:   60
+  Basarisiz:    0
+  Aday bulunan: 13
+  Onayli:       13
+  Sure:         48.8 dk
+  ETA:          26.8 dk
+
+[61/93] TIC 388633951 S18 Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 37 durations
+Searching 13191 data points, 1963 periods from 0.602 to 11.178 days
+Using 1 of 8 CPU threads
+Searching for best T0 for period 4.47200 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 37 durations
+Searching 13191 data points, 1963 periods from 0.602 to 11.178 days
+Using 1 of 8 CPU threads
+Searching for best T0 for period 4.47200 days
+| aday yok
+[62/93] TIC 58732360 S42 Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 37 durations
+Searching 11090 data points, 2035 periods from 0.601 to 11.514 days
+Using 1 of 8 CPU threads
+Searching for best T0 for period 0.61689 days
+| ADAY BULUNDU | Sinif X | Skor 0
+[63/93] TIC 408515120 S42 | aday yok
+[64/93] TIC 258866681 S57 Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 32 durations
+Searching 17970 data points, 258 periods from 9.307 to 14.375 days
+Using 1 of 8 CPU threads
+Searching for best T0 for period 10.44739 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 32 durations
+Searching 17970 data points, 258 periods from 9.307 to 14.375 days
+Using 1 of 8 CPU threads
+Searching for best T0 for period 10.44739 days
+| aday yok
+[65/93] TIC 336765302 S42 | aday yok
+[66/93] TIC 83940523 S17 | aday yok
+[67/93] TIC 365961623 S17 Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 37 durations
+Searching 13018 data points, 2083 periods from 0.601 to 11.741 days
+Using 1 of 8 CPU threads
+Searching for best T0 for period 11.43196 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 37 durations
+Searching 13018 data points, 2083 periods from 0.601 to 11.741 days
+Using 1 of 8 CPU threads
+Searching for best T0 for period 11.43196 days
+| aday yok
+[68/93] TIC 405226902 S42 | aday yok
+[69/93] TIC 373144098 S18 | aday yok
+[70/93] TIC 388604517 S18 | aday yok
+
+  === ILERLEME (70/93) ===
+  Tamamlanan:   70
+  Basarisiz:    0
+  Aday bulunan: 14
+  Onayli:       14
+  Sure:         56.0 dk
+  ETA:          18.4 dk
+
+[71/93] TIC 440672051 S17 Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 37 durations
+Searching 13014 data points, 2083 periods from 0.601 to 11.741 days
+Using 1 of 8 CPU threads
+Searching for best T0 for period 8.66636 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 37 durations
+Searching 13014 data points, 2083 periods from 0.601 to 11.741 days
+Using 1 of 8 CPU threads
+Searching for best T0 for period 8.66636 days
+| aday yok
+[72/93] TIC 388634757 S18 | aday yok
+[73/93] TIC 257305725 S42 | aday yok
+[74/93] TIC 406767163 S17 | aday yok
+[75/93] TIC 405189795 S42 Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 32 durations
+Searching 11055 data points, 215 periods from 7.475 to 11.49 days
+Using 1 of 8 CPU threads
+Searching for best T0 for period 10.16298 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 32 durations
+Searching 11055 data points, 215 periods from 7.475 to 11.49 days
+Using 1 of 8 CPU threads
+Searching for best T0 for period 10.16298 days
+| aday yok
+[76/93] TIC 44453366 S17 Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 37 durations
+Searching 13021 data points, 2083 periods from 0.601 to 11.742 days
+Using 1 of 8 CPU threads
+Searching for best T0 for period 7.28622 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 37 durations
+Searching 13021 data points, 2083 periods from 0.601 to 11.742 days
+Using 1 of 8 CPU threads
+Searching for best T0 for period 7.28622 days
+| aday yok
+[77/93] TIC 194459612 S17 Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 37 durations
+Searching 13087 data points, 2064 periods from 0.601 to 11.651 days
+Using 1 of 8 CPU threads
+Searching for best T0 for period 11.65131 days
+| ADAY BULUNDU | Sinif A | Skor 100
+[78/93] TIC 373513128 S18 Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 30 durations
+Searching 14800 data points, 128 periods from 5.924 to 7.231 days
+Using 1 of 8 CPU threads
+Searching for best T0 for period 6.58082 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 30 durations
+Searching 14800 data points, 128 periods from 5.924 to 7.231 days
+Using 1 of 8 CPU threads
+Searching for best T0 for period 6.58082 days
+| ADAY BULUNDU | Sinif A | Skor 100
+[79/93] TIC 336766231 S42 | aday yok
+[80/93] TIC 439946042 S17 Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 30 durations
+Searching 13073 data points, 105 periods from 7.705 to 9.389 days
+Using 1 of 8 CPU threads
+Searching for best T0 for period 8.54065 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 30 durations
+Searching 13073 data points, 105 periods from 7.705 to 9.389 days
+Using 1 of 8 CPU threads
+Searching for best T0 for period 8.54065 days
+| ADAY BULUNDU | Sinif A | Skor 100
+
+  === ILERLEME (80/93) ===
+  Tamamlanan:   80
+  Basarisiz:    0
+  Aday bulunan: 17
+  Onayli:       17
+  Sure:         62.9 dk
+  ETA:          10.2 dk
+
+[81/93] TIC 439996850 S17 Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 37 durations
+Searching 13087 data points, 2064 periods from 0.601 to 11.651 days
+Using 1 of 8 CPU threads
+Searching for best T0 for period 4.40129 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 37 durations
+Searching 13087 data points, 2064 periods from 0.601 to 11.651 days
+Using 1 of 8 CPU threads
+Searching for best T0 for period 4.40129 days
+| aday yok
+[82/93] TIC 405210193 S42 Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 32 durations
+Searching 11055 data points, 238 periods from 6.762 to 11.493 days
+Using 1 of 8 CPU threads
+Searching for best T0 for period 8.70301 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 32 durations
+Searching 11055 data points, 238 periods from 6.762 to 11.493 days
+Using 1 of 8 CPU threads
+Searching for best T0 for period 8.70301 days
+| aday yok
+[83/93] TIC 293342645 S42 | aday yok
+[84/93] TIC 373279538 S18 | aday yok
+[85/93] TIC 415779282 S17 Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 37 durations
+Searching 12849 data points, 2031 periods from 0.601 to 11.496 days
+Using 1 of 8 CPU threads
+Searching for best T0 for period 10.63157 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 37 durations
+Searching 12849 data points, 2031 periods from 0.601 to 11.496 days
+Using 1 of 8 CPU threads
+Searching for best T0 for period 10.63157 days
+| aday yok
+[86/93] TIC 51988338 S42 | aday yok
+[87/93] TIC 257292435 S42 | aday yok
+[88/93] TIC 201778444 S57 Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 30 durations
+Searching 17979 data points, 111 periods from 9.607 to 11.739 days
+Using 1 of 8 CPU threads
+Searching for best T0 for period 10.67902 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 30 durations
+Searching 17979 data points, 111 periods from 9.607 to 11.739 days
+Using 1 of 8 CPU threads
+Searching for best T0 for period 10.67902 days
+| ADAY BULUNDU | Sinif A | Skor 100
+[89/93] TIC 427332476 S42 Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 30 durations
+Searching 10975 data points, 107 periods from 8.848 to 10.789 days
+Using 1 of 8 CPU threads
+Searching for best T0 for period 9.80953 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 30 durations
+Searching 10975 data points, 107 periods from 8.848 to 10.789 days
+Using 1 of 8 CPU threads
+Searching for best T0 for period 9.80953 days
+| ADAY BULUNDU | Sinif A | Skor 100
+[90/93] TIC 303205354 S42 | aday yok
+
+  === ILERLEME (90/93) ===
+  Tamamlanan:   90
+  Basarisiz:    0
+  Aday bulunan: 19
+  Onayli:       19
+  Sure:         69.6 dk
+  ETA:          2.3 dk
+
+[91/93] TIC 373456697 S18 Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 32 durations
+Searching 15123 data points, 235 periods from 7.221 to 11.808 days
+Using 1 of 8 CPU threads
+Searching for best T0 for period 9.31618 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 32 durations
+Searching 15123 data points, 235 periods from 7.221 to 11.808 days
+Using 1 of 8 CPU threads
+Searching for best T0 for period 9.31618 days
+| aday yok
+[92/93] TIC 293361880 S42 | aday yok
+[93/93] TIC 293360863 S42 Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 37 durations
+Searching 11044 data points, 2032 periods from 0.602 to 11.505 days
+Using 1 of 8 CPU threads
+Searching for best T0 for period 9.52089 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 37 durations
+Searching 11044 data points, 2032 periods from 0.602 to 11.505 days
+Using 1 of 8 CPU threads
+Searching for best T0 for period 9.52089 days
+| aday yok
+
+========================================================================
+  KESIF TARAMASI TAMAMLANDI
+========================================================================
+  Sure: 71.8 dk
+  Basarili: 93
+  Basarisiz: 0
+  Aday bulunan: 19
+  Onayli: 19
+
+  Sonraki adim:
+    python scripts/discovery/classify_novelty.py
+========================================================================

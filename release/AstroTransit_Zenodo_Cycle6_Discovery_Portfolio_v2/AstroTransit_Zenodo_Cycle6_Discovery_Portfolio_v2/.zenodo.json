@@ -1,0 +1,9 @@
+﻿{
+  "title": "AstroTransit Discovery Portfolio: Vetted Non-TOI Temperate Exoplanet Candidates from TESS Photometry (v2 Verified)",
+  "upload_type": "dataset",
+  "description": "Strictly vetted evidence package containing empirical MCMC parameter estimations, FPP vetting reports, and 300 DPI light curve fits for verified Class A Non-TOI exoplanet candidates discovered from TESS photometry using AstroTransit.",
+  "creators": [{"name": "AstroTransit Team", "affiliation": "Independent Exoplanet Research Group"}],
+  "keywords": ["exoplanets", "TESS", "JWST", "MCMC", "Vetting", "FPP", "Habitability"],
+  "access_right": "open",
+  "license": "CC-BY-4.0"
+}

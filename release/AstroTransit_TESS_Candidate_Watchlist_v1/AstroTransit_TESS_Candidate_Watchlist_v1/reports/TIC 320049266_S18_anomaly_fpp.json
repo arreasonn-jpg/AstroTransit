@@ -1,0 +1,15 @@
+{
+  "target_id": "TIC 320049266",
+  "tic_id": 320049266,
+  "sector": 18,
+  "period": 11.4017,
+  "depth_ppm": 1710.7,
+  "rp_rs": 0.0421,
+  "crowding_ratio": 0.994,
+  "nearest_neighbor_arcsec": 28.5,
+  "simple_fpp": 0.009,
+  "p_planet_proxy": 0.991,
+  "dominant_scenario": "planet",
+  "fp_confidence": "HIGH_CONFIDENCE_PLANET",
+  "triage_decision": "PROCEED_TO_FOLLOWUP"
+}

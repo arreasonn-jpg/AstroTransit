@@ -1,0 +1,356 @@
+{
+  "target_id": "TIC 347299560",
+  "tic_id": 347299560,
+  "sector": 24,
+  "parameters": {
+    "period": 4.767,
+    "t0": 1955.586,
+    "duration": 0.163,
+    "depth": 0.000326,
+    "rp_rs": 0.00877
+  },
+  "spoc_metadata": {
+    "crowding_ratio": 0.97546136,
+    "centroid_shift_arcsec": null,
+    "ra": 1.46007362197156,
+    "dec": 56.5002243832995
+  },
+  "gaia_neighbors": {
+    "gaia_neighbors_within_60arcsec": 52,
+    "brightest_neighbor_delta_mag": 4.957546234130859,
+    "nearest_neighbor_arcsec": 2.9604544334253573
+  },
+  "anomaly": {
+    "residual": {
+      "target_id": "TIC 347299560",
+      "sector": 24,
+      "n_intransit": 756,
+      "n_outtransit": 16459,
+      "flag": "ANOMALOUS",
+      "score": 0.48,
+      "n_pass": 2,
+      "n_warn": 1,
+      "n_fail": 2,
+      "n_skip": 0,
+      "details": {
+        "n_intransit": 756,
+        "n_outtransit": 16459,
+        "intransit_rms": 0.001707,
+        "intransit_mean": -0.000204,
+        "intransit_std": 0.001695,
+        "intransit_skewness": -0.855518,
+        "intransit_kurtosis": -0.386631,
+        "intransit_min": -0.006035,
+        "intransit_max": 0.003056,
+        "intransit_p5": -0.003425,
+        "intransit_p95": 0.001737,
+        "outtransit_rms": 0.00156,
+        "outtransit_std": 0.001542,
+        "rms_ratio": 1.094595
+      },
+      "tests": [
+        {
+          "name": "shapiro_wilk_normality",
+          "verdict": "fail",
+          "value": 0.0,
+          "warn_threshold": 0.05,
+          "fail_threshold": 0.01,
+          "description": "Residual normal dağılmıyor: p=0.0000 < 0.01 (sistematik hata şüphesi)"
+        },
+        {
+          "name": "rms_ratio_in_out",
+          "verdict": "pass",
+          "value": 1.094595,
+          "warn_threshold": 1.3,
+          "fail_threshold": 1.6,
+          "description": "In-transit gürültü normal: RMS oran=1.095"
+        },
+        {
+          "name": "residual_skewness",
+          "verdict": "warn",
+          "value": -0.855518,
+          "warn_threshold": 0.75,
+          "fail_threshold": 1.25,
+          "description": "Residual asimetri uyarısı: skewness=-0.856"
+        },
+        {
+          "name": "residual_kurtosis",
+          "verdict": "pass",
+          "value": -0.386631,
+          "warn_threshold": 1.5,
+          "fail_threshold": 3.0,
+          "description": "Residual kurtosis normal: -0.387"
+        },
+        {
+          "name": "anderson_darling_normality",
+          "verdict": "fail",
+          "value": 33.304303,
+          "warn_threshold": 0.751,
+          "fail_threshold": 1.034,
+          "description": "Anderson-Darling: normal değil (stat=33.304 > crit_1%=1.034)"
+        }
+      ]
+    },
+    "transit_consistency": {
+      "target_id": "TIC 347299560",
+      "sector": 24,
+      "n_intransit": 756,
+      "n_transits": 2,
+      "flag": "CONSISTENT",
+      "score": 0.0,
+      "n_pass": 1,
+      "n_warn": 0,
+      "n_fail": 0,
+      "n_skip": 3,
+      "details": {
+        "n_intransit": 756,
+        "n_transits": 2,
+        "baseline": 0.999992,
+        "peak_depth": 0.006353,
+        "median_intransit_depth": -0.000167,
+        "phase_span": 0.044383,
+        "per_transit_depth_median": 0.002033,
+        "per_transit_depth_std": 0.00131,
+        "per_transit_depth_min": 0.000724,
+        "per_transit_depth_max": 0.003343,
+        "odd_depth_median": 0.003343,
+        "even_depth_median": 0.000724
+      },
+      "tests": [
+        {
+          "name": "even_odd_depth_consistency",
+          "verdict": "skip",
+          "value": 0.0,
+          "warn_threshold": 0.15,
+          "fail_threshold": 0.3,
+          "description": "Even/odd testi için yetersiz transit sayısı."
+        },
+        {
+          "name": "transit_repeatability",
+          "verdict": "skip",
+          "value": 0.0,
+          "warn_threshold": 0.25,
+          "fail_threshold": 0.4,
+          "description": "Repeatability testi için yetersiz transit sayısı (<3)."
+        },
+        {
+          "name": "v_shape_metric",
+          "verdict": "skip",
+          "value": 0.0,
+          "warn_threshold": 0.65,
+          "fail_threshold": 0.85,
+          "description": "Pozitif merkez derinliği bulunamadı."
+        },
+        {
+          "name": "ingress_egress_symmetry",
+          "verdict": "pass",
+          "value": 0.022535,
+          "warn_threshold": 0.2,
+          "fail_threshold": 0.4,
+          "description": "Ingress/egress simetrik: 0.023"
+        }
+      ]
+    },
+    "timing": {
+      "target_id": "TIC 347299560",
+      "sector": 24,
+      "n_transits": 5,
+      "flag": "TTV_CANDIDATE",
+      "score": 0.41,
+      "n_pass": 1,
+      "n_warn": 1,
+      "n_fail": 1,
+      "n_skip": 0,
+      "details": {
+        "period_days": 4.767,
+        "t0_used": 1955.586,
+        "n_transits": 5,
+        "epochs": [
+          1.0,
+          2.0,
+          3.0,
+          4.0,
+          5.0
+        ],
+        "oc_days": [
+          0.001164453070714444,
+          -0.009207776458652006,
+          0.021446207899771252,
+          0.03382381965661807,
+          -0.004290217402285634
+        ],
+        "oc_minutes": [
+          1.6768124218287994,
+          -13.259198100458889,
+          30.882539375670603,
+          48.70630030553002,
+          -6.177913059291313
+        ],
+        "observed_midtimes": [
+          1960.3541644530708,
+          1965.1107922235415,
+          1969.9084462078997,
+          1974.6878238196566,
+          1979.4167097825978
+        ],
+        "expected_midtimes": [
+          1960.353,
+          1965.1200000000001,
+          1969.887,
+          1974.654,
+          1979.421
+        ],
+        "max_abs_oc_min": 48.70630030553002,
+        "median_abs_oc_min": 13.259198100458889,
+        "oc_rms_min": 26.618863881374402,
+        "oc_std_min": 23.57229677668573,
+        "linear_slope_days_per_epoch": 0.003212225516926991,
+        "linear_intercept_days": -0.0010493791975477486,
+        "linear_rvalue": 0.27751190414937665,
+        "linear_pvalue": 0.6512500341180244,
+        "linear_total_drift_min": 18.502418977499467
+      },
+      "tests": [
+        {
+          "name": "oc_rms",
+          "verdict": "warn",
+          "value": 26.618864,
+          "warn_threshold": 15.0,
+          "fail_threshold": 30.0,
+          "unit": "min",
+          "description": "O-C RMS uyarısı: 26.62 min"
+        },
+        {
+          "name": "max_abs_oc",
+          "verdict": "fail",
+          "value": 48.7063,
+          "warn_threshold": 20.0,
+          "fail_threshold": 40.0,
+          "unit": "min",
+          "description": "Max |O-C| yüksek: 48.71 min > 40.00 min"
+        },
+        {
+          "name": "linear_ephemeris_trend",
+          "verdict": "pass",
+          "value": 18.502419,
+          "warn_threshold": 10.0,
+          "fail_threshold": 25.0,
+          "unit": "min",
+          "description": "Lineer O-C trendi zayıf: drift=18.50 min, p=0.6513"
+        }
+      ]
+    },
+    "combined": {
+      "target_id": "TIC 347299560",
+      "sector": 24,
+      "anomaly_score": 0.2705,
+      "anomaly_flag": "REVIEW",
+      "recommended_action": "manual_timing_review",
+      "n_available": 3,
+      "n_severe": 1,
+      "n_moderate": 1,
+      "details": {
+        "anomaly_score": 0.27049999999999996,
+        "weights": {
+          "residual": 0.35,
+          "transit_consistency": 0.4,
+          "timing": 0.25
+        },
+        "component_flags": {
+          "residual": "ANOMALOUS",
+          "transit_consistency": "CONSISTENT",
+          "timing": "TTV_CANDIDATE"
+        },
+        "component_scores": {
+          "residual": 0.48,
+          "transit_consistency": 0.0,
+          "timing": 0.41000000000000003
+        },
+        "residual_summary": "TIC 347299560 S24 | flag=ANOMALOUS score=0.480 | pass=2 warn=1 fail=2 skip=0",
+        "transit_summary": "TIC 347299560 S24 | flag=CONSISTENT score=0.000 | pass=1 warn=0 fail=0 skip=3 | n_transits=2",
+        "timing_summary": "TIC 347299560 S24 | flag=TTV_CANDIDATE score=0.410 | pass=1 warn=1 fail=1 skip=0 | n_transits=5"
+      },
+      "components": [
+        {
+          "name": "residual",
+          "available": true,
+          "weight": 0.35,
+          "score": 0.48,
+          "flag": "ANOMALOUS",
+          "severe": true,
+          "moderate": false
+        },
+        {
+          "name": "transit_consistency",
+          "available": true,
+          "weight": 0.4,
+          "score": 0.0,
+          "flag": "CONSISTENT",
+          "severe": false,
+          "moderate": false
+        },
+        {
+          "name": "timing",
+          "available": true,
+          "weight": 0.25,
+          "score": 0.41,
+          "flag": "TTV_CANDIDATE",
+          "severe": false,
+          "moderate": true
+        }
+      ]
+    }
+  },
+  "fpp": {
+    "target_id": "TIC 347299560",
+    "sector": 24,
+    "p_eb": 0.0,
+    "p_beb": 0.0,
+    "p_neb": 0.41,
+    "fpp": 0.41,
+    "p_planet": 0.59,
+    "dominant_scenario": "neb",
+    "confidence": "LOW",
+    "recommended_action": "deprioritize_or_inspect_neb",
+    "n_available": 3,
+    "details": {
+      "combination_method": "1 - product(1 - p_i)",
+      "raw_probabilities": {
+        "p_eb": 0.0,
+        "p_beb": 0.0,
+        "p_neb": 0.41000000000000003
+      },
+      "component_flags": {
+        "eb": "LOW_EB_RISK",
+        "beb": "LOW_BEB_RISK",
+        "neb": "HIGH_NEB_RISK"
+      },
+      "eb_summary": "TIC 347299560 S24 | p_eb=0.000 flag=LOW_EB_RISK | available=2 warn=0 fail=0 | action=planet_hypothesis_supported",
+      "beb_summary": "TIC 347299560 S24 | p_beb=0.000 flag=LOW_BEB_RISK | available=2 warn=0 fail=0 | action=background_eb_not_supported",
+      "neb_summary": "TIC 347299560 S24 | p_neb=0.410 flag=HIGH_NEB_RISK | available=3 warn=1 fail=1 | action=deprioritize_as_possible_nearby_eb"
+    },
+    "components": [
+      {
+        "name": "eb",
+        "available": true,
+        "probability": 0.0,
+        "risk_flag": "LOW_EB_RISK",
+        "recommended_action": "planet_hypothesis_supported"
+      },
+      {
+        "name": "beb",
+        "available": true,
+        "probability": 0.0,
+        "risk_flag": "LOW_BEB_RISK",
+        "recommended_action": "background_eb_not_supported"
+      },
+      {
+        "name": "neb",
+        "available": true,
+        "probability": 0.41,
+        "risk_flag": "HIGH_NEB_RISK",
+        "recommended_action": "deprioritize_as_possible_nearby_eb"
+      }
+    ]
+  }
+}

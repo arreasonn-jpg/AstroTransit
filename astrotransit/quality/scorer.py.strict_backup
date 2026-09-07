@@ -1,0 +1,605 @@
+"""
+Kalite skorlama ve Class A/B/C/D/X kategorizasyon modülü.
+
+Her transit adayı 0-100 arasında bir kalite puanı alır.
+Bu puana ve vetting sonuçlarına göre kategoriye atanır.
+
+Kategori tanımları:
+    Class A — Yüksek güven. Bilimsel analiz için hazır.
+    Class B — İyi aday. Ek doğrulama önerilir.
+    Class C — Şüpheli. Elle incelenmeli.
+    Class D — Gürültülü / düşük kaliteli.
+    Class X — Alışılmadık davranış. Özel inceleme gerekir.
+
+Literatür:
+    Mullally et al. (2016)   — Kepler Robovetter
+    Thompson et al. (2018)   — Kepler DR25 Catalog
+"""
+
+from __future__ import annotations
+
+from dataclasses import dataclass, field
+from enum import Enum
+from typing import Optional
+
+import numpy as np
+from loguru import logger
+
+from astrotransit.quality.metrics import QualityMetrics
+from astrotransit.quality.snr import SNRBreakdown
+from astrotransit.quality.vetting import VettingReport, VettingVerdict
+from astrotransit.detection.cascade import CascadeCandidate
+
+
+# ──────────────────────────────────────
+# Kategori tanımları
+# ──────────────────────────────────────
+class CandidateClass(str, Enum):
+    """
+    Transit aday sınıflandırma kategorileri.
+    """
+
+    A = "A"   # Çok yüksek güvenilirlik
+    B = "B"   # Yüksek olasılıklı aday
+    C = "C"   # Şüpheli, elle incelenmeli
+    D = "D"   # Gürültülü, düşük kalite
+    X = "X"   # Alışılmadık davranış
+
+
+CLASS_DESCRIPTIONS = {
+    CandidateClass.A: "Çok yüksek güvenilirlik. Bilimsel analiz için doğrudan uygun.",
+    CandidateClass.B: "Yüksek olasılıklı aday. Ek doğrulama önerilir.",
+    CandidateClass.C: "Şüpheli. Elle incelenmelidir.",
+    CandidateClass.D: "Yüksek gürültülü veya düşük kaliteli.",
+    CandidateClass.X: "Alışılmadık davranış. Yeni fizik veya sıra dışı olay olabilir.",
+}
+
+
+# ──────────────────────────────────────
+# Skor bileşeni
+# ──────────────────────────────────────
+@dataclass
+class ScoreComponent:
+    """
+    Kalite skorunun tek bir bileşeni.
+
+    Attributes
+    ----------
+    name : str
+        Bileşen adı.
+    raw_value : float
+        Ham değer.
+    score : float
+        Normalize skor (0-100).
+    weight : float
+        Ağırlık (tüm ağırlıkların toplamı 1.0).
+    contribution : float
+        Ağırlıklı katkı = score × weight.
+    """
+
+    name: str
+    raw_value: float
+    score: float
+    weight: float
+    contribution: float
+
+    def to_dict(self) -> dict:
+        return {
+            "name": self.name,
+            "raw_value": round(self.raw_value, 4),
+            "score": round(self.score, 2),
+            "weight": round(self.weight, 3),
+            "contribution": round(self.contribution, 2),
+        }
+
+
+@dataclass
+class QualityScore:
+    """
+    Transit adayının toplam kalite skoru ve sınıfı.
+
+    Attributes
+    ----------
+    target_id : str
+        Hedef TIC ID.
+    sector : int
+        Sektör numarası.
+    total_score : float
+        Toplam kalite skoru (0-100).
+    candidate_class : CandidateClass
+        Atanan sınıf.
+    class_description : str
+        Sınıf açıklaması.
+    components : list[ScoreComponent]
+        Skor bileşenlerinin detayı.
+    is_anomalous : bool
+        Alışılmadık davranış bayrağı (Class X için).
+    anomaly_flags : list[str]
+        Anormallik açıklamaları.
+    fpp : float
+        False Positive Probability.
+    is_false_positive : bool
+        FP kararı.
+    """
+
+    target_id: str
+    sector: int
+    total_score: float
+    candidate_class: CandidateClass
+    class_description: str
+    components: list[ScoreComponent] = field(default_factory=list)
+    is_anomalous: bool = False
+    anomaly_flags: list[str] = field(default_factory=list)
+    fpp: float = 0.0
+    is_false_positive: bool = False
+
+    def to_dict(self) -> dict:
+        return {
+            "target_id": self.target_id,
+            "sector": self.sector,
+            "total_score": round(self.total_score, 2),
+            "candidate_class": self.candidate_class.value,
+            "class_description": self.class_description,
+            "fpp": round(self.fpp, 4),
+            "is_false_positive": self.is_false_positive,
+            "is_anomalous": self.is_anomalous,
+            "anomaly_flags": self.anomaly_flags,
+            "components": [c.to_dict() for c in self.components],
+        }
+
+    def summary(self) -> dict:
+        return {
+            "target_id": self.target_id,
+            "sector": self.sector,
+            "score": round(self.total_score, 2),
+            "class": self.candidate_class.value,
+            "fpp": round(self.fpp, 4),
+            "is_fp": self.is_false_positive,
+            "is_anomalous": self.is_anomalous,
+        }
+
+
+# ──────────────────────────────────────
+# Skorlayıcı sınıf
+# ──────────────────────────────────────
+class CandidateScorer:
+    """
+    Transit adayı kalite skoru ve sınıf belirleyici.
+
+    Ağırlıklı skor sistemi:
+        SNR               → %30
+        Veri tamlığı      → %15
+        Transit kalitesi  → %20
+        Vetting geçimi    → %25
+        Residual RMS      → %10
+
+    Parameters
+    ----------
+    snr_min : float
+        Minimum beklenen SNR (skor=0).
+    snr_max : float
+        Tam skor SNR eşiği (skor=100).
+    class_a_threshold : float
+        Class A minimum skoru.
+    class_b_threshold : float
+        Class B minimum skoru.
+    class_c_threshold : float
+        Class C minimum skoru.
+    """
+
+    # Skor ağırlıkları (toplam = 1.0)
+    WEIGHTS = {
+        "snr": 0.25,
+        "completeness": 0.10,
+        "transit_quality": 0.20,
+        "vetting": 0.20,
+        "residual": 0.10,
+        "period_consistency": 0.15,
+    }
+
+    def __init__(
+        self,
+        snr_min: float = 5.0,
+        snr_max: float = 30.0,
+        class_a_threshold: float = 80.0,
+        class_b_threshold: float = 60.0,
+        class_c_threshold: float = 40.0,
+    ):
+        self.snr_min = snr_min
+        self.snr_max = snr_max
+        self.class_a_threshold = class_a_threshold
+        self.class_b_threshold = class_b_threshold
+        self.class_c_threshold = class_c_threshold
+
+        logger.debug(
+            f"CandidateScorer — "
+            f"A≥{class_a_threshold}, B≥{class_b_threshold}, "
+            f"C≥{class_c_threshold}"
+        )
+
+    def score(
+        self,
+        candidate: CascadeCandidate,
+        metrics: QualityMetrics,
+        snr_breakdown: SNRBreakdown,
+        vetting: VettingReport,
+        fit_result=None,
+    ) -> QualityScore:
+        """
+        Transit adayı için kalite skoru ve sınıf belirler.
+
+        Parameters
+        ----------
+        candidate : CascadeCandidate
+            Cascade tespit sonucu.
+        metrics : QualityMetrics
+            Kalite metrikleri.
+        snr_breakdown : SNRBreakdown
+            SNR breakdown.
+        vetting : VettingReport
+            Vetting raporu.
+        fit_result : opsiyonel
+            Fit sonucu.
+
+        Returns
+        -------
+        QualityScore
+            Skor ve sınıf.
+        """
+
+        target_id = candidate.target_id
+        sector = candidate.sector
+
+        logger.info(
+            f"Kalite skoru hesaplanıyor — "
+            f"{target_id} sektör {sector}"
+        )
+
+        components = []
+
+        # ── Bileşen 1: SNR skoru ──
+        snr_val = snr_breakdown.snr_adopted
+        snr_score = self._normalize_linear(
+            snr_val, self.snr_min, self.snr_max
+        )
+        components.append(ScoreComponent(
+            name="snr",
+            raw_value=snr_val,
+            score=snr_score,
+            weight=self.WEIGHTS["snr"],
+            contribution=snr_score * self.WEIGHTS["snr"],
+        ))
+
+        # ── Bileşen 2: Veri tamlığı skoru ──
+        completeness = metrics.photometric.data_completeness
+        comp_score = self._normalize_linear(completeness, 0.7, 1.0) * 100
+        components.append(ScoreComponent(
+            name="completeness",
+            raw_value=completeness,
+            score=comp_score,
+            weight=self.WEIGHTS["completeness"],
+            contribution=comp_score * self.WEIGHTS["completeness"],
+        ))
+
+        # ── Bileşen 3: Transit kalite skoru ──
+        transit_score = self._compute_transit_quality_score(
+            candidate, metrics
+        )
+        components.append(ScoreComponent(
+            name="transit_quality",
+            raw_value=metrics.transit.transit_symmetry,
+            score=transit_score,
+            weight=self.WEIGHTS["transit_quality"],
+            contribution=transit_score * self.WEIGHTS["transit_quality"],
+        ))
+
+        # ── Bileşen 4: Vetting skoru ──
+        vetting_score = self._compute_vetting_score(vetting)
+        components.append(ScoreComponent(
+            name="vetting",
+            raw_value=float(vetting.n_pass),
+            score=vetting_score,
+            weight=self.WEIGHTS["vetting"],
+            contribution=vetting_score * self.WEIGHTS["vetting"],
+        ))
+
+        # ── Bileşen 5: Residual RMS skoru ──
+        residual_rms = metrics.transit.residual_rms
+        # Düşük residual = iyi fit
+        residual_score = self._normalize_linear_inverse(
+            residual_rms, 0.0, 0.005
+        ) * 100
+        components.append(ScoreComponent(
+            name="residual",
+            raw_value=residual_rms,
+            score=residual_score,
+            weight=self.WEIGHTS["residual"],
+            contribution=residual_score * self.WEIGHTS["residual"],
+        ))
+
+        # ── Bilesen 6: Periyot Uyumu (BLS vs TLS) ──
+        period_consistency_score = self._compute_period_consistency_score(
+            candidate
+        )
+        components.append(ScoreComponent(
+            name="period_consistency",
+            raw_value=self._compute_period_relative_diff(candidate),
+            score=period_consistency_score,
+            weight=self.WEIGHTS["period_consistency"],
+            contribution=period_consistency_score * self.WEIGHTS["period_consistency"],
+        ))
+
+        # ── Toplam skor ──
+        total_score = sum(c.contribution for c in components)
+        total_score = float(np.clip(total_score, 0.0, 100.0))
+
+        # ── FP penaltisi ──
+        if vetting.is_false_positive:
+            total_score *= 0.3
+
+        # ── Anomali tespiti (Class X) ──
+        is_anomalous, anomaly_flags = self._detect_anomaly(
+            candidate, metrics, vetting
+        )
+
+        # ── Sınıf belirleme ──
+        candidate_class = self._assign_class(
+            total_score,
+            vetting,
+            is_anomalous,
+        )
+
+        result = QualityScore(
+            target_id=target_id,
+            sector=sector,
+            total_score=total_score,
+            candidate_class=candidate_class,
+            class_description=CLASS_DESCRIPTIONS[candidate_class],
+            components=components,
+            is_anomalous=is_anomalous,
+            anomaly_flags=anomaly_flags,
+            fpp=vetting.false_positive_probability,
+            is_false_positive=vetting.is_false_positive,
+        )
+
+        logger.info(
+            f"Kalite skoru tamamlandı — "
+            f"{target_id}: "
+            f"skor={total_score:.1f}/100, "
+            f"sınıf={candidate_class.value}, "
+            f"FPP={vetting.false_positive_probability:.3f}"
+        )
+
+        return result
+
+    def _assign_class(
+        self,
+        score: float,
+        vetting: VettingReport,
+        is_anomalous: bool,
+    ) -> CandidateClass:
+        """Skora göre sınıf atar."""
+
+        # Class X — anormallik her şeyden önce gelir
+        if is_anomalous:
+            return CandidateClass.X
+
+        # FP ise direkt D
+        if vetting.is_false_positive:
+            return CandidateClass.D
+
+        if score >= self.class_a_threshold:
+            return CandidateClass.A
+        elif score >= self.class_b_threshold:
+            return CandidateClass.B
+        elif score >= self.class_c_threshold:
+            return CandidateClass.C
+        else:
+            return CandidateClass.D
+
+    def _compute_transit_quality_score(
+        self,
+        candidate: CascadeCandidate,
+        metrics: QualityMetrics,
+    ) -> float:
+        """Transit kalite alt skorunu hesaplar."""
+
+        scores = []
+
+        # Simetri (0-1 → 0-100)
+        symmetry = metrics.transit.transit_symmetry
+        if symmetry > 0:
+            scores.append(symmetry * 100)
+
+        # Odd-even mismatch (düşük = iyi)
+        oe = metrics.transit.odd_even_mismatch
+        if oe > 0:
+            oe_score = self._normalize_linear_inverse(oe, 0.0, 3.0) * 100
+            scores.append(oe_score)
+
+        # Transit sayısı
+        n = metrics.transit.n_transits
+        n_score = self._normalize_linear(float(n), 2.0, 10.0) * 100
+        scores.append(n_score)
+
+        if not scores:
+            return 50.0
+
+        return float(np.mean(scores))
+
+    def _compute_vetting_score(
+        self,
+        vetting: VettingReport,
+    ) -> float:
+        """Vetting sonuçlarından skor üretir."""
+
+        n_tests = len([t for t in vetting.tests
+                       if t.verdict != VettingVerdict.SKIP])
+
+        if n_tests == 0:
+            return 50.0
+
+        score = (
+            vetting.n_pass * 100
+            + vetting.n_warn * 40
+            + vetting.n_fail * 0
+        ) / n_tests
+
+        # FPP penaltisi
+        fpp_penalty = vetting.false_positive_probability * 50
+        score = max(0.0, score - fpp_penalty)
+
+        return float(np.clip(score, 0.0, 100.0))
+
+    def _detect_anomaly(
+        self,
+        candidate: CascadeCandidate,
+        metrics: QualityMetrics,
+        vetting: VettingReport,
+    ) -> tuple[bool, list[str]]:
+        """
+        Alışılmadık davranışları tespit eder (Class X için).
+
+        Anomali kriterleri (literatür bazlı):
+            - Yüksek TTV (timing residual > 10 dk)
+            - Değişen transit derinliği (normalize std > 0.5)
+            - Tek geçişli olay (n_transit == 1)
+            - Aşırı derin transit (> 5% depth) + yüksek SNR
+            - Hızlı değişen yıldız (yüksek LS gücü + kısa periyot)
+        """
+
+        flags = []
+
+        # TTV şüphesi (30 dk üstü gerçekten anormal)
+        # Kısa periyotlu sıcak Jüpiterlerde 10-20 dk sapma normaldir
+        timing_rms_min = metrics.transit.timing_rms * 1440
+        if timing_rms_min > 30.0 and metrics.transit.n_transits >= 5:
+            flags.append(
+                f"TTV şüphesi: timing RMS={timing_rms_min:.1f} dk"
+            )
+
+        # Tek geçiş (monotransit)
+        if metrics.transit.n_transits == 1:
+            flags.append("Monotransit: tek geçiş olayı")
+
+        # Aşırı derin + yüksek SNR (yıldız-yıldız EB olabilir)
+        # Sadece derinlik > %10 iken anomali say
+        # Aşırı derin + yüksek SNR (yıldız-yıldız EB olabilir)
+        # Sadece derinlik > %10 iken anomali say
+        if (candidate.depth > 0.10 and
+                metrics.transit.snr > 100):
+            flags.append(
+                f"Olağandışı derin transit: "
+                f"depth={candidate.depth * 100:.1f}%, "
+                f"SNR={metrics.transit.snr:.1f}"
+            )
+
+        # Hızlı değişen yıldız + transit (sadece güçlü sinyal + kısa rotasyon)
+        if (metrics.stellar.lomb_scargle_peak > 0.7 and
+                0.1 < metrics.stellar.rotation_period_days < 1.5):
+            flags.append(
+                f"Aktif yıldız + transit: "
+                f"LS_power={metrics.stellar.lomb_scargle_peak:.2f}, "
+                f"P_rot={metrics.stellar.rotation_period_days:.2f}d"
+            )
+
+        is_anomalous = len(flags) > 0
+        return is_anomalous, flags
+
+    @staticmethod
+    def _compute_period_relative_diff(candidate) -> float:
+        """
+        BLS ve TLS periyotlari arasindaki goreli farki hesaplar.
+
+        Harmonik toleransi ile en yakin faktoru kullanir.
+        Sonuc: 0.0 = mukemmel uyum, 0.10 = %10 fark.
+        """
+
+        from astrotransit.detection.cascade import CascadeStatus
+
+        if candidate.status in (
+            CascadeStatus.BLS_FAILED,
+            CascadeStatus.TLS_FAILED,
+            CascadeStatus.ERROR,
+        ):
+            return 1.0
+
+        if (candidate.bls_result is None
+                or candidate.bls_result.best is None
+                or candidate.tls_result is None):
+            return 0.0
+
+        bls_p = candidate.bls_result.best.period
+        tls_p = candidate.tls_result.period
+
+        if bls_p <= 0 or tls_p <= 0:
+            return 1.0
+
+        best_diff = float('inf')
+        for factor in [1/3, 1/2, 1.0, 2.0, 3.0]:
+            expected = bls_p * factor
+            if expected > 0:
+                diff = abs(expected - tls_p) / expected
+                if diff < best_diff:
+                    best_diff = diff
+
+        return float(best_diff)
+
+    @staticmethod
+    def _compute_period_consistency_score(candidate) -> float:
+        """
+        Periyot uyum skoru uretir (0-100).
+
+        %0 fark   -> 100 puan
+        %1 fark   -> 90 puan
+        %5 fark   -> 50 puan
+        %10 fark  -> 20 puan
+
+        Cascade PERIOD_MISMATCH ise ek ceza.
+        """
+
+        from astrotransit.detection.cascade import CascadeStatus
+
+        rel_diff = CandidateScorer._compute_period_relative_diff(candidate)
+
+        score = 100.0 * float(np.exp(-30.0 * rel_diff))
+
+        if candidate.status == CascadeStatus.PERIOD_MISMATCH:
+            score *= 0.3
+
+        if candidate.status in (
+            CascadeStatus.BLS_FAILED,
+            CascadeStatus.TLS_FAILED,
+            CascadeStatus.ERROR,
+        ):
+            score = min(score, 20.0)
+
+        return float(np.clip(score, 0.0, 100.0))
+
+    @staticmethod
+    def _normalize_linear(
+        value: float,
+        v_min: float,
+        v_max: float,
+    ) -> float:
+        """Değeri [v_min, v_max] → [0, 100] aralığına normalize eder."""
+
+        if v_max <= v_min:
+            return 50.0
+
+        normalized = (value - v_min) / (v_max - v_min)
+        return float(np.clip(normalized * 100, 0.0, 100.0))
+
+    @staticmethod
+    def _normalize_linear_inverse(
+        value: float,
+        v_min: float,
+        v_max: float,
+    ) -> float:
+        """Ters normalize: düşük değer → yüksek skor."""
+
+        if v_max <= v_min:
+            return 0.5
+
+        normalized = 1.0 - (value - v_min) / (v_max - v_min)
+        return float(np.clip(normalized, 0.0, 1.0))

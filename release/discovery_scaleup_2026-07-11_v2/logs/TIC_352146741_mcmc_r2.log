@@ -1,0 +1,12 @@
+2026-07-13 11:50:35.398 | INFO     | astrotransit.pipelines.tess_pipeline:__init__:253 - TESSPipeline başlatıldı — author: SPOC, exptime: 120s, MCMC: zorla, görsel: açık
+2026-07-13 11:50:39.429 | INFO     | astrotransit.modeling.fitter:__init__:115 - ModelingOrchestrator — MCMC: eşik: SNR≥5.0, force_mcmc: True, force_map: False
+2026-07-13 11:51:16.643 | INFO     | astrotransit.modeling.fitter:fit:293 - Modelleme başlıyor — TIC 352146741 sektör 17: SNR=12.24, MCMC=evet
+2026-07-13 11:51:24.168 | INFO     | astrotransit.modeling.fitter:fit:325 - MCMC yükseltmesi — SNR=12.24 ≥ eşik=5.0
+2026-07-13 11:51:24.168 | INFO     | astrotransit.modeling.pymc_fit:fit:363 - PyMC MCMC fit başlıyor — TIC 352146741 sektör 17: P≈5.0028d, 2 zincir × 500 örnek
+2026-07-13 11:51:25.050 | INFO     | astrotransit.modeling.pymc_fit:fit:488 - NUTS örnekleme başlıyor...
+Initializing NUTS using adapt_diag...
+NUTS: [t0, log_rp_rs, impact_parameter, log_jitter, baseline]
+2026-07-13 12:01:56.067 | INFO     | astrotransit.modeling.pymc_fit:fit:507 - Posterior analizi yapılıyor...
+2026-07-13 12:01:56.100 | INFO     | astrotransit.modeling.pymc_fit:fit:609 - MCMC BAŞARILI — TIC 352146741 sektör 17: P=5.0023±0.0000d, Rp/Rs=0.0083±0.0005, Rp=0.84 Re, R-hat_max=1.009, ıraksama=0
+2026-07-13 12:01:56.100 | DEBUG    | astrotransit.modeling.fitter:_harmonize_mcmc_result:241 - MCMC harmonization tamamlandı — baseline=1.0000087196202423, log_jitter=-8.051521106706922, a_over_rs=13.261439044869762
+2026-07-13 12:01:56.100 | INFO     | astrotransit.modeling.fitter:fit:344 - MCMC sonucu kullanılıyor — TIC 352146741 sektör 17

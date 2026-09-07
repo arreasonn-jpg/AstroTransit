@@ -1,0 +1,9 @@
+=== TIC 117929446 ===
+========================================================================
+  Candidate Known-Status Check: TIC 117929446
+========================================================================
+TOI katalogunda var mi? False
+Golden/verified test setinde var mi? False
+Exoplanet Archive sorgusu basarisiz: ORA-01722: invalid number
+STATUS: NO_KNOWN_MATCH_FOUND
+========================================================================

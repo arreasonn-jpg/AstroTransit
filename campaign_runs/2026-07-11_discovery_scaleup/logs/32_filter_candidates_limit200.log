@@ -1,0 +1,112 @@
+========================================================================
+Discovery Candidate Prioritization
+========================================================================
+discovery_priority
+REJECT       59
+WATCHLIST    22
+FOLLOWUP     17
+Name: count, dtype: int64
+
+    source_id  sector    period     depth_ppm  planet_radius_rearth  snr_adopted candidate_class  total_score discovery_priority                     discovery_reason
+TIC 201744712      57  0.869383    608.543781              5.268719    61.440095               A   100.000000           FOLLOWUP                     strong candidate
+TIC 326682209      57 16.523800    618.485398              2.032408    24.114893               A   100.000000           FOLLOWUP                     strong candidate
+TIC 257501838      42  0.665203    623.177059              3.716890    24.015913               A   100.000000           FOLLOWUP                     strong candidate
+TIC 238302153      57  1.192313    628.631654              4.372129    23.427965               A   100.000000           FOLLOWUP                     strong candidate
+TIC 395321135      83  2.558216    154.421346              3.223798    21.690277               A   100.000000           FOLLOWUP                     strong candidate
+TIC 439951000      17  0.843652    354.168790              3.247951    20.343102               A   100.000000           FOLLOWUP                     strong candidate
+TIC 357392128      42  7.117846   1785.703107              4.910970    19.866788               A   100.000000           FOLLOWUP                     strong candidate
+TIC 611061025      42  9.641134   1721.815830              5.173491    16.383685               A   100.000000           FOLLOWUP                     strong candidate
+TIC 432549056      17  0.582136    365.588688              1.968725    13.141919               A   100.000000           FOLLOWUP                     strong candidate
+TIC 407335667      17  1.648623    347.354191              2.554594    12.887893               A   100.000000           FOLLOWUP                     strong candidate
+TIC 405266660      42  0.971878    362.132873              1.765171    12.831414               A   100.000000           FOLLOWUP                     strong candidate
+TIC 352146741      17  5.002255    310.078937              0.797253    12.237996               A   100.000000           FOLLOWUP                     strong candidate
+TIC 405609794      17  0.623771    306.817532              2.729404    11.533276               A   100.000000           FOLLOWUP                     strong candidate
+TIC 347299560      24  4.767363    326.346673              0.729194    10.804279               A   100.000000           FOLLOWUP                     strong candidate
+TIC 282721706      57  0.706462    165.747983              2.063238    10.766423               A   100.000000           FOLLOWUP                     strong candidate
+TIC 427687054      83  1.006476    590.981579              4.436887    10.337632               A   100.000000           FOLLOWUP                     strong candidate
+TIC 357391170      57 13.096759    567.875005              5.044980    10.317367               A   100.000000           FOLLOWUP                     strong candidate
+TIC 301747091      57  1.543773 269174.492071            116.050230  2292.764996               X    40.000000             REJECT                     radius too large
+TIC 201693184      17  1.555572  84973.418051             96.291328  1331.217674               C    40.000000             REJECT                     radius too large
+TIC 388602832      18  0.739479  62492.557760             90.361140   464.954312               C    40.000000             REJECT                     radius too large
+TIC 357330064      57  0.837697   3673.520775             10.706927    91.750476               A   100.000000             REJECT low quality or likely false positive
+TIC 326675379      24  0.681424 137891.174449             45.817515    47.210900               C    20.000000             REJECT                     radius too large
+TIC 405268435      42  1.130168   1452.918170              7.996693    33.826918               A   100.000000             REJECT low quality or likely false positive
+TIC 395320456      42  0.691556  15500.552200             26.523740    29.123109               D    27.500000             REJECT                     radius too large
+TIC 201867995      17  9.368644   6657.438922             13.370277    23.389776               C    50.000000             REJECT low quality or likely false positive
+TIC 201524325      57  0.604885   1236.344889              8.091352    12.839906               C    50.000000             REJECT low quality or likely false positive
+ TIC 83959472      17  9.706018   1813.787613              1.697107     9.668669               A   100.000000             REJECT low quality or likely false positive
+TIC 359043182      85  0.685328    268.017561              1.487202     9.514747               A   100.000000             REJECT low quality or likely false positive
+TIC 378474491      52  1.177464    214.967496              2.612568     8.911921               A   100.000000             REJECT low quality or likely false positive
+TIC 405186695      42  1.025649    166.154051              1.708520     8.834750               A   100.000000             REJECT low quality or likely false positive
+TIC 293223917      70  9.369874   1234.525916              3.194863     7.975186               A   100.000000             REJECT low quality or likely false positive
+TIC 439949948      17  6.741639    588.317497              0.760985     7.969399               A   100.000000             REJECT low quality or likely false positive
+TIC 117929446      57 13.794193    411.753532              0.788751     7.908848               A   100.000000             REJECT low quality or likely false positive
+TIC 395320482      42  8.431694    929.610339              2.309257     7.226500               A   100.000000             REJECT low quality or likely false positive
+TIC 238295659      57 14.026408    479.262128              3.734906     6.990290               A   100.000000             REJECT low quality or likely false positive
+TIC 407335307      17 11.215595    392.540289              1.740632     6.654237               A   100.000000             REJECT low quality or likely false positive
+TIC 354532520      17  9.956766    355.506515              0.719979     6.401414               A   100.000000             REJECT low quality or likely false positive
+TIC 194304288      17  9.849494    467.503877              1.365569     5.876331               A   100.000000             REJECT low quality or likely false positive
+TIC 259255514      17  7.435512    370.648138              1.451324     5.099776               A   100.000000             REJECT low quality or likely false positive
+TIC 201891537      17  0.809671    160.968623              2.146671     5.044788               A   100.000000             REJECT low quality or likely false positive
+TIC 439966406      17 11.528281    584.174969              2.322764     4.887945               A   100.000000             REJECT low quality or likely false positive
+TIC 354594372      17  5.373691    152.052532              1.688446     4.756107               C    50.000000             REJECT low quality or likely false positive
+TIC 437731963      17  6.270227    301.352888              3.292372     4.751802               C    50.000000             REJECT low quality or likely false positive
+TIC 238301314      57  7.209680     73.701699              1.548488     4.751297               C    50.000000             REJECT low quality or likely false positive
+TIC 118005686      57  4.816058     65.061846              1.748231     4.623507               C    50.000000             REJECT low quality or likely false positive
+TIC 258913532      57  8.375168    108.577125              0.869463     4.621740               A   100.000000             REJECT low quality or likely false positive
+TIC 201786935      57  1.139433     93.610738              1.224379     4.532692               C    50.000000             REJECT low quality or likely false positive
+TIC 357392645      42  1.658026    110.587370              2.619207     4.499917               C    50.000000             REJECT low quality or likely false positive
+TIC 347303291      57  0.669714     41.047602              1.540168     4.041752               C    50.000000             REJECT low quality or likely false positive
+TIC 354593915      17  3.351269    236.347222              1.801098     3.776180               C    50.000000             REJECT low quality or likely false positive
+TIC 301789937      57  4.703739    158.776339              2.714462     3.635838               C    50.000000             REJECT low quality or likely false positive
+TIC 177699087      57  2.488205     97.725338              1.863130     3.559514               C    50.000000             REJECT low quality or likely false positive
+TIC 378534800      17  0.644648     18.955740              0.865931     3.435212               C    50.000000             REJECT low quality or likely false positive
+ TIC 22528010      17  1.305897    149.433275              1.709896     2.844119               A   100.000000             REJECT low quality or likely false positive
+TIC 257503666      42  1.449371    139.216944              0.810412     2.815009               A   100.000000             REJECT low quality or likely false positive
+TIC 439953532      17  0.700859     46.922554              1.432276     2.414973               C    50.000000             REJECT low quality or likely false positive
+TIC 201442930      57 14.133412    469.802614              3.214438     2.123151               C    50.000000             REJECT low quality or likely false positive
+TIC 238304232      57 10.651858    327.732702              0.908736     1.463622               A   100.000000             REJECT low quality or likely false positive
+TIC 293265564      42  0.671650     12.725064              0.726804     1.301845               C    50.000000             REJECT low quality or likely false positive
+TIC 194236179      17  0.000000      0.000000              0.000000     0.000000               C    50.000000             REJECT                       invalid period
+TIC 346836545      84  0.000000      0.000000              0.000000     0.000000               C    50.000000             REJECT                       invalid period
+TIC 372079999      17  0.000000      0.000000              0.000000     0.000000               C    50.000000             REJECT                       invalid period
+TIC 327000122      17  0.000000      0.000000              0.000000     0.000000               C    50.000000             REJECT                       invalid period
+TIC 357367600      57  0.000000      0.000000              0.000000     0.000000               C    50.000000             REJECT                       invalid period
+TIC 373147340      58  0.000000      0.000000              0.000000     0.000000               C    50.000000             REJECT                       invalid period
+TIC 372131883      17  0.000000      0.000000              0.000000     0.000000               C    50.000000             REJECT                       invalid period
+TIC 405610999      17  0.000000      0.000000              0.000000     0.000000               C    50.000000             REJECT                       invalid period
+TIC 378528263      17  0.000000      0.000000              0.000000     0.000000               C    50.000000             REJECT                       invalid period
+TIC 373059236      17  0.000000      0.000000              0.000000     0.000000               C    50.000000             REJECT                       invalid period
+TIC 403021471      43  0.000000      0.000000              0.000000     0.000000               C    50.000000             REJECT                       invalid period
+TIC 373133845      58  0.000000      0.000000              0.000000     0.000000               C    50.000000             REJECT                       invalid period
+TIC 373064651      18  0.000000      0.000000              0.000000     0.000000               C    50.000000             REJECT                       invalid period
+ TIC 83958869      17  0.000000      0.000000              0.000000     0.000000               C    50.000000             REJECT                       invalid period
+TIC 258876978      57  0.000000      0.000000              0.000000     0.000000               C    50.000000             REJECT                       invalid period
+TIC 357353192      42  0.000000      0.000000              0.000000     0.000000               C    28.965625             REJECT                       invalid period
+TIC 201693582      17  0.000000      0.000000              0.000000     0.000000                     0.000000             REJECT                       invalid period
+TIC 238432056      17  3.847347    578.102208              2.100544    28.399098               C    50.000000          WATCHLIST                   moderate candidate
+TIC 380157341      84  6.193151   2230.652730              7.849613    23.885089               C    50.000000          WATCHLIST                   moderate candidate
+TIC 201523915      57 12.709417    756.084715              7.699299    18.225857               C    50.000000          WATCHLIST                   moderate candidate
+TIC 432548844      17 11.545397   1548.591154              3.623640    16.288481               C    50.000000          WATCHLIST                   moderate candidate
+TIC 408505170      42 11.310099   1627.353123              4.579246    14.885314               C    50.000000          WATCHLIST                   moderate candidate
+TIC 359124667      17  1.599330    133.453188              4.240955    11.584776               C    50.000000          WATCHLIST                   moderate candidate
+TIC 301788593      57  0.651508    426.275451              4.786384    10.914110               C    50.000000          WATCHLIST                   moderate candidate
+TIC 456481802      83 11.780153    533.468902              2.700350    10.686222               C    50.000000          WATCHLIST                   moderate candidate
+ TIC 83957915      17 10.368509   1023.508709              3.433490     8.402676               C    50.000000          WATCHLIST                   moderate candidate
+TIC 201891971      17  0.665397    101.270592              1.612554     8.347195               C    50.000000          WATCHLIST                   moderate candidate
+TIC 238301837      57  9.758198    557.873082              2.559816     7.801932               C    50.000000          WATCHLIST                   moderate candidate
+TIC 258913080      57  0.865096    577.567287              4.605348     7.169756               C    50.000000          WATCHLIST                   moderate candidate
+TIC 258876865      57 12.829659    294.498708              1.857309     6.148336               C    50.000000          WATCHLIST                   moderate candidate
+TIC 439961937      17  6.022659    377.766790              2.165857     5.869558               C    50.000000          WATCHLIST                   moderate candidate
+TIC 439942975      17 11.651285   1503.128782              4.659972     5.819589               C    50.000000          WATCHLIST                   moderate candidate
+TIC 439961270      17  6.278583    181.936699              2.525650     5.753588               C    50.000000          WATCHLIST                   moderate candidate
+TIC 258877973      57 13.949869    379.109968              2.787227     5.739450               C    50.000000          WATCHLIST                   moderate candidate
+TIC 259258109      57  4.830457    111.709014              3.577133     5.643677               C    50.000000          WATCHLIST                   moderate candidate
+TIC 117928464      57  2.514908    298.647495              1.652063     5.560679               C    50.000000          WATCHLIST                   moderate candidate
+TIC 378650392      58  4.851709    117.338956              2.715454     5.546747               C    50.000000          WATCHLIST                   moderate candidate
+TIC 293257184      42  5.854206    507.868758              1.902663     5.483408               C    50.000000          WATCHLIST                   moderate candidate
+TIC 258866681      57 10.447392    134.218568              0.941490     5.138578               C    50.000000          WATCHLIST                   moderate candidate
+
+CSV: /mnt/c/Users/Gamze/Desktop/projects/AstroTransit/outputs_discovery/novel_candidates_prioritized.csv
+Parquet: /mnt/c/Users/Gamze/Desktop/projects/AstroTransit/outputs_discovery/novel_candidates_prioritized.parquet
+========================================================================

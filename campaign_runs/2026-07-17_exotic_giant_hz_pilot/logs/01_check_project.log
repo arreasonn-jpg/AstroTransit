@@ -1,0 +1,64 @@
+
+[1m====================================================================[0m
+  [1mAstroTransit — Proje Sağlık Kontrolü[0m
+[1m====================================================================[0m
+  Kök: /mnt/c/Users/Gamze/Desktop/projects/AstroTransit
+
+[1m── Gerekli Dosyalar ──[0m
+
+
+  Toplam: 61 | Sağlam: [92m61[0m | Sorunlu: [91m0[0m
+
+[1m── Kökte Olmaması Gerekenler ──[0m
+
+[93m⚠[0m outputs/ içinde beklenmeyen klasörler: {'discovery_runs'}
+[92m✓[0m Kökte yanlış yerleştirilmiş dosya/klasör yok.
+
+[1m── Çift Kopya Kontrolü ──[0m
+
+[92m✓[0m Çift kopya yok.
+
+[1m── Sınıf Tanım Kontrolü ──[0m
+
+[92m✓[0m Tüm kritik sınıflar tanımlı.
+
+[1m── has_candidate Property Kontrolü ──[0m
+
+[92m✓[0m has_candidate property tanımlı.
+
+[1m── TLS Stellar Params Kontrolü ──[0m
+
+[92m✓[0m TLS M_star_min/max parametreleri ayarlanmış.
+
+[1m── Çıktı Dizinleri ──[0m
+
+[92m✓[0m outputs/parquet  (3 dosya)
+[92m✓[0m outputs/json  (80 dosya)
+[92m✓[0m outputs/csv  (8 dosya)
+[92m✓[0m outputs/figures  (530 dosya)
+[92m✓[0m outputs/reports  (3 dosya)
+
+[1m── Import Testleri ──[0m
+
+[92m✓[0m Tüm 8 kritik modül import edildi.
+
+[1m====================================================================[0m
+  [1mÖZET[0m
+[1m====================================================================[0m
+
+[92m✓[0m Gerekli dosyalar: sorun yok
+[92m✓[0m Kökteki yanlış dosyalar: sorun yok
+[92m✓[0m Çift kopyalar: sorun yok
+[92m✓[0m Sınıf tanımları: sorun yok
+[92m✓[0m has_candidate property: sorun yok
+[92m✓[0m TLS stellar params: sorun yok
+[92m✓[0m Import testleri: sorun yok
+
+[92m[1m  ✓ PROJE SAĞLIKLI — Test için hazır![0m
+
+  Sonraki adım:
+    python scripts/discovery/download_toi_catalog.py
+    python scripts/discovery/run_discovery_pilot_v2.py --limit 5 --no-viz
+
+[1m====================================================================[0m
+

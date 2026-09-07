@@ -1,0 +1,75 @@
+﻿[project]
+name = "AstroTransit"
+version = "0.1.0"
+
+[general]
+log_level = "INFO"
+temp_dir = ".cache/astrotransit_wsl"
+output_dir = "outputs_wsl_mcmc"
+random_seed = 42
+
+[tess]
+use_cache = true
+cache_ttl_hours = 24
+author = "SPOC"
+exptime = 120
+quality_bitmask = "default"
+
+[preprocessing]
+sigma_clip_upper = 5.0
+sigma_clip_lower = 5.0
+nan_fill_method = "interpolate"
+
+[preprocessing.detrending]
+method = "biweight"
+window_length = 0.5
+break_tolerance = 0.5
+
+[detection]
+min_period = 0.3
+max_period = 30.0
+min_transits = 2
+frequency_factor = 2.0
+
+[detection.bls]
+duration_range = [0.01, 0.2]
+n_durations = 20
+min_power_threshold = 7.0
+
+[detection.tls]
+min_sde_threshold = 6.0
+use_transit_template = true
+oversampling_factor = 3
+
+[detection.cascade]
+require_both = true
+period_tolerance = 0.02
+
+[modeling]
+fit_method = "mcmc"
+mcmc_auto_upgrade = true
+
+[modeling.map]
+optimizer = "scipy"
+max_iterations = 2000
+
+[modeling.mcmc]
+sampler = "nuts"
+chains = 2
+draws = 500
+tune = 1500
+target_accept = 0.99
+mcmc_snr_threshold = 5.0
+
+[quality]
+min_snr = 5.0
+max_residual_rms = 0.005
+min_data_completeness = 0.80
+
+[outputs]
+formats = ["parquet", "json"]
+extra_formats = ["csv"]
+save_figures = false
+figure_format = "png"
+figure_dpi = 150
+generate_html_report = false

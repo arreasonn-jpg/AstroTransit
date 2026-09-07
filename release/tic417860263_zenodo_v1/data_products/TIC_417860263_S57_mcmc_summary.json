@@ -1,0 +1,72 @@
+{
+  "target": {
+    "tic_id": 417860263,
+    "target_name": "TIC 417860263",
+    "host_name": "HD 224792",
+    "gaia_dr3_id": "429915991435184000",
+    "sector": 57
+  },
+  "fit_summary": {
+    "fit_method": "mcmc",
+    "platform": "wsl",
+    "success": true,
+    "convergence_ok": true,
+    "r_hat_max": 1.0421,
+    "n_divergences": 0,
+    "n_samples": 1000,
+    "mcmc_policy": "controlled_full_a"
+  },
+  "sampling_contract": {
+    "sampled_parameters": [
+      "t0",
+      "rp_rs",
+      "impact_parameter",
+      "baseline",
+      "log_jitter"
+    ],
+    "fixed_parameters": [
+      "period",
+      "u1",
+      "u2"
+    ],
+    "period_sampled": false,
+    "period_err": null,
+    "period_err_source": "fixed_in_mcmc",
+    "limb_darkening_sampled": false
+  },
+  "posterior_summary": {
+    "t0": {
+      "value": 2854.378905,
+      "err": 0.001789
+    },
+    "rp_rs": {
+      "value": 0.025096,
+      "err": 0.000271
+    },
+    "impact_parameter": {
+      "value": 0.028297,
+      "err": 0.023378
+    },
+    "log_jitter": {
+      "value": -8.066158,
+      "err": 0.007117
+    },
+    "baseline": {
+      "value": 1.000036,
+      "err": 3e-06
+    }
+  },
+  "derived_parameters": {
+    "period_days_map_reference": 2.853511,
+    "planet_radius_rearth": 3.0703,
+    "equilibrium_temperature_k": 1438.4
+  },
+  "provenance": {
+    "source": "validated_wsl_mcmc_run_manual_sidecar_export",
+    "date_utc": "2026-07-10",
+    "notes": [
+      "This sidecar was written because native outputs_novel_mcmc JSON persistence was not yet confirmed.",
+      "Values were copied from the validated WSL MCMC run summary for TIC 417860263."
+    ]
+  }
+}

@@ -1,0 +1,107 @@
+{
+  "metadata": {
+    "astrotransit_version": "0.1.0",
+    "created_at": "2026-07-11T15:29:00.537722Z",
+    "schema_version": "1.0"
+  },
+  "target": {
+    "source_id": "TIC 347303291",
+    "tic_id": 347303291,
+    "mission": "TESS",
+    "sector": 57,
+    "instrument": "TESS"
+  },
+  "stellar": {
+    "radius_rsun": 2.44795,
+    "mass_msun": 1.544,
+    "teff_k": 7012.0,
+    "tmag": 8.09715,
+    "logg": 3.84911,
+    "ra_deg": 1.42904867594158,
+    "dec_deg": 57.9460699450451
+  },
+  "detection": {
+    "bls": {
+      "period_days": 2.358675105944835,
+      "power": 7.124478117327842,
+      "depth_ppm": 304.36010768719603
+    },
+    "tls": {
+      "period_days": 0.6697137412307382,
+      "sde": 0.18913994606474524,
+      "snr": 4.041751556261641,
+      "odd_even_mismatch": 0.9122263816486035
+    },
+    "cascade": {
+      "status": "period_mismatch",
+      "confirmed": false
+    }
+  },
+  "parameters": {
+    "period_days": 0.6697137412307382,
+    "period_err_days": 0.013133812067819772,
+    "t0_btjd": 2853.647671460669,
+    "duration_hours": 1.2753082230134125,
+    "depth": 4.1047602383770254e-05,
+    "depth_ppm": 41.047602383770254,
+    "rp_rs": 0.005761705340250766,
+    "rp_rs_err": 0.0,
+    "impact_parameter": 0.0,
+    "a_over_rs": 0.0,
+    "inclination_deg": 0.0,
+    "u1": 0.0,
+    "u2": 0.0,
+    "log_jitter": 0.0,
+    "baseline": 1.0
+  },
+  "derived": {
+    "planet_radius_rearth": 1.5401676087019047,
+    "planet_radius_rjup": 0.13725183006545957,
+    "semi_major_axis_au": 0.017315693490024382,
+    "equilibrium_temperature_k": 3677.2905965012205,
+    "insolation_flux": 43349.36961393757,
+    "stellar_density_gcm3": 0.1484293654425721,
+    "transit_depth_ppm": 33.19724842787419
+  },
+  "quality": {
+    "snr_adopted": 4.041751556261641,
+    "snr_tls": 4.041751556261641,
+    "snr_dutycycle": 0.03131338150130056,
+    "noise_ppm": 394.55507545360757,
+    "cdpp_1hr_ppm": 79.87127619487983,
+    "data_completeness": 0.8684595627245764,
+    "n_points": 17978,
+    "n_transits": 43,
+    "residual_rms_ppm": 0.0,
+    "transit_symmetry": 0.9921448717120485,
+    "timing_rms_min": 2.0343350908618317e-09
+  },
+  "vetting": {
+    "fpp": 0.0,
+    "is_false_positive": false,
+    "is_variable_star": false,
+    "is_binary_suspect": false,
+    "secondary_eclipse_depth_ppm": 0.0,
+    "n_pass": 8,
+    "n_fail": 0,
+    "n_warn": 0,
+    "flags": ""
+  },
+  "score": {
+    "total_score": 50.0,
+    "candidate_class": "C",
+    "is_anomalous": false,
+    "anomaly_flags": ""
+  },
+  "modeling": {
+    "fit_method": "cascade_only",
+    "log_likelihood": 0.0,
+    "r_hat_max": 0.0,
+    "n_divergences": 0,
+    "mcmc_converged": false
+  },
+  "files": {
+    "json_path": "/mnt/c/Users/Gamze/Desktop/projects/AstroTransit/outputs_discovery/json/TIC_347303291_S57.json",
+    "figure_dir": "/mnt/c/Users/Gamze/Desktop/projects/AstroTransit/outputs_discovery/targets/TIC_347303291/figures"
+  }
+}

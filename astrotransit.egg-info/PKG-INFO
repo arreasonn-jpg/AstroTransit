@@ -1,0 +1,38 @@
+Metadata-Version: 2.4
+Name: astrotransit
+Version: 0.1.0
+Summary: TESS ve JWST verilerinden transit tespiti, filtreleme ve kategorizasyon platformu
+Author: AstroTransit Team
+License: Proprietary
+Requires-Python: >=3.11
+Description-Content-Type: text/markdown
+Requires-Dist: astropy>=5.0
+Requires-Dist: astroquery>=0.4.6
+Requires-Dist: lightkurve>=2.4
+Requires-Dist: boto3>=1.26
+Requires-Dist: wotan>=1.9
+Requires-Dist: transitleastsquares
+Requires-Dist: numpy>=1.24
+Requires-Dist: scipy>=1.10
+Requires-Dist: pandas>=2.0
+Requires-Dist: pyarrow>=12.0
+Requires-Dist: matplotlib>=3.7
+Requires-Dist: plotly>=5.14
+Requires-Dist: typer>=0.9
+Requires-Dist: rich>=13.0
+Requires-Dist: streamlit>=1.24
+Requires-Dist: pydantic>=2.0
+Requires-Dist: tqdm>=4.65
+Requires-Dist: loguru>=0.7
+Provides-Extra: jwst
+Requires-Dist: celerite2>=0.1.2; extra == "jwst"
+Provides-Extra: modeling
+Requires-Dist: pymc>=5.0; extra == "modeling"
+Requires-Dist: arviz>=0.15; extra == "modeling"
+Requires-Dist: batman-package; extra == "modeling"
+Provides-Extra: dev
+Requires-Dist: pytest>=7.0; extra == "dev"
+Requires-Dist: pytest-cov>=4.0; extra == "dev"
+Requires-Dist: ruff>=0.1; extra == "dev"
+Requires-Dist: ipykernel>=6.0; extra == "dev"
+Requires-Dist: jupyterlab>=4.0; extra == "dev"

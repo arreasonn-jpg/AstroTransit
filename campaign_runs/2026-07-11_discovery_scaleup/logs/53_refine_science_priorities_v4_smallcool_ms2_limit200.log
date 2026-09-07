@@ -1,0 +1,56 @@
+========================================================================
+Science Priority Refinement
+========================================================================
+science_priority_bucket
+LOW_PRIORITY              68
+SMALL_COOL_SECOND_LOOK    13
+SMALL_COOL_CORE            9
+STANDARD_FOLLOWUP          8
+SMALL_HOT                  1
+Name: count, dtype: int64
+
+    source_id  sector    period  planet_radius_rearth  equilibrium_temperature_k  snr_adopted candidate_class discovery_priority science_priority_bucket  science_priority_score                                               science_priority_reason
+ TIC 58018570      17  2.030120              5.111548                1216.973920    72.322510               A             REJECT            LOW_PRIORITY                      50                                       class A; snr>=20; multi-transit
+ TIC 57916666      17  1.720094              3.511061                1151.818693    46.328748               A             REJECT            LOW_PRIORITY                      50                                       class A; snr>=20; multi-transit
+TIC 373062137      18 11.552227              6.002751                 777.575641    23.072341               A             REJECT            LOW_PRIORITY                      40                                                      class A; snr>=20
+TIC 439996850      17  4.401294              2.949314                1183.256289    14.341682               C          WATCHLIST            LOW_PRIORITY                      40                            watchlist; class C; snr>=10; multi-transit
+TIC 408505170      42 11.310099              4.579246                 815.214208    14.885314               C          WATCHLIST            LOW_PRIORITY                      35                              watchlist; class C; snr>=10; 3+ transits
+TIC 440672051      17  8.666356              2.902256                 871.862083    12.915384               C          WATCHLIST            LOW_PRIORITY                      35                              watchlist; class C; snr>=10; 3+ transits
+TIC 373278642      18 10.650503              3.662875                 672.234320    11.545635               C          WATCHLIST            LOW_PRIORITY                      35                              watchlist; class C; snr>=10; 3+ transits
+TIC 437737143      17 11.621185              3.831130                 713.298189    11.522975               C          WATCHLIST            LOW_PRIORITY                      35                              watchlist; class C; snr>=10; 3+ transits
+TIC 437737149      17  5.449476              2.642237                 962.006484     7.535814               A             REJECT            LOW_PRIORITY                      35                                        class A; snr>=7.5; 3+ transits
+TIC 331928059      52 12.099493              3.770790                 648.918812    15.175054               C          WATCHLIST            LOW_PRIORITY                      30                                           watchlist; class C; snr>=10
+TIC 336724913      42 11.475914              4.318480                 710.493617    14.987776               C          WATCHLIST            LOW_PRIORITY                      30                                           watchlist; class C; snr>=10
+TIC 407393440      18 11.681307              2.482448                 459.294173    11.632636               C          WATCHLIST            LOW_PRIORITY                      30                                           watchlist; class C; snr>=10
+TIC 468264605      18 11.240542              3.265657                 587.321125     9.893834               A             REJECT            LOW_PRIORITY                      30                                                     class A; snr>=7.5
+TIC 257193673      42  7.054108              2.514100                 800.809556     9.610129               C          WATCHLIST            LOW_PRIORITY                      30                             watchlist; class C; snr>=7.5; 3+ transits
+TIC 466441471      42 10.553136              3.132313                 628.519487     7.822960               C          WATCHLIST            LOW_PRIORITY                      30                             watchlist; class C; snr>=7.5; 3+ transits
+TIC 194531699      17  3.216483              0.405812                1175.437321     5.278421               A             REJECT            LOW_PRIORITY                      30                                                class A; multi-transit
+TIC 257305591      42  4.025828              0.992887                1138.493807     5.196202               A             REJECT            LOW_PRIORITY                      30                                                class A; multi-transit
+TIC 373150657      18  0.634245              1.156713                1685.580434     4.003536               A             REJECT            LOW_PRIORITY                      30                                                class A; multi-transit
+TIC 418759634      42  4.847333              2.214536                1005.487873     6.000469               A             REJECT            LOW_PRIORITY                      27          class A; snr>=5.5; multi-transit; moderate odd-even mismatch
+TIC 388637626      18 11.239312              8.125334                 763.613543    49.393106               C             REJECT            LOW_PRIORITY                      25                                                      class C; snr>=20
+TIC 365963199      17 11.741471              3.377584                 720.135911     8.573551               C          WATCHLIST            LOW_PRIORITY                      25                                          watchlist; class C; snr>=7.5
+TIC 194327926      17 11.594495              3.533278                 707.345474     7.755469               C          WATCHLIST            LOW_PRIORITY                      25                                          watchlist; class C; snr>=7.5
+TIC 405210193      42  8.703013              2.152441                 602.506831     5.522776               C          WATCHLIST            LOW_PRIORITY                      25                             watchlist; class C; snr>=5.5; 3+ transits
+TIC 293371397      42  5.063105              0.974633                1132.086176     5.395059               A             REJECT            LOW_PRIORITY                      25                                                  class A; 3+ transits
+TIC 468345351      42  5.224580              2.299078                 997.132074     5.242355               A             REJECT            LOW_PRIORITY                      25                                                  class A; 3+ transits
+ TIC 52051614      42  2.116526              1.484256                1329.869709     5.192191               C          WATCHLIST            LOW_PRIORITY                      25                                     watchlist; class C; multi-transit
+TIC 257247422      42  8.307117              1.283380                 692.099173     4.915649               A             REJECT            LOW_PRIORITY                      25                                                  class A; 3+ transits
+TIC 150784941      57  7.534028              0.909693                 963.358700     4.799592               A             REJECT            LOW_PRIORITY                      25                                                  class A; 3+ transits
+TIC 397586524      42  7.743100              2.135440                 687.850537     6.244782               A             REJECT            LOW_PRIORITY                      22            class A; snr>=5.5; 3+ transits; moderate odd-even mismatch
+TIC 257322198      42  9.911581              2.355292                 701.498300     6.444521               C          WATCHLIST            LOW_PRIORITY                      20                                          watchlist; class C; snr>=5.5
+TIC 115545320      17  6.990021              2.259942                 732.684915     5.332087               C          WATCHLIST            LOW_PRIORITY                      20                                       watchlist; class C; 3+ transits
+TIC 415779282      17 10.631570              2.328222                 550.808535     5.247562               C          WATCHLIST            LOW_PRIORITY                      20                                       watchlist; class C; 3+ transits
+TIC 258866681      57 10.447392              0.941490                 706.791437     5.138578               C          WATCHLIST            LOW_PRIORITY                      20                                       watchlist; class C; 3+ transits
+TIC 461342461      24  9.829080              1.083458                 720.350787     5.008735               C          WATCHLIST            LOW_PRIORITY                      20                                       watchlist; class C; 3+ transits
+TIC 468255882      19 10.124791              3.121194                 678.952413     9.336183               C          WATCHLIST            LOW_PRIORITY                      17              watchlist; class C; snr>=7.5; moderate odd-even mismatch
+TIC 373456697      18  9.316177              2.403818                 887.350277     5.762524               C          WATCHLIST            LOW_PRIORITY                      17 watchlist; class C; snr>=5.5; 3+ transits; moderate odd-even mismatch
+TIC 293405902      42 11.462976              2.420698                 715.967453     5.226193               C          WATCHLIST            LOW_PRIORITY                      15                                                    watchlist; class C
+TIC 428737024      18  3.511269              1.933942                 953.501075     4.940311               C             REJECT            LOW_PRIORITY                      15                                                class C; multi-transit
+TIC 440064545      17  2.086782              1.204743                1577.385520     4.704221               C             REJECT            LOW_PRIORITY                      15                                                class C; multi-transit
+TIC 388633951      18  4.472001              2.038101                 957.930285     4.495462               C             REJECT            LOW_PRIORITY                      15                                                class C; multi-transit
+
+CSV: /mnt/c/Users/Gamze/Desktop/projects/AstroTransit/outputs_discovery/novel_candidates_science_prioritized.csv
+Parquet: /mnt/c/Users/Gamze/Desktop/projects/AstroTransit/outputs_discovery/novel_candidates_science_prioritized.parquet
+========================================================================

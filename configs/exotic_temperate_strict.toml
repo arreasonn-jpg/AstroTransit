@@ -1,0 +1,9 @@
+﻿fit_method = "map"
+mcmc_snr_threshold = 5.0
+
+tess.author = "SPOC"
+tess.exptime = 120
+
+# Strict temperate pilot iÃ§in biraz daha uzun periyot eriÅŸimi
+detection.min_period = 0.5
+detection.max_period = 50.0

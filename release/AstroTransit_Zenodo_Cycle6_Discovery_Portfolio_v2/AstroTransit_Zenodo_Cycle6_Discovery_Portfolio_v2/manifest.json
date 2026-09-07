@@ -1,0 +1,217 @@
+﻿[
+    {
+        "path":  ".zenodo.json",
+        "size_bytes":  660,
+        "sha256":  "dd17877d6550822254eedd3a3ab8ae48cabd51ebf7a7c41f466dbcc56ef0c7bf"
+    },
+    {
+        "path":  "DISCOVERY_NOTE.md",
+        "size_bytes":  1585,
+        "sha256":  "cde2c27b8d13d8a7fba5bc122686076673dfb9621d8a36ec51ec74b3b0bc8c4a"
+    },
+    {
+        "path":  "README.md",
+        "size_bytes":  494,
+        "sha256":  "91dfff1426d70f4c41208158b3140a42793682fa3cd6b81e66defb866b018816"
+    },
+    {
+        "path":  "configs/default.toml",
+        "size_bytes":  5816,
+        "sha256":  "33c0badf40bc8e99cebd80e6efc1dac0d2232a939d08e97f20521d114133611d"
+    },
+    {
+        "path":  "configs/exotic_giant_hz.toml",
+        "size_bytes":  132,
+        "sha256":  "53eb3e5ab50c2834aa4d85b1a15f7569814b8f038efb838fae0b8e7dee503be7"
+    },
+    {
+        "path":  "configs/exotic_habitable.toml",
+        "size_bytes":  802,
+        "sha256":  "d1b81bb6194b32b3c08d58d009f39187f520001d71143dbd53f9b6889b78fa69"
+    },
+    {
+        "path":  "configs/exotic_temperate.toml",
+        "size_bytes":  131,
+        "sha256":  "011a5ca031de5afca85dc152d47ab413b1d539b87aaa774d8c909b976db00948"
+    },
+    {
+        "path":  "configs/exotic_temperate_strict.toml",
+        "size_bytes":  195,
+        "sha256":  "ff594039b96c43a47a6fd44f2602c6a875ac6943041452e98b862b6d12990f07"
+    },
+    {
+        "path":  "configs/tic303241161_mcmc.toml",
+        "size_bytes":  5817,
+        "sha256":  "41f80149bdd8291ef9d9580cf695c83029b478c0362bbb7d61a773343f2b499d"
+    },
+    {
+        "path":  "configs/wsl_mcmc.toml",
+        "size_bytes":  1252,
+        "sha256":  "61d61a563fbe474fdcfd15445bd2279912df97bd30fd3ef44d06263a3162fc8c"
+    },
+    {
+        "path":  "data_products/verified_classA_discovery_portfolio.csv",
+        "size_bytes":  597,
+        "sha256":  "acb7282d2ef0d9cad61e682bd375fe2c13a5b01635670a1355e209b8bc211383"
+    },
+    {
+        "path":  "environment/pip_freeze.txt",
+        "size_bytes":  3776,
+        "sha256":  "543172ef36c5b663043870f07eadf612da41bbb5282f66d59b7a3ca6afd51a88"
+    },
+    {
+        "path":  "environment/python_version.txt",
+        "size_bytes":  18,
+        "sha256":  "eab99bdecc9af4a696c8a5f9d07b6a7069dd72fae3ac3ea3cf30d724f75c08e6"
+    },
+    {
+        "path":  "figures/TIC_352179145_S17_arch_review.png",
+        "size_bytes":  791070,
+        "sha256":  "6f66793b9d7a4c605c72a7c2d0cf7be98d7d46035ab46aa1f43f2b0780310b55"
+    },
+    {
+        "path":  "figures/TIC_352179145_S17_bls_tls_comparison.png",
+        "size_bytes":  161573,
+        "sha256":  "f4f24364d95b1494e06b974fceec18d7cee8e1db7d6d0cf9a8cfd46a3bee202d"
+    },
+    {
+        "path":  "figures/TIC_352179145_S17_folded.png",
+        "size_bytes":  261400,
+        "sha256":  "0fdb127ec49c363281d4224cba9353b5410c3b0cd69393b19184d65f8971a70f"
+    },
+    {
+        "path":  "figures/TIC_352179145_S17_lightcurve.png",
+        "size_bytes":  509133,
+        "sha256":  "68f890d66d345ad089f480d9b6e4e123fa5e47b0fb0f2ff7569b9f012c6f2b49"
+    },
+    {
+        "path":  "figures/TIC_352179145_S17_scorecard.png",
+        "size_bytes":  147384,
+        "sha256":  "8613cc94ee09a89ff86452bc7070ffe85c3c5828f6d27d88b4401878f75beeed"
+    },
+    {
+        "path":  "figures/TIC_352179145_S17_summary.png",
+        "size_bytes":  662839,
+        "sha256":  "e730099a0c0fe4d3b0e73897f7160f91e03650a0d8c6d3104e8f8e81fa173b5c"
+    },
+    {
+        "path":  "figures/TIC_352179145_S17_timing.png",
+        "size_bytes":  43731,
+        "sha256":  "c7378331019057c9201297c91f6938158e56e42439ef71894d75d237ccd6bb7d"
+    },
+    {
+        "path":  "figures/TIC_352179145_S57_bls_tls_comparison.png",
+        "size_bytes":  121669,
+        "sha256":  "ba6c6a8756896f81827c1e401bca6faecc590b5c59f50783882a42335f2920ef"
+    },
+    {
+        "path":  "figures/TIC_352179145_S57_folded.png",
+        "size_bytes":  332803,
+        "sha256":  "ef9b4413a02991fb5abbcd02a5b76a800e478c2e89b258d70e3b20720f74cd2e"
+    },
+    {
+        "path":  "figures/TIC_352179145_S57_lightcurve.png",
+        "size_bytes":  624353,
+        "sha256":  "8ad0fa83241d839437ed52f100e71a49b27381a1a4a238db654c9e2798a463c3"
+    },
+    {
+        "path":  "figures/TIC_352179145_S57_scorecard.png",
+        "size_bytes":  197096,
+        "sha256":  "dc7d255b44bc79899af13b20e699274d0f69c9925663c57f25198ac38d1721c8"
+    },
+    {
+        "path":  "figures/TIC_352179145_S57_summary.png",
+        "size_bytes":  735774,
+        "sha256":  "dcea64207a3387edb92063b51481d69e8ae41b939c0e9fbbc73e296edbb78303"
+    },
+    {
+        "path":  "figures/TIC_352179145_S57_timing.png",
+        "size_bytes":  20021,
+        "sha256":  "ff6a8345a4008910e57731d272530dd1d15c65a81ca704f1e37d775831399b59"
+    },
+    {
+        "path":  "figures/TIC_352179145_S84_bls_tls_comparison.png",
+        "size_bytes":  141817,
+        "sha256":  "1cf4e84e94241d83a11ad15924c948d47c7ba9f07482ac28aab2fea0e01781fc"
+    },
+    {
+        "path":  "figures/TIC_352179145_S84_folded.png",
+        "size_bytes":  319968,
+        "sha256":  "66dffa15595770d72fd6765729b8a7b16a7067fe1c3858233db8c661934a57cd"
+    },
+    {
+        "path":  "figures/TIC_352179145_S84_folded_publication.png",
+        "size_bytes":  426749,
+        "sha256":  "317dd3f7bcab24f48ff5512fb6ea7bea47652cca45334a2f4fc107a0b943d239"
+    },
+    {
+        "path":  "figures/TIC_352179145_S84_lightcurve.png",
+        "size_bytes":  628886,
+        "sha256":  "07497222ab7f35a68043eaabf819960758b3a6add50cc987b45f66de5fab27b5"
+    },
+    {
+        "path":  "figures/TIC_352179145_S84_residuals.png",
+        "size_bytes":  287059,
+        "sha256":  "e1a2cd19970078da7930a28dbf4a4d273232964a2b7b43c0b494ec30c9d4afe8"
+    },
+    {
+        "path":  "figures/TIC_352179145_S84_scorecard.png",
+        "size_bytes":  216954,
+        "sha256":  "877fe964160445bb26135476f0c3a249759a36e004edc70f41eaee6158452b8e"
+    },
+    {
+        "path":  "figures/TIC_352179145_S84_summary.png",
+        "size_bytes":  760806,
+        "sha256":  "ebaf30e90fca268359441443f35c62ce52b9c4193fe4bbd292f9cacb73ae713b"
+    },
+    {
+        "path":  "figures/TIC_352179145_S84_timing.png",
+        "size_bytes":  20021,
+        "sha256":  "ff6a8345a4008910e57731d272530dd1d15c65a81ca704f1e37d775831399b59"
+    },
+    {
+        "path":  "figures/TIC_383353664_publication.png",
+        "size_bytes":  300948,
+        "sha256":  "833049da5715a10d3efffa6cb2183380d027343505dbed5863cf69e824186e30"
+    },
+    {
+        "path":  "reports/anomaly_fpp_assessment.json",
+        "size_bytes":  9437,
+        "sha256":  "14022a2fe3fb85d2e99046556227ff6bc6be2f8e0c1aeba45d39a0676004f97c"
+    },
+    {
+        "path":  "reports/anomaly_fpp_summary.json",
+        "size_bytes":  8233,
+        "sha256":  "76eb5981aaef136bac7bd1ea35bbce49b4caa1f85fa32036832568f516c1972c"
+    },
+    {
+        "path":  "reports/TIC_347299560_S24_anomaly_fpp.json",
+        "size_bytes":  10378,
+        "sha256":  "789f3ca511b5a2d044e3944439b16f2bc15d4347c038c0399d7747fc4cce0eee"
+    },
+    {
+        "path":  "reports/TIC_352146741_S17_anomaly_fpp.json",
+        "size_bytes":  11910,
+        "sha256":  "1134f6c74d20d00e144f24ebd7c2a619debc9479d54cd89d716d9ca4f7f03681"
+    },
+    {
+        "path":  "reports/TIC_354532520_S17_anomaly_fpp.json",
+        "size_bytes":  11158,
+        "sha256":  "7604be3fc874736e09fbe943f5abad8350a50aca09e81aa1566234e9dcc82cb5"
+    },
+    {
+        "path":  "reports/TIC_427332476_S42_anomaly_fpp.json",
+        "size_bytes":  10164,
+        "sha256":  "de12d06094ec720ac3495944134608b4333387bccc35652fc0d1c8b55d5a7d22"
+    },
+    {
+        "path":  "reports/TIC_439946042_S17_anomaly_fpp.json",
+        "size_bytes":  12038,
+        "sha256":  "20344331ca443616daa0e761089e88588b6eeb77586d0ecfd3c6d4cba47c7868"
+    },
+    {
+        "path":  "reports/TIC_439949948_S17_anomaly_fpp.json",
+        "size_bytes":  11663,
+        "sha256":  "22cd428e273b851e959197e9b022d2dde04ed85d9e28205b3faca7c4cba983f1"
+    }
+]

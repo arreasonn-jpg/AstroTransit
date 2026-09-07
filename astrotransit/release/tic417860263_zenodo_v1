@@ -1,0 +1,42 @@
+README.md
+metadata.json
+SHA256SUMS.txt
+
+reports/
+  TIC_417860263_final_report.md
+  TIC_417860263_final_report.json
+  TIC_417860263_crosscheck.md
+  TIC_417860263_crosscheck.json
+  TIC_417860263_exoplanet_archive_check.md
+  TIC_417860263_exoplanet_archive_check.json
+  TIC_417860263_toi_check.md
+  TIC_417860263_toi_check.json
+  TIC_417860263_toi_nearby_check.md
+  TIC_417860263_toi_nearby_check.json
+
+data_products/
+  outputs_novel_followup/json/TIC_417860263_S57.json
+  outputs_novel_mcmc/json/TIC_417860263_S57.json
+  outputs_novel_mcmc/json/TIC_417860263_S57_mcmc_summary.json
+
+figures/
+  TIC_417860263_S57_summary.png
+  TIC_417860263_S57_folded.png
+  TIC_417860263_S57_residuals.png
+  TIC_417860263_S57_scorecard.png
+  TIC_417860263_S57_lightcurve.png
+  TIC_417860263_S57_bls_tls_comparison.png
+  TIC_417860263_S57_timing.png
+
+configs/
+  default.toml
+  wsl_mcmc.toml
+
+logs/
+  novel417_afterpatch.log
+  mcmc_validation_notes.txt
+
+environment/
+  pip_freeze.txt
+  python_version.txt
+  git_commit.txt

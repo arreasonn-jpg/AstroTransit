@@ -1,0 +1,114 @@
+[project]
+name = "AstroTransit"
+version = "0.1.0"
+
+# ──────────────────────────────────────
+# Genel ayarlar
+# ──────────────────────────────────────
+[general]
+log_level = "INFO"                     # DEBUG, INFO, WARNING, ERROR
+temp_dir = ".cache/astrotransit"       # geçici dosyalar
+output_dir = "outputs"                 # sonuç dizini
+random_seed = 42
+
+# ──────────────────────────────────────
+# TESS veri erişim ayarları
+# ──────────────────────────────────────
+[tess]
+use_cache = true                       # indirilen light curve geçici olarak saklanır
+cache_ttl_hours = 24                   # cache süresi (saat)
+author = "SPOC"                        # SPOC veya TESS-SPOC
+exptime = 120                          # kadans (saniye): 20, 120, 600
+quality_bitmask = "default"            # "default", "hard", "hardest" veya özel int
+
+# ──────────────────────────────────────
+# JWST veri erişim ayarları
+# ──────────────────────────────────────
+[jwst]
+use_cache = true
+cache_ttl_hours = 48
+product_type = "stage3"                # "stage2" veya "stage3"
+instruments = ["NIRSpec", "NIRISS", "MIRI", "NIRCam"]
+
+# ──────────────────────────────────────
+# Ön işleme ayarları
+# ──────────────────────────────────────
+[preprocessing]
+sigma_clip_upper = 5.0                 # üst sigma kesimi
+sigma_clip_lower = 5.0                 # alt sigma kesimi
+nan_fill_method = "interpolate"        # "interpolate", "median", "drop"
+
+[preprocessing.detrending]
+method = "biweight"                    # "biweight", "cosine", "gp", "spline"
+window_length = 0.5                    # gün cinsinden pencere genişliği
+break_tolerance = 0.5                  # veri boşluk toleransı (gün)
+
+# ──────────────────────────────────────
+# Transit arama ayarları
+# ──────────────────────────────────────
+[detection]
+min_period = 0.3                       # minimum arama periyodu (gün)
+max_period = 30.0                      # maksimum arama periyodu (gün)
+min_transits = 2                       # minimum transit sayısı
+frequency_factor = 2.0                 # frekans örnekleme faktörü
+
+[detection.bls]
+duration_range = [0.01, 0.2]           # transit süre aralığı (gün cinsinden, periyodun kesri)
+n_durations = 20                       # test edilecek süre sayısı
+min_power_threshold = 7.0              # minimum BLS güç eşiği (SDE)
+
+[detection.tls]
+min_sde_threshold = 6.0                # minimum TLS SDE eşiği
+use_transit_template = true            # gerçekçi transit şekli kullanılsın mı
+oversampling_factor = 3                # frekans oversampling
+period_search_window = 0.30   # 0.10 → 0.30 (%30 pencere)
+
+[detection.cascade]
+require_both = true
+period_tolerance = 0.02
+
+# ──────────────────────────────────────
+# Modelleme ayarları
+# ──────────────────────────────────────
+[modeling]
+fit_method = "map"                     # "map" veya "mcmc"
+mcmc_auto_upgrade = true               # güçlü adaylarda otomatik MCMC'ye geç
+
+[modeling.map]
+optimizer = "scipy"                    # scipy L-BFGS-B
+max_iterations = 2000
+
+[modeling.mcmc]
+sampler = "nuts"                       # PyMC NUTS sampler
+chains = 2
+draws = 1500
+tune = 1500
+target_accept = 0.99
+mcmc_snr_threshold = 10.0             # MCMC sadece SNR bu değerin üstündeyse çalışır
+
+# ──────────────────────────────────────
+# Kalite ve doğrulama ayarları
+# ──────────────────────────────────────
+[quality]
+min_snr = 5.0                          # minimum sinyal-gürültü oranı
+max_residual_rms = 0.005               # maksimum residual RMS
+min_data_completeness = 0.80           # minimum veri tamlığı (0-1)
+
+# ──────────────────────────────────────
+# Çıktı ayarları
+# ──────────────────────────────────────
+[outputs]
+formats = ["parquet", "json"]          # ana çıktı formatları
+extra_formats = ["csv"]                # ek dışa aktarma formatları
+save_figures = true
+figure_format = "png"                  # "png", "pdf", "svg"
+figure_dpi = 150
+generate_html_report = false           # HTML rapor üretilsin mi
+
+# ──────────────────────────────────────
+# Benchmark ayarları
+# ──────────────────────────────────────
+[benchmark]
+confirmed_targets_file = "benchmarks/tess/confirmed_targets.parquet"
+false_positives_file = "benchmarks/tess/false_positives.parquet"
+quiet_stars_file = "benchmarks/tess/quiet_stars.parquet"

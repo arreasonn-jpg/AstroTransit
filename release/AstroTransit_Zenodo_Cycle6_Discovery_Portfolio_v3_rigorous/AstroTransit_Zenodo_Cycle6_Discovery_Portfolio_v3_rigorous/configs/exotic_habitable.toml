@@ -1,0 +1,40 @@
+# configs/exotic_habitable.toml (yeni config)
+[project]
+name = "AstroTransit"
+version = "0.1.0"
+
+[general]
+log_level = "INFO"
+output_dir = "outputs_habitable_search"
+
+[tess]
+use_cache = true
+author = "SPOC"
+exptime = 120
+
+[detection]
+min_period = 2.0          # HZ için minimum (M dwarf)
+max_period = 60.0         # HZ için maksimum
+min_transits = 3
+
+[detection.bls]
+min_power_threshold = 8.0  # Daha yüksek eşik (uzun P = daha az transit)
+
+[detection.tls]
+min_sde_threshold = 7.0
+period_search_window = 0.20
+
+[quality]
+min_snr = 7.0
+max_residual_rms = 0.003
+min_data_completeness = 0.85
+
+[modeling]
+fit_method = "mcmc"        # HZ adayları için direkt MCMC
+mcmc_auto_upgrade = false
+
+[modeling.mcmc]
+chains = 4
+draws = 3000
+tune = 2000
+target_accept = 0.95

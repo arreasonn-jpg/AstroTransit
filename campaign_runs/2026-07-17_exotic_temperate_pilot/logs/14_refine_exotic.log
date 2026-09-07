@@ -1,0 +1,26 @@
+2026-07-17 21:29:51.352 | INFO     | __main__:main:174 - Girdi yüklendi: outputs_discovery/novel_candidates_science_prioritized.parquet | satır=12
+2026-07-17 21:29:51.352 | DEBUG    | astrotransit.quality.habitability:__init__:77 - HabitabilityScorer başlatıldı.
+2026-07-17 21:29:51.352 | DEBUG    | astrotransit.quality.moon_potential:__init__:62 - MoonHostScorer başlatıldı.
+2026-07-17 21:29:51.352 | DEBUG    | astrotransit.quality.architecture_anomalies:__init__:71 - ArchitectureAnomalyScorer başlatıldı.
+2026-07-17 21:29:51.635 | INFO     | __main__:main:356 - Parquet yazıldı: outputs_discovery/novel_candidates_exotic_prioritized.parquet
+2026-07-17 21:29:51.635 | INFO     | __main__:main:357 - CSV yazıldı: outputs_discovery/novel_candidates_exotic_prioritized.csv
+
+==============================================================================================================
+EXOTIC PRIORITY SUMMARY
+==============================================================================================================
+ sector    science_theme  science_interest_score exotic_priority_bucket  earth_similarity_score  moon_host_score  architecture_anomaly_score
+     57 STANDARD_TRANSIT                 22.0263           LOW_PRIORITY                 29.3685           6.0587                      0.1607
+     17 STANDARD_TRANSIT                 15.9246           LOW_PRIORITY                 21.2329           1.2562                      4.3970
+     57 STANDARD_TRANSIT                 14.3030           LOW_PRIORITY                 19.0706           1.2500                      7.0955
+     57 STANDARD_TRANSIT                 12.5264           LOW_PRIORITY                 16.7018           1.2851                      7.1580
+     43 STANDARD_TRANSIT                  5.4750           LOW_PRIORITY                  0.7140           1.2500                      7.2999
+     57 STANDARD_TRANSIT                  5.3201           LOW_PRIORITY                  0.0278           1.2500                      7.0935
+     42 STANDARD_TRANSIT                  5.2682           LOW_PRIORITY                  6.7571           1.2502                      7.0242
+     17 STANDARD_TRANSIT                  3.7810           LOW_PRIORITY                  0.1421           5.0413                      0.3454
+     17 STANDARD_TRANSIT                  3.7777           LOW_PRIORITY                  0.3442           5.0370                      0.4249
+     17 STANDARD_TRANSIT                  1.7095           LOW_PRIORITY                  2.2794           1.2500                      0.1672
+     18 STANDARD_TRANSIT                  1.1101           LOW_PRIORITY                  0.1769           1.4801                      0.3966
+     17 STANDARD_TRANSIT                  0.0000           LOW_PRIORITY                  0.0000           0.0000                      0.0000
+==============================================================================================================
+Output: outputs_discovery/novel_candidates_exotic_prioritized.parquet
+Output: outputs_discovery/novel_candidates_exotic_prioritized.csv

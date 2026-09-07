@@ -1,0 +1,13 @@
+total 152K
+-rwxrwxrwx 1 erdem erdem  47K Jul 11 17:54 novel_candidates_prioritized.parquet
+-rwxrwxrwx 1 erdem erdem 3.8K Jul 11 17:54 novel_candidates_prioritized.csv
+-rwxrwxrwx 1 erdem erdem  46K Jul 11 17:54 discovery_classified.parquet
+-rwxrwxrwx 1 erdem erdem  46K Jul 11 17:54 novel_candidates.parquet
+-rwxrwxrwx 1 erdem erdem 3.7K Jul 11 17:54 novel_candidates.csv
+-rwxrwxrwx 1 erdem erdem  241 Jul 11 17:54 discovery_progress.json
+drwxrwxrwx 1 erdem erdem  512 Jul 11 17:53 json
+drwxrwxrwx 1 erdem erdem  512 Jul 11 17:53 targets
+drwxrwxrwx 1 erdem erdem  512 Jul 11 17:51 parquet
+drwxrwxrwx 1 erdem erdem  512 Jul 11 17:50 reports
+drwxrwxrwx 1 erdem erdem  512 Jul 11 17:50 figures
+drwxrwxrwx 1 erdem erdem  512 Jul 11 17:50 csv

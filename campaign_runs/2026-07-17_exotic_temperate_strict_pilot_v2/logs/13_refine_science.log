@@ -1,0 +1,37 @@
+========================================================================
+Science Priority Refinement
+========================================================================
+science_priority_bucket
+LOW_PRIORITY              9
+SMALL_COOL_SECOND_LOOK    7
+SMALL_COOL_CORE           4
+SMALL_HOT                 2
+Name: count, dtype: int64
+
+    source_id  sector    period  planet_radius_rearth  equilibrium_temperature_k  snr_adopted candidate_class discovery_priority science_priority_bucket  science_priority_score                                                                       science_priority_reason
+TIC 407393440      18 11.681307              2.482448                 459.294173    11.632636               C          WATCHLIST            LOW_PRIORITY                      30                                                                   watchlist; class C; snr>=10
+TIC 405210193      42  8.703013              2.152441                 602.506831     5.522776               C          WATCHLIST            LOW_PRIORITY                      25                                                     watchlist; class C; snr>=5.5; 3+ transits
+TIC 415779282      17 10.631570              2.328222                 550.808535     5.247562               C          WATCHLIST            LOW_PRIORITY                      20                                                               watchlist; class C; 3+ transits
+TIC 150908292      17 11.563212              2.164242                 509.363551     7.378797               C          WATCHLIST            LOW_PRIORITY                      12                                      watchlist; class C; snr>=5.5; moderate odd-even mismatch
+TIC 414782563      42 11.150222              2.866796                 572.842529     7.291079               C          WATCHLIST            LOW_PRIORITY                      12                                      watchlist; class C; snr>=5.5; moderate odd-even mismatch
+ TIC 44453366      17  7.286217              1.660985                 634.062372     4.641554               C             REJECT            LOW_PRIORITY                      10                                                                          class C; 3+ transits
+ TIC 58732360      42  0.617074             45.074469                1487.696326    59.302549               X             REJECT            LOW_PRIORITY                       0                                                                           false positive flag
+TIC 327000122      17  0.000000              0.000000                   0.000000     0.000000               C             REJECT            LOW_PRIORITY                       0                                                                                invalid period
+TIC 365961623      17 11.431964              2.886354                 551.681980    12.244388               C          WATCHLIST            LOW_PRIORITY                     -20                           watchlist; class C; snr>=10; binary-suspect; high odd-even mismatch
+TIC 257303702      43  1.403225              1.956991                 976.888232    10.169360               A           FOLLOWUP         SMALL_COOL_CORE                      95                                    followup; class A; snr>=10; multi-transit; small-cool-core
+TIC 150816111      57  6.893678              1.379177                 514.162601     8.370205               A             REJECT         SMALL_COOL_CORE                      65                                             class A; snr>=7.5; multi-transit; small-cool-core
+TIC 352179145      17 11.439335              2.053441                 512.611537    18.873119               C          WATCHLIST         SMALL_COOL_CORE                      60                                     watchlist; class C; snr>=10; 3+ transits; small-cool-core
+TIC 191080974      17  9.904819              2.003730                 561.271793     8.706336               A             REJECT         SMALL_COOL_CORE                      47                                class A; snr>=7.5; moderate odd-even mismatch; small-cool-core
+TIC 405230222      42  4.419095              1.604319                 661.140687     5.767389               A             REJECT  SMALL_COOL_SECOND_LOOK                      50                                      class A; snr>=5.5; multi-transit; small-cool-second-look
+TIC 439949946      17  6.704066              0.708945                 564.468037     7.266490               A             REJECT  SMALL_COOL_SECOND_LOOK                      45                                        class A; snr>=5.5; 3+ transits; small-cool-second-look
+TIC 283859631      17  6.636395              1.457780                 618.053751     6.582437               A             REJECT  SMALL_COOL_SECOND_LOOK                      45                                        class A; snr>=5.5; 3+ transits; small-cool-second-look
+TIC 115480517      17  3.910887              1.794629                 732.042946     6.226376               C          WATCHLIST  SMALL_COOL_SECOND_LOOK                      45                           watchlist; class C; snr>=5.5; multi-transit; small-cool-second-look
+TIC 357370384      57 13.493918              1.118307                 415.702824     5.577353               C          WATCHLIST  SMALL_COOL_SECOND_LOOK                      40                             watchlist; class C; snr>=5.5; 3+ transits; small-cool-second-look
+TIC 405189795      42 10.162978              1.841837                 584.405428     5.843320               C          WATCHLIST  SMALL_COOL_SECOND_LOOK                      35                                          watchlist; class C; snr>=5.5; small-cool-second-look
+TIC 461590771      18  8.130528              1.751263                 604.562655     6.069124               C          WATCHLIST  SMALL_COOL_SECOND_LOOK                      32 watchlist; class C; snr>=5.5; 3+ transits; moderate odd-even mismatch; small-cool-second-look
+TIC 303241161      57  0.754877              2.205903                1257.956814    27.959815               A           FOLLOWUP               SMALL_HOT                      87                                          followup; class A; snr>=20; multi-transit; small-hot
+TIC 150970759      57  0.342548              1.333161                1430.591955    14.504193               A           FOLLOWUP               SMALL_HOT                      82                                          followup; class A; snr>=10; multi-transit; small-hot
+
+CSV: /mnt/c/Users/Gamze/Desktop/projects/AstroTransit/outputs_discovery/novel_candidates_science_prioritized.csv
+Parquet: /mnt/c/Users/Gamze/Desktop/projects/AstroTransit/outputs_discovery/novel_candidates_science_prioritized.parquet
+========================================================================

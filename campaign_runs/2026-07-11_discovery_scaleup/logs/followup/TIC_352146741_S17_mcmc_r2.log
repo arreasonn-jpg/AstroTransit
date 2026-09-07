@@ -1,0 +1,20 @@
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 30 durations
+Searching 13087 data points, 117 periods from 4.543 to 5.546 days
+Using 1 of 8 CPU threads
+Searching for best T0 for period 5.00282 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 30 durations
+Searching 13087 data points, 117 periods from 4.543 to 5.546 days
+Using 1 of 8 CPU threads
+Searching for best T0 for period 5.00282 days
+========================================================================
+Novel Follow-up Sonucu
+========================================================================
+{'target_id': 'TIC 352146741', 'success': True, 'sectors_processed': 1, 'candidates_found': 1, 'candidates_confirmed': 1, 'error': ''}
+{'target_id': 'TIC 352146741', 'sector': 17, 'success': True, 'has_candidate': True, 'candidate_confirmed': True, 'error': '', 'score': 100.0, 'class': 'A'}
+========================================================================
+Cikti dizini: outputs_novel_mcmc
+Gorseller: outputs_novel_mcmc/figures
+JSON: outputs_novel_mcmc/json
+Parquet: outputs_novel_mcmc/parquet

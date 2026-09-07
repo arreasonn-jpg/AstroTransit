@@ -1,0 +1,9 @@
+﻿{
+  "title": "AstroTransit: Prescreened TESS Transit-Like Exoplanet Candidate Watchlist (v1 Release)",
+  "upload_type": "dataset",
+  "description": "Prescreened watchlist containing empirical light curve fits, MCMC posterior parameter distributions, and diagnostic vetting scores for unconfirmed exoplanet candidates identified from TESS cadence photometry using the AstroTransit pipeline. All targets are unconfirmed candidates requiring follow-up high-resolution imaging and radial velocity spectroscopy.",
+  "creators": [{"name": "Erdem [Soyadınız]", "affiliation": "Independent Researcher"}],
+  "keywords": ["exoplanets", "TESS", "transit-candidates", "MCMC", "photometry", "astronomy"],
+  "access_right": "open",
+  "license": "CC-BY-4.0"
+}
