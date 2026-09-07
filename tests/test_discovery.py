@@ -3,6 +3,7 @@
 from types import SimpleNamespace
 
 from astrotransit.discovery.earth_search import EarthCandidateRanker
+from astrotransit.pipelines.orchestrator import AstroTransitOrchestrator
 
 
 def _record(
@@ -71,6 +72,27 @@ def test_ranker_deduplicates_target_using_best_record():
 
     assert [item.target_id for item in ranked] == ["TIC 1"]
     assert ranked[0].candidate_category == "earth_twin_candidate"
+
+
+def test_orchestrator_exposes_ranked_earth_search_api():
+    record = _record(
+        "TIC 99",
+        "photometric_earth_like_candidate",
+        93.0,
+        confidence="MEDIUM",
+    )
+    target_result = SimpleNamespace(
+        sector_results=[SimpleNamespace(record=record)],
+        long_period_record=None,
+    )
+    orchestrator = object.__new__(AstroTransitOrchestrator)
+    orchestrator.run_batch = lambda targets, sectors=None: [target_result]
+
+    summary = orchestrator.run_earth_search(["TIC 99"], min_similarity=90.0, limit=1)
+
+    assert summary.n_targets == 1
+    assert summary.n_ranked_candidates == 1
+    assert summary.ranked_candidates[0].target_id == "TIC 99"
 
 
 def test_ranker_supports_legacy_class_and_long_period_provenance():

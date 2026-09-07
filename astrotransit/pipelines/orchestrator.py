@@ -16,7 +16,7 @@ Desteklenen modlar:
 from __future__ import annotations
 
 from enum import Enum
-from typing import Optional, Union
+from typing import Any, Optional, Union
 
 from loguru import logger
 
@@ -154,6 +154,40 @@ class AstroTransitOrchestrator:
 
         self._finalize()
         return results
+
+    def run_earth_search(
+        self,
+        targets: list[str | int],
+        *,
+        sectors: Optional[list[int]] = None,
+        min_similarity: float = 90.0,
+        limit: Optional[int] = None,
+    ) -> Any:
+        """TESS batch taraması ve Earth-like aday sıralamasını birleştirir.
+
+        ``priority_score`` operasyonel takip önceliğidir; similarity, FPP ve
+        detection confidence sonuç nesnesinde ayrı tutulur.
+        """
+
+        from astrotransit.discovery.earth_search import (
+            EarthCandidateRanker,
+            EarthSearchSummary,
+        )
+
+        results = self.run_batch(targets, sectors=sectors)
+        ranker = EarthCandidateRanker(min_similarity=min_similarity)
+        records = ranker.records_from_target_results(results)
+        summary = ranker.summarize(records, n_targets=len(results))
+        if limit is None:
+            return summary
+        if limit < 1:
+            raise ValueError("limit en az 1 olmalıdır.")
+        return EarthSearchSummary(
+            n_targets=summary.n_targets,
+            n_records=summary.n_records,
+            n_ranked_candidates=min(limit, summary.n_ranked_candidates),
+            ranked_candidates=summary.ranked_candidates[:limit],
+        )
 
     def run_followup(
         self,
