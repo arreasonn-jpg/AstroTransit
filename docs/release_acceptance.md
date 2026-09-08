@@ -19,6 +19,7 @@ results. `PASS` requires an immutable report and a reproducible command.
 | Schema | CI machine validation | IMPLEMENTED |
 | Determinism | repeated output hash equality | IMPLEMENTED / PENDING RUN |
 | Performance | seconds/target and peak memory | IMPLEMENTED / PENDING RUN |
+| Figures | measured-only recovery/reliability plots | IMPLEMENTED / PENDING RUN |
 | Reproduction | `astrotransit reproduce benchmark-v1` | IMPLEMENTED |
 | Documentation | methods, assumptions, references, limitations | IMPLEMENTED |
 

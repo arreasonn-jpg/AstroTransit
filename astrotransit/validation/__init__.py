@@ -28,6 +28,7 @@ from astrotransit.validation.determinism import assert_deterministic, canonical_
 from astrotransit.validation.performance import RuntimeMeasurement, measure_runtime
 from astrotransit.validation.release_gate import GateResult, ReleaseGateReport, evaluate_release_gates
 from astrotransit.validation.corpus_evaluation import CorpusEvaluation, evaluate_corpus
+from astrotransit.validation.plots import generate_validation_figures
 from astrotransit.validation.fpp_benchmark import (
     FPPBenchmarkCase,
     FPPBenchmarkReport,
@@ -99,6 +100,7 @@ __all__ = [
     "evaluate_release_gates",
     "CorpusEvaluation",
     "evaluate_corpus",
+    "generate_validation_figures",
     "FPPBenchmarkCase",
     "FPPBenchmarkReport",
     "evaluate_fpp_benchmark",

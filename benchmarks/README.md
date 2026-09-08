@@ -76,6 +76,16 @@ hashes and can enforce a previously published output hash with
 `--expected-sha256`. Network-backed data downloads remain explicit inputs and
 are never silently treated as reproducible local fixtures.
 
+Generate figures only from measured report fields:
+
+```bash
+python scripts/validation/generate_figures.py outputs/benchmark/benchmark_performance.json \
+  --output-dir outputs/benchmark/plots
+```
+
+No figure is generated for a missing metric, preventing empty or fabricated
+plots from being presented as validation evidence.
+
 ## Acceptance gate
 
 Before claiming a research release, run:
