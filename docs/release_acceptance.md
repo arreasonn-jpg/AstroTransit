@@ -17,10 +17,12 @@ results. `PASS` requires an immutable report and a reproducible command.
 | Blind test | deterministic held-out target IDs | IMPLEMENTED / PENDING DATA |
 | Provenance | input/config/output hashes and git revision | IMPLEMENTED |
 | Schema | CI machine validation | IMPLEMENTED |
-| Determinism | repeated output hash equality | IMPLEMENTED / PENDING RUN |
+| Determinism | repeated output hash equality | IMPLEMENTED |
 | Performance | seconds/target and peak memory | IMPLEMENTED / PENDING RUN |
 | Figures | measured-only recovery/reliability plots | IMPLEMENTED / PENDING RUN |
 | Reproduction | `astrotransit reproduce benchmark-v1` | IMPLEMENTED |
 | Documentation | methods, assumptions, references, limitations | IMPLEMENTED |
+| Environment | `uv.lock`, requirements lock and Dockerfile | IMPLEMENTED |
+| Repository lint | `ruff check .` | IMPLEMENTED |
 
 A release must not convert `PENDING DATA` or `PENDING RUN` into a numeric score.
