@@ -14,8 +14,8 @@ Durum sembolü: ✅ mevcut altyapı | 🟧 iskelet var, veri/çalıştırma eksi
 | 4 | Cross-sektör tutarlılığı | Tek sektör başarısı yetmez; aynı aday sektörler arası periyot/derinlik tutarlılığı | 🟧 | çok sektör stitching + `source_sectors` |
 | 5 | Parametre geri kazanımı | Enjekte edilen P, Rp/R*, T0, derinlik ile geri kazanılan değerlerin dağılımı (bias, scatter) | 🟧 | `RecoveryTrial.period_error_fraction` + modeling |
 | 6 | FPP kalibrasyonu | `fpp ≈ 0.01` denilen adayların gerçekten ~%1 false-positive çıkması; Brier skor + precision/recall e eğrisi | 🟧 | `astrotransit/validation/fpp_benchmark.py` |
-| 7 | Earth-similarity duyarlılık analizi | Ağırlıkların ±10–20% değişiminde sıralamanın ne kadar değiştiği (Kendall τ) | ⬜ | `EARTH_SIMILARITY_PROFILES` (profili kopyalayıp ağırlık vektörü değiştirerek) |
-| 8 | Tam provenance | Her sonuç: veri kaynağı, sektör, pipeline versiyonu, config hash, bağımlılık ortamı, model versiyonu, zaman damgası, random seed | 🟧 | `scripts/maintenance/make_environment_manifest.py`, `release/manifests/` |
+| 7 | Earth-similarity duyarlılık analizi | Ağırlıkların ±10–20% değişiminde sıralamanın ne kadar değiştiği (Kendall τ) | ✅ | `astrotransit/validation/sensitivity.py` |
+| 8 | Tam provenance | Her sonuç: veri kaynağı, sektör, pipeline versiyonu, config hash, bağımlılık ortamı, model versiyonu, zaman damgası, random seed | ✅ | `astrotransit/validation/provenance.py`, `scripts/maintenance/make_environment_manifest.py` |
 
 ## Nasıl çalıştırılır
 
@@ -54,6 +54,28 @@ kalibrasyon sonrası Brier skorun azalması beklenir.
 ±10/20% değiştirilerek aynı aday setinde skor sıralamasının Kendall τ'si
 hesaplanır. τ < 0.9 ise ağırlık seçimi sıralamayı belirleyici demektir ve
 sonuçlar "ağırlığa duyarlı" olarak etiketlenmelidir.
+
+## Release-gate sözleşmeleri (uygulandı)
+
+- `astrotransit.validation.claims` claim seviyelerini tek bir enum altında toplar;
+  takip kanıtı olmadan `CONFIRMED_PLANET` üretilemez.
+- `provenance.build_manifest` her deney için git commit, config/input hash,
+  seed, platform ve zaman damgasını taşır. Eksik ölçümler `null` kalır.
+- `make_injection_grid` period × depth × duration deneyini üretir; rapor seed,
+  completeness map ve provenance içerir.
+- FPP benchmark raporu Brier skoruna ek olarak reliability curve, ECE, ROC-AUC
+  ve PR-AUC üretir. Bunlar proxy kalibrasyonudur; Bayesian posterior değildir.
+- Makine doğrulaması için aday JSON şeması `docs/candidate.schema.json` altında
+  ve CI içinde Draft 2020-12 validator ile zorunlu olarak kontrol edilir.
+  sürümlenmiştir. `CITATION.cff` yazılım atfı metadata'sını sağlar.
+- `cross_sector.assess_cross_sector_consistency` period, depth, duration ve epoch
+  tutarlılığını ayrı ayrı raporlar; tek sektör sonucu asla multi-sector olarak
+  etiketlenmez. Ölçülmeyen boyutlar `multi_sector_incomplete` durumunda kalır.
+- MCMC çıktısı `mcmc_quality=PASS` olmadan güvenilir posterior olarak işaretlenmez;
+  `R-hat < 1.01`, minimum bulk ESS `>= 400` ve sıfır divergence zorunludur.
+- `metrics.parameter_recovery` bias, scatter, RMSE ve interval coverage üretir.
+  `splits.partition_target_ids` deterministic development/validation/blind-test
+  ayrımı sağlar; blind set pipeline skorlarıyla yeniden karıştırılmaz.
 
 ## Çıktı sözleşmesi
 

@@ -1,0 +1,15 @@
+cff-version: 1.2.0
+message: "If AstroTransit contributes to your work, please cite this software."
+title: "AstroTransit"
+version: "0.3.0"
+type: software
+authors:
+  - family-names: "AstroTransit Team"
+license: MIT
+repository-code: "https://github.com/arreasonn-jpg/AstroTransit"
+abstract: "Reproducible TESS transit detection and candidate characterization pipeline."
+keywords:
+  - astronomy
+  - exoplanets
+  - TESS
+  - transit photometry

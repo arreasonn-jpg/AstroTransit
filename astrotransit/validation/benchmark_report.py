@@ -155,6 +155,7 @@ class BenchmarkPerformanceReport:
     targets: tuple[BenchmarkTargetMeasurement, ...] = ()
     metrics: dict[str, Any] = field(default_factory=dict)
     limitations: tuple[str, ...] = ()
+    provenance: dict[str, Any] = field(default_factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -168,6 +169,7 @@ class BenchmarkPerformanceReport:
             "metrics": self.metrics,
             "targets": [target.to_dict() for target in self.targets],
             "limitations": list(self.limitations),
+            "provenance": self.provenance,
         }
 
     def summary(self) -> str:
@@ -212,6 +214,7 @@ def evaluate_benchmark_results(
     period_tolerance_fraction: float = DEFAULT_PERIOD_TOLERANCE,
     radius_tolerance_fraction: float = DEFAULT_RADIUS_TOLERANCE,
     pipeline_version: Optional[str] = None,
+    provenance: Optional[dict[str, Any]] = None,
 ) -> BenchmarkPerformanceReport:
     """Pipeline sonuçlarını known-target ground truth ile karşılaştırır.
 
@@ -382,6 +385,7 @@ def evaluate_benchmark_results(
         targets=tuple(measurements),
         metrics=metrics,
         limitations=tuple(limitations),
+        provenance=provenance or {},
     )
 
 
