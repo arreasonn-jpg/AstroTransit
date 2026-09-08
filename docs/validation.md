@@ -93,9 +93,21 @@ Mevcut durum: 1817 `false_positive` (FP/FA/APC) + 1191 `planet`
 - Özet, `corpus_summary()` ile `has_negative_controls: false` durumunu açıkça
   taşır; bu, sıfır false-positive iddiası değildir.
 
-Ölçüm adımı (MAST erişimi gereken ortamda): önce pipeline corpus
-hedeflerinde çalıştırılıp tespit sonuçları `predictions.json` olarak
-dışa aktarılır (`[{"target_id": "...", "detected": true/false}]`); sonra:
+Ölçüm adımı (MAST erişimi gereken ortamda). İlk ölçüm için 150 hedeflik
+deterministik alt küme hazır (`benchmarks/corpora/fp_run_subset_v1.json`:
+100 false_positive + 50 planet; kapı minimumu >=100 FP):
+
+```bash
+astrotransit benchmark --config configs/benchmark_fp.toml
+# -> outputs/benchmark/fp_benchmark_performance.json (+ .csv)
+```
+
+Bu rapor, FP hedeflerinde kaç yanlış tespit üretildiğini (FPR),
+planet hedeflerinde recall/precision'ı verir. Tam corpus (3008 hedef)
+üzerinde ölçüm istenirse `false_positives_file` tamamı içerecek biçimde
+güncellenir; ilk yayın için 150 hedeflik alt küme yeterlidir ve sonuç
+raporuna alt kümenin kimliği işlenir. `evaluate-corpus` alternatifi
+(pipeline dışı mevcut öngörüler varsa):
 
 ```bash
 astrotransit evaluate-corpus \
