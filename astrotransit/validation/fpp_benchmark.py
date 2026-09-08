@@ -7,6 +7,8 @@ from typing import Any, Iterable, Optional
 
 import numpy as np
 
+from astrotransit.validation.splits import assign_split
+
 
 @dataclass(frozen=True)
 class FPPBenchmarkCase:
@@ -131,4 +133,18 @@ def _pr_auc(scores: np.ndarray, labels: np.ndarray) -> Optional[float]:
     return float(np.sum(np.diff(np.r_[0.0, recall]) * precision))
 
 
-__all__ = ["FPPBenchmarkCase", "FPPBenchmarkReport", "evaluate_fpp_benchmark"]
+def split_fpp_cases(cases: Iterable[FPPBenchmarkCase], *, seed: int = 0) -> dict[str, list[FPPBenchmarkCase]]:
+    """Partition labelled FPP cases without allowing target leakage."""
+    result = {"development": [], "validation": [], "blind_test": []}
+    for case in cases:
+        result[assign_split(case.target_id, seed=seed)].append(case)
+    return result
+
+
+def evaluate_fpp_holdout(cases: Iterable[FPPBenchmarkCase], *, threshold: float = .5, seed: int = 0) -> dict[str, FPPBenchmarkReport]:
+    """Evaluate each deterministic split independently; no train/test mixing."""
+    return {name: evaluate_fpp_benchmark(partition, threshold=threshold)
+            for name, partition in split_fpp_cases(cases, seed=seed).items()}
+
+
+__all__ = ["FPPBenchmarkCase", "FPPBenchmarkReport", "evaluate_fpp_benchmark", "evaluate_fpp_holdout", "split_fpp_cases"]

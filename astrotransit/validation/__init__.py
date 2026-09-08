@@ -32,6 +32,8 @@ from astrotransit.validation.fpp_benchmark import (
     FPPBenchmarkCase,
     FPPBenchmarkReport,
     evaluate_fpp_benchmark,
+    evaluate_fpp_holdout,
+    split_fpp_cases,
 )
 from astrotransit.validation.benchmark_report import (
     BenchmarkPerformanceReport,
@@ -100,6 +102,8 @@ __all__ = [
     "FPPBenchmarkCase",
     "FPPBenchmarkReport",
     "evaluate_fpp_benchmark",
+    "evaluate_fpp_holdout",
+    "split_fpp_cases",
     "BenchmarkPerformanceReport",
     "BenchmarkTargetMeasurement",
     "VerifiedTarget",
