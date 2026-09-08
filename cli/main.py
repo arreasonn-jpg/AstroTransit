@@ -532,7 +532,8 @@ def benchmark(
             report_csv = Path(csv_output or orchestrator.settings.benchmark.report_csv)
             from astrotransit.validation.provenance import build_manifest
             report.provenance = build_manifest(config=orchestrator.settings.model_dump())
-            report.write_json(report_json)
+            from astrotransit.validation.artifacts import write_artifact
+            write_artifact(report.to_dict(), report_json)
             report.write_csv(report_csv)
             console.print(f"[green]Performans JSON raporu:[/green] {report_json}")
             console.print(f"[green]Hedef CSV raporu:[/green] {report_csv}")
@@ -619,8 +620,8 @@ def release_gate(
     )
     rendered = json.dumps(report.to_dict(), indent=2, ensure_ascii=False)
     if output:
-        Path(output).parent.mkdir(parents=True, exist_ok=True)
-        Path(output).write_text(rendered + "\\n", encoding="utf-8")
+        from astrotransit.validation.artifacts import write_artifact
+        write_artifact(report.to_dict(), output)
     console.print(rendered)
     if not report.passed:
         raise typer.Exit(1)
@@ -648,8 +649,8 @@ def evaluate_corpus_command(
     report = evaluate_corpus(cases, lambda case: prediction_map[case.target_id], split=split, seed=seed)
     rendered = json.dumps(report.to_dict(), indent=2, ensure_ascii=False)
     if output:
-        Path(output).parent.mkdir(parents=True, exist_ok=True)
-        Path(output).write_text(rendered + "\\n", encoding="utf-8")
+        from astrotransit.validation.artifacts import write_artifact
+        write_artifact(report.to_dict(), output)
     console.print(rendered)
     if report.errors or report.n_evaluated != report.n_cases:
         raise typer.Exit(1)
@@ -671,8 +672,8 @@ def evaluate_fpp_command(
     reports = {name: report.to_dict() for name, report in evaluate_fpp_holdout(cases, threshold=threshold, seed=seed).items()}
     rendered = json.dumps(reports, indent=2, ensure_ascii=False)
     if output:
-        Path(output).parent.mkdir(parents=True, exist_ok=True)
-        Path(output).write_text(rendered + "\\n", encoding="utf-8")
+        from astrotransit.validation.artifacts import write_artifact
+        write_artifact(reports, output)
     console.print(rendered)
 
 
