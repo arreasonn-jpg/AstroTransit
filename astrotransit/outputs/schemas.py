@@ -240,7 +240,7 @@ class TransitCandidateRecord:
     r_hat_max: Optional[float] = 0.0
     n_divergences: int = 0
     mcmc_converged: bool = False
-    mcmc_quality: str = "MCMC_FAILED_DIAGNOSTICS"
+    mcmc_quality: str = "NOT_RUN"
     period_sampled: bool = False
     period_err_source: str = ""
     rp_rs_sampled: bool = False
