@@ -4,18 +4,18 @@ Bu belge, pipeline'ın bilimsel doğrulama borcunu **ölçülebilir kapılar**
 hâlinde tanımlar. Kural: yeni özellik, kapalı çevrim doğrulama kanıtından
 önce ikinci plandadır ("validation debt" önce ödenir).
 
-Durum sembolü: ✅ mevcut altyapı | 🟧 iskelet var, veri/çalıştırma eksik | ⬜ yapılmalı
+Durum sembolü: ✅ ölçüm yapıldı, sonuç donduruldu | 🟩 mevcut altyapı, çalıştırma bekleniyor | 🟧 iskelet var, veri/çalıştırma eksik | ⬜ yapılmalı
 
 | # | Kapı | Tanım | Durum | Araç |
 |---|------|-------|-------|------|
 | 1 | Injection-recovery | Enjekte edilmiş transitlerin (P, Rp/R*, derinlik, gürültü gridi) kaçta kaçı geri kazanılıyor; `completeness(P, Rp/Rs, duration, noise)` haritası | 🟧 | `astrotransit/validation/injection_recovery.py` |
-| 2 | Bilinen gezegen geri kazanımı | TESS'ten bilinen onaylı gezegenler (örn. WASP-18b, WASP-19b) pipeline'dan geçirilir; beklenen/geri kazanılan periyot ve yarıçap hedef bazında raporlanır | 🟧 | `astrotransit benchmark` + `benchmarks/verified_targets.json` + `benchmark_report.py` |
-| 3 | Bilinen false positive'ler | Bilinen EB/sistematiği olayların ne oranında elendiği | 🟧 | `corpus.py`, `build_labelled_corpus.py` + etiketli FP seti |
+| 2 | Bilinen gezegen geri kazanımı | TESS'ten bilinen onaylı gezegenler (örn. WASP-18b, WASP-19b) pipeline'dan geçirilir; beklenen/geri kazanılan periyot ve yarıçap hedef bazında raporlanır | 🟧 (ground truth hazır: 59 etiketli hedef, TFOP KP/CP; ölçüm PENDING RUN) | `astrotransit benchmark` + `benchmarks/verified_targets.json` + `benchmark_report.py` |
+| 3 | Bilinen false positive'ler | Bilinen EB/sistematiği olayların ne oranında elendiği | 🟧 (etiketli **girdi** corpus hazır: 1817 FP + 1191 planet, TFOP disposition; quiet controls PENDING DATA; ölçüm PENDING RUN) | `corpus.py`, `build_labelled_corpus.py` + `benchmarks/corpora/tfop_disposition_corpus_v1.json` |
 | 4 | Cross-sektör tutarlılığı | Tek sektör başarısı yetmez; aynı aday sektörler arası periyot/derinlik tutarlılığı | 🟧 | çok sektör stitching + `source_sectors` |
 | 5 | Parametre geri kazanımı | Enjekte edilen P, Rp/R*, T0, derinlik ile geri kazanılan değerlerin dağılımı (bias, scatter) | 🟧 | `RecoveryTrial.period_error_fraction` + modeling |
 | 6 | FPP kalibrasyonu | `fpp ≈ 0.01` denilen adayların gerçekten ~%1 false-positive çıkması; Brier skor + precision/recall e eğrisi | 🟧 | `astrotransit/validation/fpp_benchmark.py` |
 | 7 | Earth-similarity duyarlılık analizi | Ağırlıkların ±10–20% değişiminde sıralamanın ne kadar değiştiği (Kendall τ) | ✅ | `astrotransit/validation/sensitivity.py` |
-| 8 | Tam provenance | Her sonuç: veri kaynağı, sektör, pipeline versiyonu, config hash, bağımlılık ortamı, model versiyonu, zaman damgası, random seed | ✅ | `astrotransit/validation/provenance.py`, `scripts/maintenance/make_environment_manifest.py` |
+| 8 | Tam provenance | Her sonuç: veri kaynağı, sektör, pipeline versiyonu, config hash, bağımlılık ortamı, model versiyonu, zaman damgası, random seed | 🟩 | `astrotransit/validation/provenance.py`, `scripts/maintenance/make_environment_manifest.py` |
 
 ## Nasıl çalıştırılır
 
@@ -40,7 +40,82 @@ Etiketli false-positive/quiet-star corpus'u yapılandırılmamışsa rapor
 `false_positive_rejection: null` ve `not_evaluated` durumu taşır; bu değer
 sıfır false-positive iddiası değildir.
 
-### 3. FPP kalibrasyonu
+**Ground truth genişletilmesi (59 hedef).** Özgün 9 el-küratörlü dev gezegenin
+yanına, TESS FOP WG disposition'larından (KP/CP; bağımsız etiket) 50 hedef
+deterministik olarak eklendi: yıldız başına tek giriş (en kısa periyotlu
+gezegen), BLS aralığı (0.3–30 gün), derinliğe göre kolay/orta/zor
+sınıflandırmasında round-robin dengesi (20/19/11). Her kayıt `reference`
+alanında TFOP disposition'unu ve TOI kimliğini taşır. Üretim komutu:
+
+```bash
+python scripts/validation/expand_verified_targets.py
+```
+
+Sözleşme testi: `tests/test_verified_targets_corpus.py`.
+
+**Regresyon protokolü.** Bilinen gezegen benchmark'ı her release'ten önce
+ve en az çeyreklik aralıklarla çalıştırılır; sonuç `benchmarks/results/`
+altına dondurulur ve bu belgenin "Ölçülen ve dondurulan sonuçlar" tablosuna
+satır olarak eklenir. Referans komut (MAST erişimi gereken ortamda):
+
+```bash
+astrotransit benchmark \
+  --output benchmarks/results/known_planets_regression.json \
+  --csv-output benchmarks/results/known_planets_regression.csv
+```
+
+Kural: taze, provenance'lı (git commit + config hash) bir regresyon raporu
+olmadan "pipeline bilinen gezegenleri hâlâ doğru tespit ediyor" iddiası
+yapılamaz; `verified_targets.json`'un kendisi ground-truth'tür, performans
+kanıtı değildir.
+
+### 3. Bilinen false positive'ler
+
+Etiketli girdi corpus TESS FOP Working Group disposition'larından
+(bağımsız program etiketi; AstroTransit çıktısı değil) küratörlendi:
+
+```bash
+python scripts/validation/curate_tfop_false_positive_corpus.py
+python scripts/validation/build_labelled_corpus.py \
+  benchmarks/corpora/tfop_disposition_corpus_v1.csv \
+  --output benchmarks/corpora/tfop_disposition_corpus_v1.json
+```
+
+Mevcut durum: 1817 `false_positive` (FP/FA/APC) + 1191 `planet`
+(KP/CP) kaydı, her kayıt disposition referansı taşır; disposition'ları
+çelişen 6 hedef bilinçli olarak dışarıda bırakıldı. Sınırlar:
+
+- Bu bir **girdi** corpus'udur; pipeline bu hedefler üzerinde çalıştırılmadı,
+  dolayısıyla FPR/specificity ölçümü henüz yok.
+- `quiet_star` kontrolleri aday kataloğundan türetilemez; bağımsız bir
+  sessiz-yıldız listesi (TOI geçmişi olmayan TIC'ler + occurrence/üst sınır
+  argümanı) gerekir ve PENDING DATA'dır.
+- Özet, `corpus_summary()` ile `has_negative_controls: false` durumunu açıkça
+  taşır; bu, sıfır false-positive iddiası değildir.
+
+Ölçüm adımı (MAST erişimi gereken ortamda). İlk ölçüm için 150 hedeflik
+deterministik alt küme hazır (`benchmarks/corpora/fp_run_subset_v1.json`:
+100 false_positive + 50 planet; kapı minimumu >=100 FP):
+
+```bash
+astrotransit benchmark --config configs/benchmark_fp.toml
+# -> outputs/benchmark/fp_benchmark_performance.json (+ .csv)
+```
+
+Bu rapor, FP hedeflerinde kaç yanlış tespit üretildiğini (FPR),
+planet hedeflerinde recall/precision'ı verir. Tam corpus (3008 hedef)
+üzerinde ölçüm istenirse `false_positives_file` tamamı içerecek biçimde
+güncellenir; ilk yayın için 150 hedeflik alt küme yeterlidir ve sonuç
+raporuna alt kümenin kimliği işlenir. `evaluate-corpus` alternatifi
+(pipeline dışı mevcut öngörüler varsa):
+
+```bash
+astrotransit evaluate-corpus \
+  benchmarks/corpora/tfop_disposition_corpus_v1.json predictions.json \
+  --output benchmarks/results/fp_corpus_evaluation_v1.json
+```
+
+### 6. FPP kalibrasyonu
 
 `FPPBenchmarkCase(target_id, is_false_positive, fpp)` etiketli setiyle
 `Brier score`, `false_positive_recall`, `planet_precision` ve kafa karıştırma
@@ -54,6 +129,44 @@ kalibrasyon sonrası Brier skorun azalması beklenir.
 ±10/20% değiştirilerek aynı aday setinde skor sıralamasının Kendall τ'si
 hesaplanır. τ < 0.9 ise ağırlık seçimi sıralamayı belirleyici demektir ve
 sonuçlar "ağırlığa duyarlı" olarak etiketlenmelidir.
+
+**Kapalı çevrim çalıştırıldı (2026-09-08).** Gerçek aday kataloğu
+(`benchmarks/toi_catalog.csv`, 8064 TOI kaydından 7320 fotometrik aday)
+üzerinde her iki profil için ±10% ve ±20% perturbasyon ölçüldü:
+
+| Profil | Perturbasyon | τ (min) | Top-10 overlap | Karar |
+|--------|-------------|---------|----------------|-------|
+| `photometric_earth_analog` | ±10% | 1.0 | 1.0 | `ranking_stable` |
+| `photometric_earth_analog` | ±20% | 1.0 | 1.0 | `ranking_stable` |
+| `strict_earth_twin` | ±10% | 1.0 | 1.0 | `ranking_stable` |
+| `strict_earth_twin` | ±20% | 1.0 | 1.0 | `ranking_stable` |
+
+Yeniden üretim komutu (tek komut, deterministik):
+
+```bash
+python scripts/validation/run_similarity_sensitivity.py
+```
+
+Ölçülmüş ve provenance'lı (git commit, input SHA-256, rapor hash'i) dondurulmuş
+sonuç: `benchmarks/results/similarity_sensitivity_v1.json`. Sözleşme testi:
+`tests/test_similarity_sensitivity_results.py`.
+
+Sınırlar (rapor içine de işlenmiştir): bu ölçüm, heuristik ağırlık seçiminin
+**sıralama kararlılığı** testidir; mutlak skorların kalibrasyonu ve
+yaşanabilirlik iddiası değildir. TOI kataloğu gezegen kütlesi/yoğunluğu
+taşımadığından `strict_earth_twin` yalnızca mevcut boyutlarla değerlendirilmiştir
+(sınıflandırma `INCOMPLETE_EARTH_TWIN` kalır). `tfopwg_disp` etiketleri
+hiçbir skora ağırlık olarak girmez.
+
+## Ölçülen ve dondurulan sonuçlar
+
+| Sonuç dosyası | Kapı | Üreten komut |
+|---------------|------|--------------|
+| `benchmarks/results/similarity_sensitivity_v1.json` | 7 (benzerlik duyarlılığı) | `python scripts/validation/run_similarity_sensitivity.py` |
+
+Bu listede yer almayan kapılar için sonuç iddiası yapılamaz; durumları tablodaki
+sembollerle aynı kalmaya devam eder. Yeni bir ölçüm eklendiğinde bu tabloya
+satır eklenir ve dosya commit/tag ile immutable kabul edilir.
 
 ## Release-gate sözleşmeleri (uygulandı)
 

@@ -5,8 +5,9 @@
 #         python -m venv .venv && . .venv/bin/activate
 #         pip install -r envs/requirements.lock   # veya
 #         pip install -e ".[dev]"
-# Yeniden üretmek için:
-#         .venv/bin/pip freeze | grep -v '^astrotransit' >> envs/requirements.lock
+# Yeniden üretmek için (DOSYANIN TAMAMIYLA; eski satırlar kalmayacak
+# şekilde '>', asla '>>' ile eklemeyin — tekrarlı pin çakışması yaratır):
+#         .venv/bin/pip freeze | grep -v '^astrotransit' > envs/requirements.lock
 
 altair==6.2.2
 annotated-doc==0.0.5
@@ -88,7 +89,6 @@ keyring==25.7.0
 kiwisolver==1.5.1
 lark==1.3.1
 lightkurve==2.4.2
-llvmlite==0.49.0
 loguru==0.7.3
 markdown-it-py==4.2.0
 MarkupSafe==3.0.3
@@ -104,7 +104,6 @@ nbconvert==7.17.1
 nbformat==5.11.1
 nest-asyncio2==1.7.2
 notebook_shim==0.2.4
-numba==0.67.0
 numpy==2.4.6
 oktopus==0.1.2
 overrides==7.7.0

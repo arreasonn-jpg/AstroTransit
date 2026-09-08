@@ -18,17 +18,40 @@
 
 ### Uzun Periyot ve Tek Transit Kararı
 
+`detection/long_period.py` klasik BLS/TLS cascade'inden **ayrı bir keşif
+kanalıdır**: 20–500 gün aralığında stitched BLS üzerinde çalışır
+(`LongPeriodSearchConfig`: min_power 7.0, derinlik 1e-4–0.5, en az 3
+nokta/transit).
+
+Her güç tepesi için gözlenen/geçerli olay sayısı karşılaştırılarak
+identifiability durumu belirlenir:
+
+| Durum | Koşul | Periyot hata varsayımı |
+|-------|-------|------------------------|
+| `multi_transit` | ≥2 gözlenen olay ve beklenen = gözlenen | `period_err = 0.02 × P` |
+| `multi_transit_gapped_ambiguous` | ≥2 gözlenen olay, ama beklenen > gözlenen (gap) | `period_err = 0.5 × P` |
+| `single_transit_ambiguous` | yalnızca 1 gözlenen olay | `period_err = 0.5 × P` |
+
+Tepeler önce identifiability sırasına, sonra güce göre sıralanır (%1'den
+küçük göreceli farktaki periyotlar dedup edilir).
+
 `detection.long_period` ayarı açık olduğunda, başarıyla detrend edilen tüm
 sektörler tekrar birleştirilir. Sektörler arası boşluklar gözlem zaman
 baseline'ından ayrı tutulur. Transit süre grid'i yıldız yarıçapı/kütlesi ve
-arama periyodu ile fiziksel olarak ölçeklenir. Arama sonucu:
+arama periyodu ile fiziksel olarak ölçeklenir. Arama sonucu
+identifiability durumlarına göre:
 
 - `multi_transit`: tüm beklenen geçişler gözlenmiş ve periyot daha iyi kısıtlanmış.
 - `multi_transit_gapped_ambiguous`: birden fazla geçiş görülmüş, ancak aradaki sektör boşlukları nedeniyle geçişler kaçırılmış olabilir.
 - `single_transit_ambiguous`: tek geçiş; periyot ve gezegen sınıfı doğrulanmış değildir.
 
-Uzun periyot sonucu normal BLS/TLS `cascade_confirmed` alanını otomatik olarak
-onaylamaz; follow-up ve ek sektör önceliklendirmesi için kullanılır.
+Tek transitte periyot ve gezegen **doğrulanmış sayılmaz**: sonuç
+`PERIOD_ESTIMATED` epistemik durumunda, belirsizlik
+`long_period_identifiability` ve `period_err` alanlarında taşınır. Uzun
+periyot sonucu normal BLS/TLS `cascade_confirmed` alanını otomatik olarak
+onaylamaz; follow-up ve ek sektör önceliklendirmesi için kullanılır. Bu
+kanalın çıktısı asla `DETECTED`/`MULTI_SECTOR_CONSISTENT` etiketiyle
+karıştırılmaz (bkz. `docs/architecture.md` → İddia Güvenlik Duvarı).
 
 ### Earth-like hedef araması
 
@@ -57,3 +80,28 @@ Parquet'te aynı hedef/sektör kimliği altında upsert edilerek güncellenebili
 kopya aday satırı oluşturulmaz.
 
 ### Cascade Karar Ağacı
+
+`detection/cascade.py` sıralı elenme uygular; her elenme adımı açık bir
+`CascadeStatus` üretir ve sessiz atlamaya izin vermez:
+
+```
+BLS hızlı tarama
+   ├─ aday yok        → BLS_FAILED
+   └─ aday var
+        ↓
+TLS doğrulama
+   ├─ başarısız       → TLS_FAILED
+   └─ başarılı
+        ↓
+Periyot uyum kontrolü (BLS ↔ TLS periyotları)
+   ├─ uyumsuz         → PERIOD_MISMATCH
+   └─ uyumlu
+        ↓
+CONFIRMED → modelleme aşamasına (MAP; seçililerde MCMC)
+```
+
+Diğer durumlar: `BLS_ONLY` (`require_both=False` ayarında; her zaman
+`confirmed=False`) ve `ERROR` (hata; aday üretilmez). Cascade
+`confirmed=True` yalnızca bu ağacın `CONFIRMED` kolundan çıkar; `BLS_ONLY`
+dahil hiçbir diğer durum `CONFIRMED_PLANET` iddiasına dönüştürülemez (bkz.
+`claims.py` — `confirmed` alanı iddia türetmede yok sayılır).
