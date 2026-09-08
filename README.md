@@ -1,5 +1,7 @@
 # AstroTransit
 
+**Türkçe: README.md | English: [README.en.md](README.en.md)**
+
 AstroTransit, TESS ışık eğrilerinde transit adayı **tespiti, vetting ve
 fiziksel karakterizasyonu** yapan, sonuçları kanıt zinciriyle (provenance)
 birlikte kalıcı çıktı sözleşmesine döken, modüler bir Python araştırma
