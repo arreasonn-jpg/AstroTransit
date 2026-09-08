@@ -45,6 +45,7 @@ class VerifiedTarget:
     difficulty: str
     sector: Optional[int] = None
     available_sectors: tuple[int, ...] = ()
+    reference: str = ""
 
     @property
     def target_id(self) -> str:
@@ -70,6 +71,7 @@ class VerifiedTarget:
             difficulty=str(row.get("difficulty", "unknown")).lower(),
             sector=sector,
             available_sectors=sectors,
+            reference=str(row.get("reference", "")),
         )
 
     def to_dict(self) -> dict[str, Any]:
@@ -80,6 +82,7 @@ class VerifiedTarget:
             "difficulty": self.difficulty,
             "sector": self.sector,
             "available_sectors": list(self.available_sectors),
+            "reference": self.reference,
             "expected_period_days": self.expected_period_days,
             "expected_radius_rearth": self.expected_radius_rearth,
         }

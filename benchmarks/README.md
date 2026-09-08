@@ -20,6 +20,17 @@ Recommended minimum release gate:
 
 ## Known-target benchmark
 
+To expand the confirmed-planet corpus from a traceable external source, run:
+
+```bash
+python scripts/validation/build_known_planet_corpus.py --limit 100 \
+  --output benchmarks/verified_targets_nasa_v1.json
+```
+
+The script queries only the NASA Exoplanet Archive confirmed-planet table,
+records retrieval provenance and refuses to write an empty result. Review the
+result and pin its retrieval date/hash before using it in a release.
+
 Run the network-backed known-target benchmark from the repository root:
 
 ```bash
