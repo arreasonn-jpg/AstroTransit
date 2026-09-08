@@ -20,6 +20,11 @@ manifest are recorded in the release notes.
    generated from the final archive rather than a Git LFS pointer.
 3. `release_notes/<tag>.md` — scope, pipeline version, config hash, commit,
    environment manifest, DOI/URL and scientific limitations.
+4. `release_notes/candidate_disclaimer.md` — binding policy: releases are
+   candidate lists, not peer-reviewed discoveries. Any release note listing
+   novel candidates must embed the disclaimer sentence, the ExoFOP/TESS FOP
+   submission status per target, and the "no peer review has taken place"
+   statement.
 
 Never add a manual `fpp: 0.0` value to a release report. If no calibrated FPP
 was computed, use JSON `null`, `fpp_method: "not_estimated"` and explain the
