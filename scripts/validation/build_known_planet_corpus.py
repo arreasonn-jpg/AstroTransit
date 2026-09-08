@@ -15,6 +15,7 @@ from datetime import datetime, timezone
 import json
 from pathlib import Path
 from urllib.parse import urlencode
+from urllib.error import URLError
 from urllib.request import Request, urlopen
 
 
@@ -72,7 +73,13 @@ def main() -> int:
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
     retrieved_at = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
-    rows = normalize(fetch_rows(args.limit), retrieved_at)
+    try:
+        rows = normalize(fetch_rows(args.limit), retrieved_at)
+    except (OSError, URLError, ValueError) as exc:
+        raise SystemExit(
+            "NASA Exoplanet Archive erişilemedi; network failure olarak bırakıldı, "
+            f"boş corpus yazılmadı: {exc}"
+        ) from exc
     if not rows:
         raise SystemExit("No confirmed planet rows returned; no output written.")
     args.output.parent.mkdir(parents=True, exist_ok=True)
