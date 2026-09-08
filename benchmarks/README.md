@@ -12,6 +12,17 @@ The format is described by `benchmarks/corpus.schema.json` and is loaded with
 and a traceable `reference`; unknown labels are rejected. The repository does
 not fabricate labels or convert missing labels to `false`.
 
+Freeze a reviewed CSV corpus with an input hash:
+
+```bash
+python scripts/validation/build_labelled_corpus.py curated_cases.csv \
+  --output benchmarks/labelled_corpus_v1.json
+```
+
+The CSV must contain `target_id,label,reference`; valid labels are
+`planet`, `false_positive` and `quiet_star`. Duplicate IDs and empty corpora
+are rejected.
+
 Recommended minimum release gate:
 
 - 100 labelled eclipsing-binary/false-positive cases
