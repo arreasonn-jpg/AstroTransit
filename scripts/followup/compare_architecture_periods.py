@@ -359,7 +359,7 @@ def main():
     periods_to_test["double_period"] = args.period * 2.0
 
     fold_results = {}
-    dur_phase_adopted = (args.duration_hours / 24.0) / args.period
+    _dur_phase_adopted = (args.duration_hours / 24.0) / args.period
 
     for label, period in periods_to_test.items():
         if period <= 0:
@@ -384,7 +384,7 @@ def main():
     print(f"TIC {args.tic} S{args.sector} — ARCHITECTURE MULTI-PERIOD COMPARISON")
     print("=" * 90)
 
-    headers = ["Fold", "Period(d)", "Primary", "Secondary", "L4", "L5", "Pre-sh", "Post-sh"]
+    _headers = ["Fold", "Period(d)", "Primary", "Secondary", "L4", "L5", "Pre-sh", "Post-sh"]
     print(f"{'Fold':<16} {'Period':>8} {'Primary':>10} {'Sec':>8} {'L4':>8} {'L5':>8} {'Pre-sh':>8} {'Post-sh':>8}")
     print("-" * 90)
 

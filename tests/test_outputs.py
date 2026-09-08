@@ -1,11 +1,9 @@
 """Çıktı sistemi testleri."""
 
 import json
-from pathlib import Path
 
 import numpy as np
 import pandas as pd
-import pytest
 
 from astrotransit.data.catalog_client import StellarProperties
 from astrotransit.outputs.schemas import TransitCandidateRecord, build_record

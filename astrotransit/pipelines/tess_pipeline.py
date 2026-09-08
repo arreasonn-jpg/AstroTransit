@@ -21,7 +21,7 @@ Tek bir hedef veya sektör için tam iş akışını çalıştırır:
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Optional, Union
+from typing import Optional
 
 from loguru import logger
 
@@ -31,7 +31,6 @@ from astrotransit.settings import Settings, get_settings
 from astrotransit.data.tess_client import (
     TESSClient,
     TESSLightCurveData,
-    TESSMultiSectorData,
     TESSNoDataError,
 )
 from astrotransit.data.catalog_client import CatalogClient, StellarProperties
@@ -39,7 +38,6 @@ from astrotransit.data.catalog_client import CatalogClient, StellarProperties
 # Ön işleme
 from astrotransit.preprocessing.pipeline import (
     TESSPreprocessingPipeline,
-    PreprocessedLightCurve,
 )
 from astrotransit.preprocessing.stitching import stitch_detrended_light_curves
 from astrotransit.preprocessing.tess_detrend import DetrendedLightCurve
@@ -58,7 +56,6 @@ from astrotransit.detection.long_period import (
 
 # Modelleme
 from astrotransit.modeling.fitter import ModelingOrchestrator, FitResult
-from astrotransit.modeling.parameters import TransitPriors
 
 # Kalite
 from astrotransit.quality.pipeline import (

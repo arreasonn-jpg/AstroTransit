@@ -97,8 +97,8 @@ def estimate_mass_msun(
             return float(np.clip(r ** 0.95, 0.12, 1.6))
 
     if lum_lsun is not None and lum_lsun > 0:
-        l = float(lum_lsun)
-        return float(np.clip(l ** 0.25, 0.12, 1.8))
+        luminosity = float(lum_lsun)
+        return float(np.clip(luminosity ** 0.25, 0.12, 1.8))
 
     if teff_k is not None and teff_k > 0:
         t = float(teff_k)

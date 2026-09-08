@@ -8,17 +8,12 @@ harmonik yapıları görselleştirir.
 
 from __future__ import annotations
 
-from pathlib import Path
-from typing import Optional
 
-import numpy as np
 import matplotlib.pyplot as plt
-from loguru import logger
 
 from astrotransit.visualization.base import FigureManager, Colors
 from astrotransit.detection.bls_search import BLSResult
 from astrotransit.detection.tls_search import TLSResult
-from astrotransit.detection.cascade import CascadeCandidate
 
 
 class PeriodogramPlotter:
@@ -171,7 +166,7 @@ class PeriodogramPlotter:
         # Bu yüzden sadece sonuç bilgilerini göster
         ax.text(
             0.5, 0.6,
-            f"TLS Sonucu",
+            "TLS Sonucu",
             transform=ax.transAxes,
             ha="center", va="center",
             color=Colors.TEXT_PRIMARY,

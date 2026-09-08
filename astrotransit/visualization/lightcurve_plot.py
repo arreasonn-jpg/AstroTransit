@@ -7,16 +7,13 @@ light curve karşılaştırma grafikleri üretir.
 
 from __future__ import annotations
 
-from pathlib import Path
 from typing import Optional
 
-import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
-from loguru import logger
 
 from astrotransit.visualization.base import (
-    FigureManager, Colors, apply_astrotransit_style
+    FigureManager, Colors
 )
 from astrotransit.preprocessing.tess_detrend import DetrendedLightCurve
 from astrotransit.preprocessing.normalization import NormalizedLightCurve

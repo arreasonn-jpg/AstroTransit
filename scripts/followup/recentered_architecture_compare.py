@@ -37,7 +37,6 @@ from pathlib import Path
 import numpy as np
 from loguru import logger
 from scipy.interpolate import UnivariateSpline
-from scipy.signal import find_peaks
 
 import matplotlib
 matplotlib.use("Agg")
@@ -122,7 +121,7 @@ def find_transit_minimum_phase(
         return float(t0_guess)
 
     flux_in_window = flux[search_mask]
-    time_in_window = time[search_mask]
+    _time_in_window = time[search_mask]
     phase_in_window = phase_frac[search_mask]
 
     bins = np.linspace(-search_phase_half_width, search_phase_half_width, 60)
@@ -294,7 +293,7 @@ def architecture_stability(results: dict) -> dict:
 
     prim = adopted["scores"]["primary"]
     l5 = adopted["scores"]["L5"]
-    l4 = adopted["scores"]["L4"]
+    _l4 = adopted["scores"]["L4"]
     secondary = adopted["scores"]["secondary"]
 
     coorbital_flag = "NO"

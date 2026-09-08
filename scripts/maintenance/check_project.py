@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import sys
 from pathlib import Path
-from typing import List, Tuple
+from typing import Tuple
 
 project_root = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(project_root))
@@ -270,7 +270,7 @@ def check_duplicate_locations() -> int:
                 # astrotransit/outputs/ modül olmalı
                 has_py = any(p.suffix == ".py" for p in pkg_path.iterdir())
                 if not has_py:
-                    print(warn(f"astrotransit/outputs/ var ama .py dosyası yok"))
+                    print(warn("astrotransit/outputs/ var ama .py dosyası yok"))
                     n_dupes += 1
             continue
 
@@ -278,7 +278,7 @@ def check_duplicate_locations() -> int:
             print(fail(f"'{name}' HEM kökte HEM astrotransit/ altında var!"))
             print(info(f"  Kök: {root_path}"))
             print(info(f"  Paket: {pkg_path}"))
-            print(info(f"  → Kökteki silinmeli"))
+            print(info("  → Kökteki silinmeli"))
             n_dupes += 1
 
     if n_dupes == 0:
@@ -512,7 +512,7 @@ def main():
     else:
         print(f"{Color.RED}{Color.BOLD}  ✗ TOPLAM {total_issues} SORUN TESPİT EDİLDİ{Color.RESET}")
         print()
-        print(f"  Yukarıdaki hataları çözdükten sonra tekrar çalıştırın.")
+        print("  Yukarıdaki hataları çözdükten sonra tekrar çalıştırın.")
 
     print(f"\n{Color.BOLD}{'=' * 68}{Color.RESET}\n")
 

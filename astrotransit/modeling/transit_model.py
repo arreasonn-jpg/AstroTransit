@@ -11,7 +11,6 @@ Alternatif: exoplanet (PyMC entegrasyonu için ayrı modülde)
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Optional
 
 import numpy as np
 from loguru import logger

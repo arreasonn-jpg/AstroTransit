@@ -18,7 +18,7 @@ import numpy as np
 from loguru import logger
 
 try:
-    from wotan import flatten, slide_clip
+    from wotan import flatten
     _WOTAN_AVAILABLE = True
 except ImportError:
     _WOTAN_AVAILABLE = False

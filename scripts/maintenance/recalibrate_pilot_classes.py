@@ -1,5 +1,4 @@
 from pathlib import Path
-import sys
 import pandas as pd
 import numpy as np
 
@@ -30,8 +29,8 @@ def classify_row(row):
     radius = float(row.get("planet_radius_rearth", np.nan)) if not pd.isna(row.get("planet_radius_reearth", np.nan)) else row.get("planet_radius_rearth", np.nan)
     ref_match = str(row.get("reference_match", "NO_REFERENCE"))
 
-    period_err = row.get("period_error_pct_ref", None)
-    radius_err = row.get("radius_error_pct_ref", None)
+    _period_err = row.get("period_error_pct_ref", None)
+    _radius_err = row.get("radius_error_pct_ref", None)
 
     # Referans bazli karar
     if ref_match == "GOOD":

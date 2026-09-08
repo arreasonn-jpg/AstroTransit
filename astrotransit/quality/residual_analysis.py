@@ -21,7 +21,6 @@ ResidualReport dataclass — tüm metrikler + flag + özet
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Optional
 
 import numpy as np
 from loguru import logger
@@ -280,7 +279,6 @@ class ResidualAnalyzer:
 
         # ── Temizlik ──
         valid = np.isfinite(residuals) & np.isfinite(time)
-        time_clean = time[valid]
         res_clean = residuals[valid]
         mask_clean = in_transit_mask[valid]
 

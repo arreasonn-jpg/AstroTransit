@@ -272,7 +272,7 @@ def get_detrended_data(sector: int) -> tuple[np.ndarray, np.ndarray, bool]:
 
     except Exception as e:
         print(f"  AstroTransit detrending failed for S{sector}: {e}")
-        print(f"  Falling back to lightkurve flatten...")
+        print("  Falling back to lightkurve flatten...")
 
     # Fallback: lightkurve flatten
     lc_flat = lc.flatten(window_length=301)
@@ -562,7 +562,7 @@ def main():
         f.write(f"- **T0**: {T0_BTJD:.6f} BTJD\n")
         f.write(f"- **Duration**: {DURATION_HOURS:.4f} hrs\n")
         f.write(f"- **Rp/Rs**: {RP_RS:.6f}\n")
-        f.write(f"- **Source**: S57 MAP+MCMC\n\n")
+        f.write("- **Source**: S57 MAP+MCMC\n\n")
 
         f.write("## Combined Analysis\n")
         f.write(f"- **Sectors tested**: {len(SECTORS)}\n")

@@ -176,7 +176,8 @@ class LongPeriodTransitSearch:
         observed_days = self._observed_days(light_curve, time)
         notes: list[str] = []
 
-        empty = lambda: LongPeriodResult(
+        def empty() -> LongPeriodResult:
+            return LongPeriodResult(
             target_id=light_curve.target_id,
             source_sectors=source_sectors,
             coverage_baseline_days=baseline_days,
@@ -188,7 +189,7 @@ class LongPeriodTransitSearch:
             has_candidate=False,
             search_params=self._search_params(),
             notes=tuple(notes),
-        )
+            )
 
         if time.size < max(20, self.config.min_points_per_transit * 3):
             notes.append("Uzun periyot araması için yetersiz temiz veri noktası.")

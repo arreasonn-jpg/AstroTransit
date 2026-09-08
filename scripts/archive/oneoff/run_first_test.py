@@ -79,7 +79,7 @@ def run_synthetic_test() -> bool:
     # ── 3. Cascade tespiti ──
     print("\n[2/4] BLS → TLS cascade tespiti...")
 
-    from astrotransit.detection.cascade import CascadeDetector, CascadeStatus
+    from astrotransit.detection.cascade import CascadeDetector
 
     cascade = CascadeDetector(settings=settings)
 
@@ -256,7 +256,7 @@ def run_real_test() -> bool:
             fit_result = modeling.fit(detrended, candidate)
             if fit_result.success:
                 d = fit_result.derived
-                print(f"  ✓ MAP fit başarılı")
+                print("  ✓ MAP fit başarılı")
                 print(f"    P     = {fit_result.period:.6f} gün")
                 print(f"    Rp/Rs = {fit_result.rp_rs:.5f}")
                 print(f"    Rp    = {d.planet_radius_rearth:.2f} R⊕  "
@@ -332,7 +332,7 @@ def run_real_test() -> bool:
             print(f"    Sınıf: {quality_result.score.candidate_class.value}  "
                   f"(skor: {quality_result.score.total_score:.0f}/100)")
     elif candidate.has_candidate:
-        print(f"  ⚠ Aday bulundu ancak cascade tam onaylamadı.")
+        print("  ⚠ Aday bulundu ancak cascade tam onaylamadı.")
         print(f"  Durum: {candidate.status.value}")
     else:
         print(f"  – Transit tespit edilemedi ({TARGET} sektör {SECTOR})")

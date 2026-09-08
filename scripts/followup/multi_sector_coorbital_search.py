@@ -31,23 +31,24 @@ from __future__ import annotations
 import argparse
 import json
 from pathlib import Path
-from typing import Optional
 
 import numpy as np
 from loguru import logger
 from scipy.interpolate import UnivariateSpline
 
 import matplotlib
+
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from matplotlib.gridspec import GridSpec
 
-from astrotransit.data.tess_client import TESSClient, TESSLightCurveData, TESSNoDataError
+from astrotransit.data.tess_client import TESSClient, TESSNoDataError
 
 
 # ──────────────────────────────────────────────────────────────
 # Detrend
 # ──────────────────────────────────────────────────────────────
+
 
 def detrend_sector(
     time: np.ndarray,
@@ -76,6 +77,7 @@ def detrend_sector(
 # ──────────────────────────────────────────────────────────────
 # Fold & window scoring
 # ──────────────────────────────────────────────────────────────
+
 
 def fold(time: np.ndarray, period: float, t0: float) -> np.ndarray:
     return ((time - t0 + 0.5 * period) % period) / period - 0.5
@@ -143,6 +145,7 @@ def bin_lc(phase: np.ndarray, flux: np.ndarray, bins: int = 200):
 # Cross-sector ASI (Architecture Stability Index)
 # ──────────────────────────────────────────────────────────────
 
+
 def cross_sector_asi(sector_scores: list[dict], window: str) -> float:
     """
     Birden fazla sektördeki belirtilen pencere sinyalinin tutarlılığı.
@@ -193,25 +196,32 @@ def cross_sector_verdict(
     mean_l4_ppm = np.mean([abs(r["scores"]["L4"]["depth_ppm"]) for r in sector_results])
     mean_l5_ppm = np.mean([abs(r["scores"]["L5"]["depth_ppm"]) for r in sector_results])
     mean_pre_ppm = np.mean([abs(r["scores"]["pre_shoulder"]["depth_ppm"]) for r in sector_results])
-    mean_post_ppm = np.mean([abs(r["scores"]["post_shoulder"]["depth_ppm"]) for r in sector_results])
+    mean_post_ppm = np.mean(
+        [abs(r["scores"]["post_shoulder"]["depth_ppm"]) for r in sector_results]
+    )
 
     # Guard 1: Güçlü Orbital Modülasyon / Faz Eğrisi
     modulation_score = 0
     if mean_prim_ppm > 0:
-        if mean_sec_ppm > 0.4 * mean_prim_ppm: modulation_score += 1
-        if mean_pre_ppm > 0.4 * mean_prim_ppm: modulation_score += 1
-        if mean_post_ppm > 0.4 * mean_prim_ppm: modulation_score += 1
-        if mean_l4_ppm > 0.3 * mean_prim_ppm: modulation_score += 1
-        if mean_l5_ppm > 0.3 * mean_prim_ppm: modulation_score += 1
+        if mean_sec_ppm > 0.4 * mean_prim_ppm:
+            modulation_score += 1
+        if mean_pre_ppm > 0.4 * mean_prim_ppm:
+            modulation_score += 1
+        if mean_post_ppm > 0.4 * mean_prim_ppm:
+            modulation_score += 1
+        if mean_l4_ppm > 0.3 * mean_prim_ppm:
+            modulation_score += 1
+        if mean_l5_ppm > 0.3 * mean_prim_ppm:
+            modulation_score += 1
 
     if modulation_score >= 3:
         return (
             "LIKELY_ORBITAL_MODULATION_SYSTEM",
-            "Broad, symmetric flux variations across all phases → binary phase-curve or reflection, NOT a simple co-orbital planet"
+            "Broad, symmetric flux variations across all phases → binary phase-curve or reflection, NOT a simple co-orbital planet",
         )
 
     # Guard 2: Eclipsing Binary
-    sec_dominant = (np.mean([abs(s) for s in secondary_sigs]) >= 4.0 and odd_even >= 2.0)
+    sec_dominant = np.mean([abs(s) for s in secondary_sigs]) >= 4.0 and odd_even >= 2.0
     if sec_dominant:
         return "LIKELY_EB", "Strong repeatable secondary with high odd-even → eclipsing binary"
 
@@ -228,36 +238,39 @@ def cross_sector_verdict(
         if coorbital_size_guard:
             return (
                 "SYMMETRIC_COORBITAL_OR_DISK",
-                f"Both L4 (ASI={l4_asi:.2f}) and L5 (ASI={l5_asi:.2f}) persistent → disk or symmetric debris structure"
+                f"Both L4 (ASI={l4_asi:.2f}) and L5 (ASI={l5_asi:.2f}) persistent → disk or symmetric debris structure",
             )
         else:
-            return "LIKELY_ORBITAL_MODULATION", "Strong symmetric L4/L5 signals too deep for planetary co-orbitals"
+            return (
+                "LIKELY_ORBITAL_MODULATION",
+                "Strong symmetric L4/L5 signals too deep for planetary co-orbitals",
+            )
 
     if l5_strong and not l4_strong and coorbital_size_guard:
         return (
             "POSSIBLE_COORBITAL_L5",
-            f"L5 ASI={l5_asi:.2f} ≥ 0.60, persistent across {n_sectors} sectors → co-orbital review priority"
+            f"L5 ASI={l5_asi:.2f} ≥ 0.60, persistent across {n_sectors} sectors → co-orbital review priority",
         )
 
     if l4_strong and not l5_strong and coorbital_size_guard:
         return (
             "POSSIBLE_COORBITAL_L4",
-            f"L4 ASI={l4_asi:.2f} ≥ 0.60, persistent across {n_sectors} sectors → co-orbital review priority"
+            f"L4 ASI={l4_asi:.2f} ≥ 0.60, persistent across {n_sectors} sectors → co-orbital review priority",
         )
 
     if l5_asi >= 0.30 or l4_asi >= 0.30:
         return (
             "PARTIAL_OFFPRIMARY_SIGNAL",
-            f"L4 ASI={l4_asi:.2f}, L5 ASI={l5_asi:.2f} — partial cross-sector signal, worth follow-up"
+            f"L4 ASI={l4_asi:.2f}, L5 ASI={l5_asi:.2f} — partial cross-sector signal, worth follow-up",
         )
 
     return "NO_ARCHITECTURE_ANOMALY", "No persistent off-primary signal detected across sectors"
 
 
-
 # ──────────────────────────────────────────────────────────────
 # Basit BLS (periyot bilinmiyorsa)
 # ──────────────────────────────────────────────────────────────
+
 
 def simple_bls(time: np.ndarray, flux: np.ndarray, min_p: float = 0.5, max_p: float = 30.0):
     """Çok basit BLS — sadece en iyi periyodu bulmak için."""
@@ -276,13 +289,16 @@ def simple_bls(time: np.ndarray, flux: np.ndarray, min_p: float = 0.5, max_p: fl
     best_depth = float(result.depth[best_idx])
     best_duration = float(result.duration[best_idx])
 
-    logger.info(f"BLS best: period={best_period:.4f}d, t0={best_t0:.4f}, depth={best_depth*1e6:.0f}ppm")
+    logger.info(
+        f"BLS best: period={best_period:.4f}d, t0={best_t0:.4f}, depth={best_depth * 1e6:.0f}ppm"
+    )
     return best_period, best_t0, best_duration * 24.0
 
 
 # ──────────────────────────────────────────────────────────────
 # Figür
 # ──────────────────────────────────────────────────────────────
+
 
 def make_figure(
     tic_id: int,
@@ -304,7 +320,7 @@ def make_figure(
         bc = np.array(res["bin_centers"])
         bm = np.array(res["bin_medians"])
         sc = res["scores"]
-        dur_phase = res["dur_phase"]
+        _dur_phase = res["dur_phase"]
 
         # Full fold panel
         ax0 = fig.add_subplot(gs[ridx, 0])
@@ -349,12 +365,8 @@ def make_figure(
     l5_sigs = [r["scores"]["L5"]["sig"] for r in sector_results]
     sector_nums = [r["sector"] for r in sector_results]
 
-    l4_asi = cross_sector_asi(
-        [r["scores"] for r in sector_results], "L4"
-    )
-    l5_asi = cross_sector_asi(
-        [r["scores"] for r in sector_results], "L5"
-    )
+    l4_asi = cross_sector_asi([r["scores"] for r in sector_results], "L4")
+    l5_asi = cross_sector_asi([r["scores"] for r in sector_results], "L5")
 
     l4_str = "  ".join(f"S{s}:{v:.1f}σ" for s, v in zip(sector_nums, l4_sigs))
     l5_str = "  ".join(f"S{s}:{v:.1f}σ" for s, v in zip(sector_nums, l5_sigs))
@@ -365,9 +377,14 @@ def make_figure(
         f"L5 cross-sector ASI = {l5_asi:.3f}  |  {l5_str}\n"
     )
     ax_sum.text(
-        0.02, 0.85, txt,
+        0.02,
+        0.85,
+        txt,
         transform=ax_sum.transAxes,
-        va="top", ha="left", family="monospace", fontsize=9,
+        va="top",
+        ha="left",
+        family="monospace",
+        fontsize=9,
         bbox=dict(boxstyle="round,pad=0.4", fc="#f7f7f7", ec="#cccccc"),
     )
 
@@ -380,6 +397,7 @@ def make_figure(
 # ──────────────────────────────────────────────────────────────
 # Ana akış
 # ──────────────────────────────────────────────────────────────
+
 
 def main():
     parser = argparse.ArgumentParser(description="Multi-sector co-orbital search")
@@ -416,15 +434,13 @@ def main():
         return
 
     # Seçilen sektör sayısını sınırla
-    selected = multi.sectors[:args.max_sectors]
+    selected = multi.sectors[: args.max_sectors]
 
     # 2. Periyot belirleme
     if args.auto_period or args.period is None:
         logger.info("Otomatik periyot taraması yapılıyor (tüm sektörler birleşik)...")
         all_time = np.concatenate([s.time for s in selected])
-        all_flux = np.concatenate([
-            detrend_sector(s.time, s.flux) for s in selected
-        ])
+        all_flux = np.concatenate([detrend_sector(s.time, s.flux) for s in selected])
         sorter = np.argsort(all_time)
         all_time = all_time[sorter]
         all_flux = all_flux[sorter]
@@ -465,15 +481,17 @@ def main():
         scores_s = score_all_windows(phase_s, flux_s, dur_phase)
         bc_s, bm_s = bin_lc(phase_s, flux_s)
 
-        sector_results.append({
-            "sector": sec_data.sector,
-            "n_points": sec_data.n_points_clean,
-            "duration_days": sec_data.duration_days,
-            "scores": scores_s,
-            "bin_centers": bc_s.tolist(),
-            "bin_medians": bm_s.tolist(),
-            "dur_phase": dur_phase,
-        })
+        sector_results.append(
+            {
+                "sector": sec_data.sector,
+                "n_points": sec_data.n_points_clean,
+                "duration_days": sec_data.duration_days,
+                "scores": scores_s,
+                "bin_centers": bc_s.tolist(),
+                "bin_medians": bm_s.tolist(),
+                "dur_phase": dur_phase,
+            }
+        )
 
         logger.info(
             f"S{sec_data.sector}: "
@@ -515,7 +533,9 @@ def main():
     print(f"Dur        : {args.duration_hours:.3f} h  (dur_phase={dur_phase:.4f})")
     print(f"Sectors    : {sector_nums}")
     print()
-    print(f"{'Sector':>8} {'Primary':>10} {'Secondary':>12} {'L4':>8} {'L5':>8} {'Pre-sh':>8} {'Post-sh':>8}")
+    print(
+        f"{'Sector':>8} {'Primary':>10} {'Secondary':>12} {'L4':>8} {'L5':>8} {'Pre-sh':>8} {'Post-sh':>8}"
+    )
     print("-" * 80)
     for res in sector_results:
         sc = res["scores"]

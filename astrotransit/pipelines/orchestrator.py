@@ -16,11 +16,11 @@ Desteklenen modlar:
 from __future__ import annotations
 
 from enum import Enum
-from typing import Any, Optional, Union
+from typing import Any, Optional
 
 from loguru import logger
 
-from astrotransit.settings import Settings, get_settings
+from astrotransit.settings import get_settings
 from astrotransit.logging_config import setup_logging
 from astrotransit.pipelines.tess_pipeline import (
     TESSPipeline,

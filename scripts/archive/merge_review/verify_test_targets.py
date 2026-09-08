@@ -87,7 +87,7 @@ def verify_target(tic_id: str, name: str, sectors: list, period: float, rp: floa
                 try:
                     s = int(m.split("Sector")[-1].strip())
                     available.add(s)
-                except:
+                except (ValueError, TypeError):
                     pass
 
         result["available_sectors"] = sorted(available)

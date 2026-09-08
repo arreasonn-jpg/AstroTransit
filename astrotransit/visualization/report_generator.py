@@ -10,7 +10,7 @@ from __future__ import annotations
 
 from pathlib import Path
 from typing import Optional
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 from loguru import logger
 
@@ -76,7 +76,7 @@ class VisualizationReport:
                     "timing": self.timing,
                     "scorecard": self.scorecard,
                 }.items()
-            }
+            },
         }
 
 
@@ -172,10 +172,7 @@ class VisualizationReportGenerator:
             logger.debug("Grafik kaydetme devre dışı.")
             return VisualizationReport(target_id=target_id, sector=sector)
 
-        logger.info(
-            f"Görsel rapor üretiliyor — "
-            f"{target_id} sektör {sector}"
-        )
+        logger.info(f"Görsel rapor üretiliyor — {target_id} sektör {sector}")
 
         report = VisualizationReport(
             target_id=target_id,
@@ -185,17 +182,15 @@ class VisualizationReportGenerator:
         # ── 1: Light curve ──
         try:
             if normalized is not None:
-                fig = self._lc_plotter.plot_raw_and_detrended(
+                self._lc_plotter.plot_raw_and_detrended(
                     normalized, detrended, candidate, save=True
                 )
             else:
-                fig = self._lc_plotter.plot_detrended_only(
-                    detrended, candidate, save=True
-                )
+                self._lc_plotter.plot_detrended_only(detrended, candidate, save=True)
             safe_id = target_id.replace(" ", "_")
             report.lightcurve = (
-                self._figure_dir /
-                f"{safe_id}_S{sector:02d}_lightcurve.{self.settings.outputs.figure_format}"
+                self._figure_dir
+                / f"{safe_id}_S{sector:02d}_lightcurve.{self.settings.outputs.figure_format}"
             )
         except Exception as e:
             logger.warning(f"Light curve grafiği başarısız: {e}")
@@ -203,13 +198,11 @@ class VisualizationReportGenerator:
         # ── 2: Periodogram ──
         try:
             if bls_result is not None and tls_result is not None:
-                self._period_plotter.plot_bls_tls_comparison(
-                    bls_result, tls_result, save=True
-                )
+                self._period_plotter.plot_bls_tls_comparison(bls_result, tls_result, save=True)
                 safe_id = target_id.replace(" ", "_")
                 report.periodogram = (
-                    self._figure_dir /
-                    f"{safe_id}_S{sector:02d}_bls_tls_comparison.{self.settings.outputs.figure_format}"
+                    self._figure_dir
+                    / f"{safe_id}_S{sector:02d}_bls_tls_comparison.{self.settings.outputs.figure_format}"
                 )
             elif bls_result is not None:
                 self._period_plotter.plot_bls(bls_result, save=True)
@@ -219,13 +212,11 @@ class VisualizationReportGenerator:
         # ── 3: Faz katlanmış ──
         try:
             if candidate is not None:
-                self._fold_plotter.plot_folded_transit(
-                    candidate, tls_result, fit_result, save=True
-                )
+                self._fold_plotter.plot_folded_transit(candidate, tls_result, fit_result, save=True)
                 safe_id = target_id.replace(" ", "_")
                 report.folded = (
-                    self._figure_dir /
-                    f"{safe_id}_S{sector:02d}_folded.{self.settings.outputs.figure_format}"
+                    self._figure_dir
+                    / f"{safe_id}_S{sector:02d}_folded.{self.settings.outputs.figure_format}"
                 )
         except Exception as e:
             logger.warning(f"Faz katlanmış grafiği başarısız: {e}")
@@ -233,13 +224,13 @@ class VisualizationReportGenerator:
         # ── 4b: Residual (fit varsa) ──
         try:
             if fit_result is not None and fit_result.success:
-                import numpy as np
                 from astrotransit.modeling.transit_model import (
-                    TransitModel, TransitModelParams,
+                    TransitModel,
+                    TransitModelParams,
                 )
 
                 # Model flux'unu yeniden hesapla
-                a_over_rs = getattr(fit_result, 'a_over_rs', 15.0)
+                a_over_rs = getattr(fit_result, "a_over_rs", 15.0)
                 params = TransitModelParams(
                     period=fit_result.period,
                     t0=fit_result.t0,
@@ -263,8 +254,8 @@ class VisualizationReportGenerator:
                 )
                 safe_id = target_id.replace(" ", "_")
                 report.residuals = (
-                    self._figure_dir /
-                    f"{safe_id}_S{sector:02d}_residuals.{self.settings.outputs.figure_format}"
+                    self._figure_dir
+                    / f"{safe_id}_S{sector:02d}_residuals.{self.settings.outputs.figure_format}"
                 )
         except Exception as e:
             logger.warning(f"Residual grafiği başarısız: {e}")
@@ -272,13 +263,11 @@ class VisualizationReportGenerator:
         # ── 4: Timing ──
         try:
             if candidate is not None:
-                self._diag_plotter.plot_transit_timing(
-                    candidate, save=True
-                )
+                self._diag_plotter.plot_transit_timing(candidate, save=True)
                 safe_id = target_id.replace(" ", "_")
                 report.timing = (
-                    self._figure_dir /
-                    f"{safe_id}_S{sector:02d}_timing.{self.settings.outputs.figure_format}"
+                    self._figure_dir
+                    / f"{safe_id}_S{sector:02d}_timing.{self.settings.outputs.figure_format}"
                 )
         except Exception as e:
             logger.warning(f"Timing grafiği başarısız: {e}")
@@ -286,23 +275,23 @@ class VisualizationReportGenerator:
         # ── 5: Scorecard ──
         try:
             if score is not None and vetting is not None:
-                self._diag_plotter.plot_quality_scorecard(
-                    score, vetting, save=True
-                )
+                self._diag_plotter.plot_quality_scorecard(score, vetting, save=True)
                 safe_id = target_id.replace(" ", "_")
                 report.scorecard = (
-                    self._figure_dir /
-                    f"{safe_id}_S{sector:02d}_scorecard.{self.settings.outputs.figure_format}"
+                    self._figure_dir
+                    / f"{safe_id}_S{sector:02d}_scorecard.{self.settings.outputs.figure_format}"
                 )
         except Exception as e:
             logger.warning(f"Scorecard grafiği başarısız: {e}")
 
         # ── 6: Özet panel (en son) ──
         try:
-            if (candidate is not None and
-                    bls_result is not None and
-                    score is not None and
-                    vetting is not None):
+            if (
+                candidate is not None
+                and bls_result is not None
+                and score is not None
+                and vetting is not None
+            ):
                 self._summary_plotter.plot(
                     detrended=detrended,
                     candidate=candidate,
@@ -316,23 +305,26 @@ class VisualizationReportGenerator:
                 )
                 safe_id = target_id.replace(" ", "_")
                 report.summary_panel = (
-                    self._figure_dir /
-                    f"{safe_id}_S{sector:02d}_summary.{self.settings.outputs.figure_format}"
+                    self._figure_dir
+                    / f"{safe_id}_S{sector:02d}_summary.{self.settings.outputs.figure_format}"
                 )
         except Exception as e:
             logger.warning(f"Özet panel başarısız: {e}")
 
         n_produced = sum(
-            1 for v in [
-                report.summary_panel, report.lightcurve,
-                report.periodogram, report.folded,
-                report.residuals, report.timing, report.scorecard,
-            ] if v is not None
+            1
+            for v in [
+                report.summary_panel,
+                report.lightcurve,
+                report.periodogram,
+                report.folded,
+                report.residuals,
+                report.timing,
+                report.scorecard,
+            ]
+            if v is not None
         )
 
-        logger.info(
-            f"Görsel rapor tamamlandı — "
-            f"{target_id}: {n_produced} grafik üretildi"
-        )
+        logger.info(f"Görsel rapor tamamlandı — {target_id}: {n_produced} grafik üretildi")
 
         return report

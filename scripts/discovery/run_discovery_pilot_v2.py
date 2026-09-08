@@ -75,7 +75,7 @@ def main():
     print("=" * 72)
     print(f"  Toplam hedef: {len(df)}")
     print(f"  Gorsel: {'kapali' if args.no_viz else 'acik'}")
-    print(f"  Output: outputs_discovery/")
+    print("  Output: outputs_discovery/")
     print("=" * 72)
     print()
 

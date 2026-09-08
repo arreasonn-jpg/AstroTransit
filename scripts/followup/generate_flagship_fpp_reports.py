@@ -5,7 +5,6 @@ Bu script kalibre edilmiş FPP hesaplamaz; veri yoksa FPP alanını null ve
 metodunu ``not_estimated`` olarak yazar. Sayısal posterior iddiası üretmez.
 """
 import json
-import numpy as np
 from pathlib import Path
 
 targets_data = [

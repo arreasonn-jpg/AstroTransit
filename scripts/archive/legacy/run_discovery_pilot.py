@@ -125,12 +125,12 @@ def main():
                                 score = sr.quality.score.total_score
                             print(f"| ADAY BULUNDU | Sinif {cls} | Skor {score:.0f}")
                         else:
-                            print(f"| ADAY BULUNDU")
+                            print("| ADAY BULUNDU")
                     else:
-                        print(f"| aday yok")
+                        print("| aday yok")
                 else:
                     stats["failed"] += 1
-                    print(f"| basarisiz")
+                    print("| basarisiz")
 
             except Exception as e:
                 stats["failed"] += 1

@@ -35,7 +35,7 @@ class TestScorer:
     """Skor ve sınıflandırma testleri."""
 
     def test_class_a_threshold(self):
-        from astrotransit.quality.scorer import CandidateScorer, CandidateClass
+        from astrotransit.quality.scorer import CandidateScorer
 
         scorer = CandidateScorer(class_a_threshold=80.0)
 

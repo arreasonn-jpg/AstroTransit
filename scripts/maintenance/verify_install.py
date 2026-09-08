@@ -140,11 +140,11 @@ def main():
     print("── Konfigürasyon ──")
     config_path = project_root / "configs" / "default.toml"
     if config_path.exists():
-        print(f"  ✓ default.toml bulundu")
+        print("  ✓ default.toml bulundu")
         try:
             from astrotransit.settings import load_settings
             s = load_settings(config_path)
-            print(f"  ✓ Pydantic doğrulama başarılı")
+            print("  ✓ Pydantic doğrulama başarılı")
             print(f"    log_level          : {s.general.log_level}")
             print(f"    tess.author        : {s.tess.author}")
             print(f"    tess.exptime       : {s.tess.exptime}s")

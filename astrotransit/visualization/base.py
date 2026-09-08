@@ -10,13 +10,10 @@ from __future__ import annotations
 
 from pathlib import Path
 from typing import Optional, Tuple
-from abc import ABC, abstractmethod
 
-import numpy as np
 import matplotlib
 matplotlib.use('Agg', force=True)
 import matplotlib.pyplot as plt
-import matplotlib.gridspec as gridspec
 from matplotlib.figure import Figure
 from matplotlib.axes import Axes
 from loguru import logger

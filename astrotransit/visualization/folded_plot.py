@@ -11,7 +11,6 @@ from typing import Optional
 
 import numpy as np
 import matplotlib.pyplot as plt
-from loguru import logger
 
 from astrotransit.visualization.base import FigureManager, Colors
 from astrotransit.detection.cascade import CascadeCandidate

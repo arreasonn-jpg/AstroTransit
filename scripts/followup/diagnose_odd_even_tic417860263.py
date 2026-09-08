@@ -9,10 +9,6 @@ Senaryolar:
   4. Gerçek EB → V-shaped transit, derinlik > 1%
 """
 from __future__ import annotations
-import json
-import numpy as np
-from pathlib import Path
-from loguru import logger
 
 # Sektör bazlı sonuçlar (refined_validation.json'dan)
 SECTOR_DATA = {

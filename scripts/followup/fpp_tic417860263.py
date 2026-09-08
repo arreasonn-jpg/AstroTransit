@@ -17,7 +17,6 @@ Senaryolar:
 from __future__ import annotations
 
 import json
-import math
 from pathlib import Path
 
 OUT_DIR = Path("outputs_discovery/reports")
@@ -163,7 +162,7 @@ def compute_fpp():
     print(f"{'='*60}")
 
     # Komşu analizi
-    print(f"\n[1] Gaia Komşu Analizi (10 arcsec içinde)")
+    print("\n[1] Gaia Komşu Analizi (10 arcsec içinde)")
     for nb in GAIA_NEIGHBORS:
         delta_g = nb["Gmag"] - HOST_GMAG
         fr = flux_ratio(delta_g)
@@ -183,7 +182,7 @@ def compute_fpp():
     heb_mod = compute_heb_likelihood_modifier(RP_RS)
     tp_mod = 1.0  # TP için modifier yok
 
-    print(f"\n[2] Likelihood Modifiers")
+    print("\n[2] Likelihood Modifiers")
     print(f"  TP  modifier: {tp_mod:.3f}")
     print(f"  BEB modifier: {beb_mod:.3f} (contamination={CONTAMINATION_RATIO:.4f})")
     print(f"  NEB modifier: {neb_mod:.3f} (komşu analizi bazlı)")
@@ -199,11 +198,11 @@ def compute_fpp():
 
     normalized = normalize(raw)
 
-    print(f"\n[3] Prior × Likelihood (normalize edilmemiş)")
+    print("\n[3] Prior × Likelihood (normalize edilmemiş)")
     for k, v in raw.items():
         print(f"  {k}: {v:.5f}")
 
-    print(f"\n[4] Posterior (normalize edilmiş)")
+    print("\n[4] Posterior (normalize edilmiş)")
     for k, v in normalized.items():
         print(f"  {k}: {v:.4f} ({v*100:.2f}%)")
 
@@ -322,13 +321,13 @@ def compute_fpp():
         f.write(f"- **{verdict}**\n")
         f.write(f"- Heuristic FPP proxy = **{fpp*100:.2f}%** (not calibrated)\n")
         f.write(f"- P(TP) proxy = **{tp_prob*100:.2f}%** (not calibrated)\n\n")
-        f.write(f"## Inputs\n")
+        f.write("## Inputs\n")
         for k, v in report["inputs"].items():
             f.write(f"- **{k}**: {v}\n")
-        f.write(f"\n## Posteriors\n")
+        f.write("\n## Posteriors\n")
         for k, v in normalized.items():
             f.write(f"- **{k}**: {v:.4f} ({v*100:.2f}%)\n")
-        f.write(f"\n## Cautions\n")
+        f.write("\n## Cautions\n")
         for note in report["methodology"]["notes"]:
             f.write(f"- {note}\n")
 

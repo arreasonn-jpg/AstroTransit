@@ -7,16 +7,13 @@ derinlik varyansı ve kalite özeti grafikleri.
 
 from __future__ import annotations
 
-from typing import Optional
 
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy import stats as scipy_stats
-from loguru import logger
 
 from astrotransit.visualization.base import FigureManager, Colors
 from astrotransit.detection.cascade import CascadeCandidate
-from astrotransit.quality.metrics import QualityMetrics
 from astrotransit.quality.vetting import VettingReport
 from astrotransit.quality.scorer import QualityScore
 

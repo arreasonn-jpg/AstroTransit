@@ -16,7 +16,7 @@ import sys
 import time
 import argparse
 from pathlib import Path
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 project_root = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(project_root))
@@ -232,10 +232,10 @@ def test_single_target(
                 print(f"    Rp bulunan: {result.found_rp_rearth:.2f} R⊕  "
                       f"(hata: %{result.radius_error_pct:.1f})")
         elif result.detected:
-            print(f"  ⚠ Aday bulundu ama cascade onaylamadı")
+            print("  ⚠ Aday bulundu ama cascade onaylamadı")
             print(f"    P: {result.found_period:.5f}d")
         else:
-            print(f"  ✗ Transit tespit edilemedi")
+            print("  ✗ Transit tespit edilemedi")
 
         print(f"    Süre: {result.elapsed_sec:.1f}s")
 
@@ -409,7 +409,7 @@ def main():
     print("=" * 90)
     print(f"  Hedef sayısı : {len(targets)}")
     print(f"  Görsel       : {'kapalı' if args.no_viz else 'açık'}")
-    print(f"  Modelleme    : MAP only (hızlı)")
+    print("  Modelleme    : MAP only (hızlı)")
     print("=" * 90)
 
     t_batch_start = time.time()

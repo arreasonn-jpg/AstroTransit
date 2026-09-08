@@ -217,7 +217,7 @@ def main():
         return 0
     else:
         print("\nBAZI DEGISIKLIKLER EKSIK")
-        print(f"Yedegi geri yuklemek icin:")
+        print("Yedegi geri yuklemek icin:")
         print(f"  copy {backup} {scorer_file}")
         return 1
 

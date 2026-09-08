@@ -81,7 +81,7 @@ def main():
     print(f"\n[3] Kaydedildi: {pilot_file}")
 
     # Ozet
-    print(f"\n[4] Pilot hedef ozeti:")
+    print("\n[4] Pilot hedef ozeti:")
     print(f"    Toplam: {len(df_pilot)}")
 
     if "st_tmag" in df_pilot.columns:
@@ -97,7 +97,7 @@ def main():
               f"{df_pilot['pl_rade'].max():.2f} R_earth")
 
     if "tfopwg_disp" in df_pilot.columns:
-        print(f"\n    Disposition dagilimi:")
+        print("\n    Disposition dagilimi:")
         for disp, count in df_pilot["tfopwg_disp"].value_counts().items():
             print(f"      {disp}: {count}")
 

@@ -64,9 +64,9 @@ def main():
         print("    TLS sonuc yok!")
         return 1
 
-    print(f"\n[5] Multimode sonuc:")
+    print("\n[5] Multimode sonuc:")
     print(f"    Bulunan P: {tls_result.period:.5f}d")
-    print(f"    Gercek P:  0.78884d")
+    print("    Gercek P:  0.78884d")
     print(f"    SDE: {tls_result.sde:.2f}")
     print(f"    Duration: {tls_result.duration:.4f}d")
     print(f"    dp_ratio: {tls_result.duration/tls_result.period:.4f}")
