@@ -1,0 +1,194 @@
+{
+  "report_id": "similarity_sensitivity_v1",
+  "experiment": "earth_similarity_weight_sensitivity",
+  "gate": "docs/validation.md — Gate 7 (Earth-similarity sensitivity)",
+  "command": "python scripts/validation/run_similarity_sensitivity.py --input benchmarks/toi_catalog.csv --output benchmarks/results/similarity_sensitivity_v1.json",
+  "input": {
+    "path": "benchmarks/toi_catalog.csv",
+    "sha256": "bab09843e52ebbd016bd246d265e60674a55987e586c7e4ab61b1bb8c52a639c",
+    "n_rows_total": 8064,
+    "n_candidates_used": 7320,
+    "filters": "finite positive pl_rade, pl_orbper, st_teff, st_rad, st_mass_est",
+    "derived_quantities": {
+      "semi_major_axis_au": "(P[yr]^2 * M_star)^(1/3)",
+      "insolation_s_earth": "(L/L_sun) / a^2; L/L_sun = R_star^2 * (Teff/5772.4)^4",
+      "equilibrium_temperature_k": "Teff * sqrt(R_star * 0.00465047 / (2 a)), albedo 0"
+    }
+  },
+  "tau_stability_threshold": 0.9,
+  "decision_rule": "kendall_tau_min < 0.9 => 'weight_sensitive' (weight choice determines the ranking; results must be labelled as such); kendall_tau_min >= 0.9 => 'ranking_stable'",
+  "profiles": {
+    "photometric_earth_analog": {
+      "perturbation_fraction": {
+        "0.10": {
+          "n_candidates": 7320,
+          "n_perturbations": 2,
+          "kendall_tau_min": 1.0,
+          "kendall_tau_median": 1.0,
+          "top_k_overlap_min": 1.0,
+          "verdict": "ranking_stable"
+        },
+        "0.20": {
+          "n_candidates": 7320,
+          "n_perturbations": 2,
+          "kendall_tau_min": 1.0,
+          "kendall_tau_median": 1.0,
+          "top_k_overlap_min": 1.0,
+          "verdict": "ranking_stable"
+        }
+      },
+      "overall_verdict": "ranking_stable",
+      "baseline_top_k": [
+        {
+          "index": 1,
+          "toi": "700.04",
+          "score": 64.2711
+        },
+        {
+          "index": 2,
+          "toi": "700.02",
+          "score": 63.1013
+        },
+        {
+          "index": 3,
+          "toi": "6714.01",
+          "score": 59.5363
+        },
+        {
+          "index": 4,
+          "toi": "5527.01",
+          "score": 59.3687
+        },
+        {
+          "index": 5,
+          "toi": "4344.01",
+          "score": 57.4186
+        },
+        {
+          "index": 6,
+          "toi": "699.03",
+          "score": 56.1337
+        },
+        {
+          "index": 7,
+          "toi": "6076.01",
+          "score": 53.8896
+        },
+        {
+          "index": 8,
+          "toi": "6905.01",
+          "score": 52.9738
+        },
+        {
+          "index": 9,
+          "toi": "1895.01",
+          "score": 52.9624
+        },
+        {
+          "index": 10,
+          "toi": "5724.01",
+          "score": 50.4095
+        }
+      ],
+      "input_limitations": [
+        "planet_mass_mearth not in TOI catalog; mass/density dimensions unavailable"
+      ]
+    },
+    "strict_earth_twin": {
+      "perturbation_fraction": {
+        "0.10": {
+          "n_candidates": 7320,
+          "n_perturbations": 2,
+          "kendall_tau_min": 1.0,
+          "kendall_tau_median": 1.0,
+          "top_k_overlap_min": 1.0,
+          "verdict": "ranking_stable"
+        },
+        "0.20": {
+          "n_candidates": 7320,
+          "n_perturbations": 2,
+          "kendall_tau_min": 1.0,
+          "kendall_tau_median": 1.0,
+          "top_k_overlap_min": 1.0,
+          "verdict": "ranking_stable"
+        }
+      },
+      "overall_verdict": "ranking_stable",
+      "baseline_top_k": [
+        {
+          "index": 1,
+          "toi": "5527.01",
+          "score": 65.1477
+        },
+        {
+          "index": 2,
+          "toi": "4344.01",
+          "score": 61.1765
+        },
+        {
+          "index": 3,
+          "toi": "699.03",
+          "score": 58.4479
+        },
+        {
+          "index": 4,
+          "toi": "6905.01",
+          "score": 55.3781
+        },
+        {
+          "index": 5,
+          "toi": "5724.01",
+          "score": 51.9743
+        },
+        {
+          "index": 6,
+          "toi": "6076.01",
+          "score": 51.9225
+        },
+        {
+          "index": 7,
+          "toi": "700.02",
+          "score": 51.769
+        },
+        {
+          "index": 8,
+          "toi": "4555.01",
+          "score": 50.8336
+        },
+        {
+          "index": 9,
+          "toi": "700.04",
+          "score": 50.661
+        },
+        {
+          "index": 10,
+          "toi": "1895.01",
+          "score": 50.1643
+        }
+      ],
+      "input_limitations": [
+        "planet_mass_mearth and density_gcm3 not in TOI catalog; required dimensions missing, classification remains INCOMPLETE_EARTH_TWIN",
+        "ranking measured over available dimensions only (radius, insolation, equilibrium_temperature, semi_major_axis, host_teff)"
+      ]
+    }
+  },
+  "scope_note": "Ranking-stability test of heuristic profile weights on a TOI candidate pool. Not a calibration of absolute similarity scores, not a habitability claim. tfopwg_designation labels are not used to score or weight any result.",
+  "runtime_seconds": 84.3,
+  "provenance": {
+    "target_id": null,
+    "sector": null,
+    "data_product": null,
+    "cadence": null,
+    "pipeline_version": "0.3.0",
+    "git_commit": "87b6af356c4318b848d14f43b07deb5c2b39a093",
+    "config_hash": "2088b6369c0f035881c8b77388a22259534a1957ff1a610802a4b3b352ff7fba",
+    "schema_version": null,
+    "model_version": "score_earth_similarity (heuristic profile weights v1.0)",
+    "random_seed": null,
+    "run_timestamp_utc": "2026-09-08T07:17:17.192584Z",
+    "host_platform": "Linux-6.1.158+-x86_64-with-glibc2.36",
+    "input_hash": "bab09843e52ebbd016bd246d265e60674a55987e586c7e4ab61b1bb8c52a639c",
+    "output_hash": null,
+    "report_hash": "fbd288bf786df3374f325b587bcedafa3a531cf48e53a6ca98f827d5a9cb7293"
+  }
+}

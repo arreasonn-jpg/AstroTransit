@@ -4,7 +4,7 @@ Bu belge, pipeline'ın bilimsel doğrulama borcunu **ölçülebilir kapılar**
 hâlinde tanımlar. Kural: yeni özellik, kapalı çevrim doğrulama kanıtından
 önce ikinci plandadır ("validation debt" önce ödenir).
 
-Durum sembolü: ✅ mevcut altyapı | 🟧 iskelet var, veri/çalıştırma eksik | ⬜ yapılmalı
+Durum sembolü: ✅ ölçüm yapıldı, sonuç donduruldu | 🟩 mevcut altyapı, çalıştırma bekleniyor | 🟧 iskelet var, veri/çalıştırma eksik | ⬜ yapılmalı
 
 | # | Kapı | Tanım | Durum | Araç |
 |---|------|-------|-------|------|
@@ -15,7 +15,7 @@ Durum sembolü: ✅ mevcut altyapı | 🟧 iskelet var, veri/çalıştırma eksi
 | 5 | Parametre geri kazanımı | Enjekte edilen P, Rp/R*, T0, derinlik ile geri kazanılan değerlerin dağılımı (bias, scatter) | 🟧 | `RecoveryTrial.period_error_fraction` + modeling |
 | 6 | FPP kalibrasyonu | `fpp ≈ 0.01` denilen adayların gerçekten ~%1 false-positive çıkması; Brier skor + precision/recall e eğrisi | 🟧 | `astrotransit/validation/fpp_benchmark.py` |
 | 7 | Earth-similarity duyarlılık analizi | Ağırlıkların ±10–20% değişiminde sıralamanın ne kadar değiştiği (Kendall τ) | ✅ | `astrotransit/validation/sensitivity.py` |
-| 8 | Tam provenance | Her sonuç: veri kaynağı, sektör, pipeline versiyonu, config hash, bağımlılık ortamı, model versiyonu, zaman damgası, random seed | ✅ | `astrotransit/validation/provenance.py`, `scripts/maintenance/make_environment_manifest.py` |
+| 8 | Tam provenance | Her sonuç: veri kaynağı, sektör, pipeline versiyonu, config hash, bağımlılık ortamı, model versiyonu, zaman damgası, random seed | 🟩 | `astrotransit/validation/provenance.py`, `scripts/maintenance/make_environment_manifest.py` |
 
 ## Nasıl çalıştırılır
 
@@ -54,6 +54,44 @@ kalibrasyon sonrası Brier skorun azalması beklenir.
 ±10/20% değiştirilerek aynı aday setinde skor sıralamasının Kendall τ'si
 hesaplanır. τ < 0.9 ise ağırlık seçimi sıralamayı belirleyici demektir ve
 sonuçlar "ağırlığa duyarlı" olarak etiketlenmelidir.
+
+**Kapalı çevrim çalıştırıldı (2026-09-08).** Gerçek aday kataloğu
+(`benchmarks/toi_catalog.csv`, 8064 TOI kaydından 7320 fotometrik aday)
+üzerinde her iki profil için ±10% ve ±20% perturbasyon ölçüldü:
+
+| Profil | Perturbasyon | τ (min) | Top-10 overlap | Karar |
+|--------|-------------|---------|----------------|-------|
+| `photometric_earth_analog` | ±10% | 1.0 | 1.0 | `ranking_stable` |
+| `photometric_earth_analog` | ±20% | 1.0 | 1.0 | `ranking_stable` |
+| `strict_earth_twin` | ±10% | 1.0 | 1.0 | `ranking_stable` |
+| `strict_earth_twin` | ±20% | 1.0 | 1.0 | `ranking_stable` |
+
+Yeniden üretim komutu (tek komut, deterministik):
+
+```bash
+python scripts/validation/run_similarity_sensitivity.py
+```
+
+Ölçülmüş ve provenance'lı (git commit, input SHA-256, rapor hash'i) dondurulmuş
+sonuç: `benchmarks/results/similarity_sensitivity_v1.json`. Sözleşme testi:
+`tests/test_similarity_sensitivity_results.py`.
+
+Sınırlar (rapor içine de işlenmiştir): bu ölçüm, heuristik ağırlık seçiminin
+**sıralama kararlılığı** testidir; mutlak skorların kalibrasyonu ve
+yaşanabilirlik iddiası değildir. TOI kataloğu gezegen kütlesi/yoğunluğu
+taşımadığından `strict_earth_twin` yalnızca mevcut boyutlarla değerlendirilmiştir
+(sınıflandırma `INCOMPLETE_EARTH_TWIN` kalır). `tfopwg_disp` etiketleri
+hiçbir skora ağırlık olarak girmez.
+
+## Ölçülen ve dondurulan sonuçlar
+
+| Sonuç dosyası | Kapı | Üreten komut |
+|---------------|------|--------------|
+| `benchmarks/results/similarity_sensitivity_v1.json` | 7 (benzerlik duyarlılığı) | `python scripts/validation/run_similarity_sensitivity.py` |
+
+Bu listede yer almayan kapılar için sonuç iddiası yapılamaz; durumları tablodaki
+sembollerle aynı kalmaya devam eder. Yeni bir ölçüm eklendiğinde bu tabloya
+satır eklenir ve dosya commit/tag ile immutable kabul edilir.
 
 ## Release-gate sözleşmeleri (uygulandı)
 
