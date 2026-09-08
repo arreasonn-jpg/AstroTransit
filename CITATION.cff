@@ -4,7 +4,8 @@ title: "AstroTransit"
 version: "0.3.0"
 type: software
 authors:
-  - family-names: "AstroTransit Team"
+  - family-names: "Erdem"
+    given-names: "Esa"
 license: MIT
 repository-code: "https://github.com/arreasonn-jpg/AstroTransit"
 abstract: "Reproducible TESS transit detection and candidate characterization pipeline."
