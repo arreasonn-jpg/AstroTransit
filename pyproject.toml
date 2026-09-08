@@ -47,6 +47,7 @@ modeling = [
     "arviz>=0.15",
     "batman-package",
     "exoplanet>=0.6",
+    "exoplanet-core>=0.3",
 ]
 dev = [
     "pytest>=7.0",
