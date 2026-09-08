@@ -29,6 +29,7 @@ from astrotransit.validation.performance import RuntimeMeasurement, measure_runt
 from astrotransit.validation.release_gate import GateResult, ReleaseGateReport, evaluate_release_gates
 from astrotransit.validation.corpus_evaluation import CorpusEvaluation, evaluate_corpus
 from astrotransit.validation.plots import generate_validation_figures
+from astrotransit.validation.artifacts import write_artifact
 from astrotransit.validation.fpp_benchmark import (
     FPPBenchmarkCase,
     FPPBenchmarkReport,
@@ -101,6 +102,7 @@ __all__ = [
     "CorpusEvaluation",
     "evaluate_corpus",
     "generate_validation_figures",
+    "write_artifact",
     "FPPBenchmarkCase",
     "FPPBenchmarkReport",
     "evaluate_fpp_benchmark",
