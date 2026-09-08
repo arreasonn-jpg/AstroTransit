@@ -10,7 +10,7 @@ Durum sembolü: ✅ mevcut altyapı | 🟧 iskelet var, veri/çalıştırma eksi
 |---|------|-------|-------|------|
 | 1 | Injection-recovery | Enjekte edilmiş transitlerin (P, Rp/R*, derinlik, gürültü gridi) kaçta kaçı geri kazanılıyor; `completeness(P, Rp/Rs, duration, noise)` haritası | 🟧 | `astrotransit/validation/injection_recovery.py` |
 | 2 | Bilinen gezegen geri kazanımı | TESS'ten bilinen onaylı gezegenler (örn. WASP-18b, WASP-19b) pipeline'dan geçirilir; beklenen/geri kazanılan periyot ve yarıçap hedef bazında raporlanır | 🟧 | `astrotransit benchmark` + `benchmarks/verified_targets.json` + `benchmark_report.py` |
-| 3 | Bilinen false positive'ler | Bilinen EB/sistematiği olayların ne oranında elendiği | ⬜ | vetting + etiketli FP seti |
+| 3 | Bilinen false positive'ler | Bilinen EB/sistematiği olayların ne oranında elendiği | 🟧 | `corpus.py`, `build_labelled_corpus.py` + etiketli FP seti |
 | 4 | Cross-sektör tutarlılığı | Tek sektör başarısı yetmez; aynı aday sektörler arası periyot/derinlik tutarlılığı | 🟧 | çok sektör stitching + `source_sectors` |
 | 5 | Parametre geri kazanımı | Enjekte edilen P, Rp/R*, T0, derinlik ile geri kazanılan değerlerin dağılımı (bias, scatter) | 🟧 | `RecoveryTrial.period_error_fraction` + modeling |
 | 6 | FPP kalibrasyonu | `fpp ≈ 0.01` denilen adayların gerçekten ~%1 false-positive çıkması; Brier skor + precision/recall e eğrisi | 🟧 | `astrotransit/validation/fpp_benchmark.py` |
