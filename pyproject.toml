@@ -46,11 +46,14 @@ modeling = [
     "pymc>=5.0",
     "arviz>=0.15",
     "batman-package",
+    "exoplanet>=0.6",
+    "exoplanet-core>=0.3",
 ]
 dev = [
     "pytest>=7.0",
     "pytest-cov>=4.0",
     "ruff>=0.1",
+    "jsonschema>=4.20",
     "ipykernel>=6.0",
     "jupyterlab>=4.0",
 ]
@@ -85,6 +88,11 @@ exclude = [
 [tool.ruff]
 target-version = "py311"
 line-length = 100
+
+[tool.ruff.lint]
+# Repository-wide gate. Legacy style-only rules (imports, preview upgrades) are
+# intentionally not release blockers; correctness rules remain mandatory.
+select = ["E4", "E7", "E9", "F"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

@@ -181,9 +181,9 @@ def main():
     rows = []
 
     for _, row in df.iterrows():
-        source_id = row.get("source_id", "")
-        period = safe_float(row.get("period"), 0.0)
-        candidate_class = str(row.get("candidate_class", "")).upper()
+        _source_id = row.get("source_id", "")
+        _period = safe_float(row.get("period"), 0.0)
+        _candidate_class = str(row.get("candidate_class", "")).upper()
 
         # tamamen bozuk candidate'ları tut ama ağır ceza ver
         timing_rms_min = safe_float(row.get("timing_rms_min"), 0.0)

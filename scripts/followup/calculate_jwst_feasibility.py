@@ -3,7 +3,6 @@ TIC 303241161 için JWST Transmission Spectroscopy Metric (TSM)
 ve Atmosferik Ölçek Yüksekliği (Scale Height) hesaplayıcı.
 Referans: Kempton et al. 2018 (TSM formülleri)
 """
-import numpy as np
 
 # Gezegen ve Yıldız Parametreleri (MCMC/MAP çıktılarından)
 R_star = 0.670746      # R_sun
@@ -31,7 +30,7 @@ else:
     M_p = 1.57 * (R_p ** 1.25) # Neptunian fit
 
 print("="*70)
-print(f"TIC 303241161 - JWST FZBLTE VE SPEKTROSKOP ANALZ")
+print("TIC 303241161 - JWST FZBLTE VE SPEKTROSKOP ANALZ")
 print("="*70)
 print(f"Tahmini Gezegen Kütlesi (M_earth) : {M_p:.2f} M_⊕")
 

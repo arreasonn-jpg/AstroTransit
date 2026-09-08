@@ -12,12 +12,11 @@ from __future__ import annotations
 import json
 import math
 import sys
-import csv
 from pathlib import Path
-from dataclasses import dataclass, field, asdict
+from dataclasses import dataclass, asdict
 
 import numpy as np
-from scipy.optimize import minimize_scalar, minimize
+from scipy.optimize import minimize
 
 project_root = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(project_root))

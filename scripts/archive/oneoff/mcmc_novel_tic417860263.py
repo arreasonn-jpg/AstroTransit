@@ -24,7 +24,7 @@ def main():
     sector = 57
 
     print("=" * 72)
-    print(f"  Novel Candidate MCMC Analysis")
+    print("  Novel Candidate MCMC Analysis")
     print(f"  Target: {target}  Sector: {sector}")
     print("=" * 72)
 

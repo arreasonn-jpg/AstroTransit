@@ -7,6 +7,8 @@ from typing import Any, Callable, Iterable, Optional
 
 import numpy as np
 
+from astrotransit.validation.provenance import build_manifest
+
 
 @dataclass(frozen=True)
 class InjectionScenario:
@@ -51,13 +53,24 @@ class RecoveryTrial:
 
 @dataclass(frozen=True)
 class InjectionRecoveryReport:
-    """Injection-recovery completeness özeti."""
+    """Injection-recovery completeness özeti.
+
+    ``completeness`` is an empirical measurement, not a claim that the
+    pipeline is complete.  ``seed`` and ``provenance`` make a run auditable.
+    """
 
     trials: tuple[RecoveryTrial, ...]
     completeness: float
     completeness_by_label: dict[str, float] = field(default_factory=dict)
     n_trials: int = 0
     n_recovered: int = 0
+    seed: Optional[int] = None
+    provenance: dict[str, Any] = field(default_factory=dict)
+
+    @property
+    def completeness_map(self) -> dict[str, float]:
+        """Completeness grouped by scenario label (a portable map contract)."""
+        return dict(self.completeness_by_label)
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -65,6 +78,8 @@ class InjectionRecoveryReport:
             "n_recovered": self.n_recovered,
             "completeness": self.completeness,
             "completeness_by_label": self.completeness_by_label,
+            "seed": self.seed,
+            "provenance": self.provenance,
             "trials": [trial.to_dict() for trial in self.trials],
         }
 
@@ -95,6 +110,8 @@ def run_injection_recovery(
     detector: Callable[[np.ndarray, np.ndarray], Any],
     *,
     period_tolerance: float = 0.02,
+    seed: Optional[int] = None,
+    provenance: Optional[dict[str, Any]] = None,
 ) -> InjectionRecoveryReport:
     """Detektör callable'ı ile sentetik sinyal completeness'ı ölçer.
 
@@ -143,7 +160,23 @@ def run_injection_recovery(
         completeness_by_label=completeness_by_label,
         n_trials=len(trials),
         n_recovered=recovered,
+        seed=seed,
+        provenance=provenance or build_manifest(seed=seed),
     )
+
+
+def make_injection_grid(
+    periods_days: Iterable[float] = (0.5, 1, 2, 5, 10, 20, 50, 100, 200),
+    depths: Iterable[float] = (50e-6, 100e-6, 200e-6, 500e-6, 1e-3, 2e-3, 5e-3),
+    durations_days: Iterable[float] = (0.1, 0.2, 0.3),
+    *,
+    t0: float = 0.0,
+) -> list[InjectionScenario]:
+    """Build a log-spaced-friendly experiment grid without hiding assumptions."""
+    return [
+        InjectionScenario(float(period), float(depth), float(duration), t0, label=f"P={period:g};depth={depth:g}")
+        for period in periods_days for depth in depths for duration in durations_days
+    ]
 
 
 def _extract_period(result: Any) -> Optional[float]:
@@ -177,5 +210,6 @@ __all__ = [
     "InjectionScenario",
     "RecoveryTrial",
     "inject_box_transit",
+    "make_injection_grid",
     "run_injection_recovery",
 ]

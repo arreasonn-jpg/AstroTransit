@@ -3,7 +3,7 @@
 import numpy as np
 import pytest
 
-from tests.conftest import generate_transit_lightcurve, generate_synthetic_lightcurve
+from tests.conftest import generate_synthetic_lightcurve
 
 
 class TestBLSSearch:

@@ -15,13 +15,11 @@ from loguru import logger
 from astrotransit.data.tess_client import TESSLightCurveData, TESSMultiSectorData
 from astrotransit.preprocessing.normalization import (
     LightCurveNormalizer,
-    NormalizationMethod,
     NormalizedLightCurve,
 )
 from astrotransit.preprocessing.cleaning import LightCurveCleaner, CleanedLightCurve
 from astrotransit.preprocessing.tess_detrend import (
     TESSDetrending,
-    DetrendMethod,
     DetrendedLightCurve,
 )
 from astrotransit.settings import Settings, get_settings

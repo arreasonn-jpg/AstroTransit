@@ -12,7 +12,7 @@ from dataclasses import dataclass
 import json
 import math
 from pathlib import Path
-from typing import Any, Iterable, Sequence
+from typing import Any, Iterable
 
 
 _STATUS_LABELS = {

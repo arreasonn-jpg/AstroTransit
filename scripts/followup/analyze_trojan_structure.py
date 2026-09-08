@@ -160,7 +160,7 @@ def main():
     print()
     print("=" * 60)
     print(f"TIC {args.tic} S{args.sector} — TROJAN/CO-ORBITAL ANALYSIS v2")
-    print(f"Primary transit masked (OOT-only detrend)")
+    print("Primary transit masked (OOT-only detrend)")
     print("=" * 60)
     for name, sc in windows.items():
         print(

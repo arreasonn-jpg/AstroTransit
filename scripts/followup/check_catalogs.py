@@ -1,5 +1,4 @@
 import requests
-import json
 
 targets = [52005579, 150428135, 352179145, 439949948, 303241161]
 

@@ -171,6 +171,7 @@ class MCMCFitResult:
     derived: DerivedParameters = field(default_factory=DerivedParameters)
     fit_method: str = "mcmc"
     convergence_ok: bool = False
+    mcmc_quality: str = "MCMC_FAILED_DIAGNOSTICS"
 
     def to_dict(self) -> dict:
         base = {
@@ -179,6 +180,7 @@ class MCMCFitResult:
             "fit_method": self.fit_method,
             "success": self.success,
             "convergence_ok": self.convergence_ok,
+            "mcmc_quality": self.mcmc_quality,
             "period": round(self.period, 6),
             "period_err": round(self.period_err, 6),
             "t0": round(self.t0, 6),
@@ -388,7 +390,7 @@ class PyMCFitter:
             init_u2 = priors.u2
 
         try:
-            with pm.Model() as model:
+            with pm.Model():
 
                 # ── Controlled Full-A Priorlar ──
                 # Period ve limb darkening sabit
@@ -536,7 +538,16 @@ class PyMCFitter:
             if np.isfinite(p.r_hat)
         ]
         r_hat_max = max(r_hat_values) if r_hat_values else 99.0
-        convergence_ok = (r_hat_max < 1.05) and (n_divergences < 20)
+        ess_values = [p.ess for p in posteriors.values() if np.isfinite(p.ess)]
+        min_ess = min(ess_values) if ess_values else 0.0
+        # Scientific release gate: a successful sampler is not automatically a
+        # trustworthy posterior. These thresholds are intentionally explicit.
+        convergence_ok = (
+            r_hat_max < 1.01
+            and min_ess >= 400.0
+            and n_divergences == 0
+        )
+        mcmc_quality = "PASS" if convergence_ok else "MCMC_FAILED_DIAGNOSTICS"
 
         # Medyan değerleri çıkar
         def get_median(pname: str) -> float:
@@ -578,7 +589,8 @@ class PyMCFitter:
         mcmc_success = (
             convergence_ok
             and len(posteriors) >= 4
-            and n_divergences < 20
+            and n_divergences == 0
+            and min_ess >= 400.0
             and rp_rs_median > 0
             and b_median >= 0
         )
@@ -603,6 +615,7 @@ class PyMCFitter:
             n_samples=n_samples,
             derived=derived,
             convergence_ok=convergence_ok,
+            mcmc_quality=mcmc_quality,
         )
 
         if convergence_ok:

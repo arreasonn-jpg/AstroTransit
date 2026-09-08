@@ -12,7 +12,7 @@ def main():
     from astrotransit.pipelines.orchestrator import AstroTransitOrchestrator
 
     setup_logging(log_level="INFO")
-    settings = get_settings()
+    _settings = get_settings()
 
     target = "TIC 100100827"
     sector = 2

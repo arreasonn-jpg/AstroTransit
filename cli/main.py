@@ -530,7 +530,10 @@ def benchmark(
         if report is not None:
             report_json = Path(output or orchestrator.settings.benchmark.report_json)
             report_csv = Path(csv_output or orchestrator.settings.benchmark.report_csv)
-            report.write_json(report_json)
+            from astrotransit.validation.provenance import build_manifest
+            report.provenance = build_manifest(config=orchestrator.settings.model_dump())
+            from astrotransit.validation.artifacts import write_artifact
+            write_artifact(report.to_dict(), report_json)
             report.write_csv(report_csv)
             console.print(f"[green]Performans JSON raporu:[/green] {report_json}")
             console.print(f"[green]Hedef CSV raporu:[/green] {report_csv}")
@@ -548,7 +551,135 @@ def benchmark(
 
 
 @app.command()
+def reproduce(
+    dataset: str = typer.Argument(..., help="Reproducible dataset identifier (örn. benchmark-v1)"),
+    max_per_category: Optional[int] = typer.Option(None, "--max"),
+    output: str = typer.Option("outputs/benchmark/benchmark_performance.json", "--output", "-o"),
+    csv_output: str = typer.Option("outputs/benchmark/benchmark_targets.csv", "--csv-output"),
+    manifest_output: str = typer.Option("outputs/benchmark/manifest.json", "--manifest"),
+    expected_sha256: Optional[str] = typer.Option(None, "--expected-sha256"),
+    config: Optional[str] = typer.Option(None, "--config", "-c"),
+    log_level: str = typer.Option("INFO", "--log-level"),
+):
+    """Tek komutla benchmark'ı çalıştırır ve çıktının hash/provenance kaydını üretir."""
+    from astrotransit.validation.provenance import build_manifest, sha256_file
+
+    if dataset != "benchmark-v1":
+        console.print(f"[red]Bilinmeyen dataset: {dataset}. Desteklenen: benchmark-v1[/red]")
+        raise typer.Exit(2)
+    benchmark(
+        max_per_category=max_per_category,
+        output=output,
+        csv_output=csv_output,
+        config=config,
+        log_level=log_level,
+    )
+    output_path = Path(output)
+    if not output_path.exists():
+        console.print("[red]Benchmark çıktısı oluşmadı.[/red]")
+        raise typer.Exit(1)
+    output_hash = sha256_file(output_path)
+    if expected_sha256 is not None and output_hash != expected_sha256:
+        console.print(f"[red]Hash uyuşmazlığı: {output_hash} != {expected_sha256}[/red]")
+        raise typer.Exit(1)
+    manifest = build_manifest(config={"dataset": dataset, "max_per_category": max_per_category})
+    manifest.update({"dataset": dataset, "output_path": str(output_path), "output_hash": output_hash,
+                     "csv_output_path": str(csv_output)})
+    manifest_path = Path(manifest_output)
+    manifest_path.parent.mkdir(parents=True, exist_ok=True)
+    manifest_path.write_text(json.dumps(manifest, indent=2), encoding="utf-8")
+    console.print(f"[green]Reproduction manifest:[/green] {manifest_path}")
+    console.print(f"[green]Output SHA-256:[/green] {output_hash}")
+
+
+@app.command("release-gate")
+def release_gate(
+    corpus: Optional[str] = typer.Option(None, "--corpus", help="Labelled corpus JSON"),
+    injection_report: Optional[str] = typer.Option(None, "--injection-report"),
+    blind_report: Optional[str] = typer.Option(None, "--blind-report"),
+    baseline_report: Optional[str] = typer.Option(None, "--baseline-report"),
+    output: Optional[str] = typer.Option(None, "--output", "-o"),
+):
+    """Evaluate release evidence without turning missing data into a pass."""
+    from astrotransit.validation.corpus import corpus_summary, load_corpus
+    from astrotransit.validation.release_gate import evaluate_release_gates
+
+    known_path = Path("benchmarks/verified_targets.json")
+    payload = json.loads(known_path.read_text(encoding="utf-8")) if known_path.exists() else []
+    known_targets = len(payload if isinstance(payload, list) else payload.get("targets", []))
+    cases = load_corpus(corpus) if corpus else []
+    summary = corpus_summary(cases)
+    report = evaluate_release_gates(
+        known_targets=known_targets,
+        false_positives=summary["counts"]["false_positive"],
+        quiet_controls=summary["counts"]["quiet_star"],
+        has_injection_report=bool(injection_report and Path(injection_report).exists()),
+        has_blind_report=bool(blind_report and Path(blind_report).exists()),
+        has_baseline_report=bool(baseline_report and Path(baseline_report).exists()),
+        has_provenance=bool(injection_report or blind_report or baseline_report),
+    )
+    rendered = json.dumps(report.to_dict(), indent=2, ensure_ascii=False)
+    if output:
+        from astrotransit.validation.artifacts import write_artifact
+        write_artifact(report.to_dict(), output)
+    console.print(rendered)
+    if not report.passed:
+        raise typer.Exit(1)
+
+
+@app.command("evaluate-corpus")
+def evaluate_corpus_command(
+    corpus: str = typer.Argument(..., help="Labelled corpus JSON"),
+    predictions: str = typer.Argument(..., help="JSON: [{target_id, detected}]"),
+    split: str = typer.Option("blind_test", "--split"),
+    seed: int = typer.Option(0, "--seed"),
+    output: Optional[str] = typer.Option(None, "--output", "-o"),
+):
+    """Evaluate saved detector predictions on one deterministic corpus split."""
+    from astrotransit.validation.corpus import load_corpus
+    from astrotransit.validation.corpus_evaluation import evaluate_corpus
+
+    cases = load_corpus(corpus)
+    rows = json.loads(Path(predictions).read_text(encoding="utf-8"))
+    if isinstance(rows, dict):
+        rows = rows.get("predictions", rows.get("results", []))
+    if not isinstance(rows, list):
+        raise typer.BadParameter("predictions JSON'u liste olmalıdır")
+    prediction_map = {str(row["target_id"]): bool(row["detected"]) for row in rows}
+    report = evaluate_corpus(cases, lambda case: prediction_map[case.target_id], split=split, seed=seed)
+    rendered = json.dumps(report.to_dict(), indent=2, ensure_ascii=False)
+    if output:
+        from astrotransit.validation.artifacts import write_artifact
+        write_artifact(report.to_dict(), output)
+    console.print(rendered)
+    if report.errors or report.n_evaluated != report.n_cases:
+        raise typer.Exit(1)
+
+
+@app.command("evaluate-fpp")
+def evaluate_fpp_command(
+    predictions: str = typer.Argument(..., help="JSON: [{target_id, is_false_positive, fpp}]"),
+    seed: int = typer.Option(0, "--seed"),
+    threshold: float = typer.Option(.5, "--threshold"),
+    output: Optional[str] = typer.Option(None, "--output", "-o"),
+):
+    """Evaluate FPP proxy metrics separately on deterministic holdout splits."""
+    from astrotransit.validation.fpp_benchmark import FPPBenchmarkCase, evaluate_fpp_holdout
+
+    rows = json.loads(Path(predictions).read_text(encoding="utf-8"))
+    rows = rows.get("cases", rows.get("predictions", [])) if isinstance(rows, dict) else rows
+    cases = [FPPBenchmarkCase(str(row["target_id"]), bool(row["is_false_positive"]), float(row["fpp"])) for row in rows]
+    reports = {name: report.to_dict() for name, report in evaluate_fpp_holdout(cases, threshold=threshold, seed=seed).items()}
+    rendered = json.dumps(reports, indent=2, ensure_ascii=False)
+    if output:
+        from astrotransit.validation.artifacts import write_artifact
+        write_artifact(reports, output)
+    console.print(rendered)
+
+
+@app.command()
 def version():
+
     """AstroTransit versiyon bilgisi."""
 
     from astrotransit.version import __version__

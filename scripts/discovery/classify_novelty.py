@@ -7,7 +7,6 @@ sys.path.insert(0, str(project_root))
 
 def main():
     import pandas as pd
-    import numpy as np
 
     print("=" * 72)
     print("  Kesif Sonuclari Yenilik Siniflandirmasi")

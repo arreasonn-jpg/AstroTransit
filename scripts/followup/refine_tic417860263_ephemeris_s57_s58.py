@@ -15,7 +15,6 @@ import json
 import math
 import sys
 from pathlib import Path
-from dataclasses import dataclass, field
 
 import numpy as np
 
@@ -182,7 +181,7 @@ def fit_transit_center(
     best_chi2 = np.inf
     best_depth = depth_init
 
-    baseline = np.median(flux)
+    _baseline = np.median(flux)
 
     for t_try in t_trials:
         in_mask = np.abs(time - t_try) < half_dur
@@ -487,7 +486,7 @@ def main():
     # Çok küçük hatalara alt sınır koy
     t_errors = np.maximum(t_errors, 0.0001)
 
-    print(f"\n── Lineer Ephemeris Fit ──")
+    print("\n── Lineer Ephemeris Fit ──")
     print(f"  Toplam transit ölçümü: {len(all_transit_measurements)}")
 
     refined = fit_linear_ephemeris(epochs, t_centers, t_errors)
@@ -542,7 +541,7 @@ def main():
         f.write("## Initial Ephemeris\n")
         f.write(f"- **T0**: {T0_INIT:.6f} BTJD\n")
         f.write(f"- **Period**: {PERIOD_INIT:.10f} d\n")
-        f.write(f"- **Source**: S57 MAP+MCMC\n\n")
+        f.write("- **Source**: S57 MAP+MCMC\n\n")
 
         f.write("## Refined Ephemeris\n")
         f.write(f"- **T0**: {refined['T0']:.8f} ± {refined['T0_err']:.8f} BTJD\n")

@@ -50,7 +50,7 @@ def human_assessment(row: dict) -> tuple[str, int, str]:
         1 = en güçlü
         6 = en zayıf
     """
-    target_id = row.get("target_id", "")
+    _target_id = row.get("target_id", "")
     anomaly_flag = row.get("anomaly_flag", "UNKNOWN")
     timing_flag = row.get("timing_flag", "")
     transit_flag = row.get("transit_consistency_flag", "")

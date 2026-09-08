@@ -3,7 +3,6 @@ TIC 52005579 (TOI-6251.01) Çoklu Sektör Birlestirici ve Transit Dogrulayici
 ESI = %96.52 (Earth Twin)
 """
 import numpy as np
-import pandas as pd
 import matplotlib.pyplot as plt
 from pathlib import Path
 import lightkurve as lk
@@ -32,7 +31,7 @@ for lc in lc_collection:
 combined_lc = lk.LightCurveCollection(cleaned_lcs).stitch()
 
 time = combined_lc.time.value
-flux = combined_getattr(lc.flux, "value", lc.flux)
+flux = getattr(lc.flux, "value", lc.flux)
 
 # Faz Katlama (Phase Folding)
 phase = ((time - T0 + 0.5 * PERIOD) % PERIOD) / PERIOD - 0.5
@@ -88,10 +87,10 @@ ax.grid(True, linestyle="--", alpha=0.45)
 ax.legend(loc="lower right", frameon=True)
 
 info_text = (
-    f"$P = 12.7615$ d\n"
-    f"$R_p = 0.971\\ R_\\oplus$\n"
-    f"$T_{{eq}} = 299.5$ K (26.3 °C)\n"
-    f"ESI = 96.5% [Earth Twin]"
+    "$P = 12.7615$ d\n"
+    "$R_p = 0.971\\ R_\\oplus$\n"
+    "$T_{eq} = 299.5$ K (26.3 °C)\n"
+    "ESI = 96.5% [Earth Twin]"
 )
 ax.text(0.025, 0.05, info_text, transform=ax.transAxes, fontsize=9.5,
         verticalalignment='bottom', bbox=dict(boxstyle='round,pad=0.5', facecolor='#f8f9fa', edgecolor='#adb5bd', alpha=0.9))

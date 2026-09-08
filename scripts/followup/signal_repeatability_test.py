@@ -199,19 +199,19 @@ def main():
 
     if lagrange_repeatable:
         best = max(lagrange_repeatable, key=lambda x: x["sig_full"])
-        print(f"  ★★ LAGRANGE-ZONE SIGNAL CONFIRMED REPEATABLE")
+        print("  ★★ LAGRANGE-ZONE SIGNAL CONFIRMED REPEATABLE")
         print(f"     Phase: {best['phase']:+.4f}, Full: {best['sig_full']:.1f}σ")
         print(f"     First½: {best['sig_first_half']:.1f}σ, Second½: {best['sig_second_half']:.1f}σ")
-        print(f"     COORBITAL REVIEW: STRONGLY SUPPORTED")
+        print("     COORBITAL REVIEW: STRONGLY SUPPORTED")
     elif lagrange_partial:
         best = max(lagrange_partial, key=lambda x: x["sig_full"])
-        print(f"  ○ LAGRANGE-ZONE SIGNAL PARTIALLY REPEATABLE")
+        print("  ○ LAGRANGE-ZONE SIGNAL PARTIALLY REPEATABLE")
         print(f"     Phase: {best['phase']:+.4f}, Full: {best['sig_full']:.1f}σ")
         print(f"     First½: {best['sig_first_half']:.1f}σ, Second½: {best['sig_second_half']:.1f}σ")
-        print(f"     COORBITAL REVIEW: WORTH MANUAL INSPECTION")
+        print("     COORBITAL REVIEW: WORTH MANUAL INSPECTION")
     else:
-        print(f"  ✓ No repeatable Lagrange-zone signal found.")
-        print(f"    Off-primary signals are likely noise or single-event artifacts.")
+        print("  ✓ No repeatable Lagrange-zone signal found.")
+        print("    Off-primary signals are likely noise or single-event artifacts.")
 
     print("=" * 70)
 

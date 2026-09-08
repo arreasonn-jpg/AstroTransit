@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/arreasonn-jpg/AstroTransit/schemas/candidate-1.7.json",
+  "title": "AstroTransit candidate output",
+  "type": "object",
+  "required": ["metadata", "target", "detection", "vetting"],
+  "properties": {
+    "metadata": {"type": "object", "required": ["schema_version"], "properties": {"schema_version": {"const": "1.7"}}},
+    "target": {"type": "object", "required": ["source_id"]},
+    "detection": {"type": "object"},
+    "vetting": {"type": "object", "properties": {
+      "fpp": {"type": ["number", "null"], "minimum": 0, "maximum": 1},
+      "fpp_method": {"type": "string"},
+      "claim_status": {"enum": ["DETECTED", "CANDIDATE", "MULTI_SECTOR_CONSISTENT", "PHOTOMETRIC_PLANET_CANDIDATE", "EARTH_ANALOG_CANDIDATE", "FOLLOWUP_SUPPORTED", "VALIDATED_PLANET", "CONFIRMED_PLANET"]},
+      "followup_confirmed": {"type": "boolean"},
+      "followup_observation_ids": {"type": "array"}
+    }}
+  },
+  "allOf": [{"if": {"properties": {"vetting": {"properties": {"claim_status": {"const": "CONFIRMED_PLANET"}}}}}, "then": {"properties": {"vetting": {"required": ["followup_confirmed", "followup_observation_ids"], "properties": {"followup_confirmed": {"const": true}, "followup_observation_ids": {"minItems": 1}}}}}}]
+}

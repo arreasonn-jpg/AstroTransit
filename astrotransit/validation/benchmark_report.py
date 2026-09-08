@@ -45,6 +45,7 @@ class VerifiedTarget:
     difficulty: str
     sector: Optional[int] = None
     available_sectors: tuple[int, ...] = ()
+    reference: str = ""
 
     @property
     def target_id(self) -> str:
@@ -70,6 +71,7 @@ class VerifiedTarget:
             difficulty=str(row.get("difficulty", "unknown")).lower(),
             sector=sector,
             available_sectors=sectors,
+            reference=str(row.get("reference", "")),
         )
 
     def to_dict(self) -> dict[str, Any]:
@@ -80,6 +82,7 @@ class VerifiedTarget:
             "difficulty": self.difficulty,
             "sector": self.sector,
             "available_sectors": list(self.available_sectors),
+            "reference": self.reference,
             "expected_period_days": self.expected_period_days,
             "expected_radius_rearth": self.expected_radius_rearth,
         }
@@ -155,6 +158,7 @@ class BenchmarkPerformanceReport:
     targets: tuple[BenchmarkTargetMeasurement, ...] = ()
     metrics: dict[str, Any] = field(default_factory=dict)
     limitations: tuple[str, ...] = ()
+    provenance: dict[str, Any] = field(default_factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -168,6 +172,7 @@ class BenchmarkPerformanceReport:
             "metrics": self.metrics,
             "targets": [target.to_dict() for target in self.targets],
             "limitations": list(self.limitations),
+            "provenance": self.provenance,
         }
 
     def summary(self) -> str:
@@ -212,6 +217,7 @@ def evaluate_benchmark_results(
     period_tolerance_fraction: float = DEFAULT_PERIOD_TOLERANCE,
     radius_tolerance_fraction: float = DEFAULT_RADIUS_TOLERANCE,
     pipeline_version: Optional[str] = None,
+    provenance: Optional[dict[str, Any]] = None,
 ) -> BenchmarkPerformanceReport:
     """Pipeline sonuçlarını known-target ground truth ile karşılaştırır.
 
@@ -382,6 +388,7 @@ def evaluate_benchmark_results(
         targets=tuple(measurements),
         metrics=metrics,
         limitations=tuple(limitations),
+        provenance=provenance or {},
     )
 
 

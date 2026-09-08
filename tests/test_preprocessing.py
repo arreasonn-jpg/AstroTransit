@@ -3,7 +3,6 @@
 import numpy as np
 import pytest
 
-from tests.conftest import generate_synthetic_lightcurve, generate_transit_lightcurve
 
 
 class TestNormalization:

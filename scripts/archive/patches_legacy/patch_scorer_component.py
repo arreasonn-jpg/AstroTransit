@@ -16,7 +16,7 @@ def main():
         return 1
 
     shutil.copy(scorer_file, scorer_file.with_suffix(".py.component_backup"))
-    print(f"OK Yedek: scorer.py.component_backup")
+    print("OK Yedek: scorer.py.component_backup")
 
     content = scorer_file.read_text(encoding="utf-8")
 

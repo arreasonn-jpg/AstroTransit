@@ -14,19 +14,19 @@ gücünü sürekli bir fonksiyon olarak hesaplamak.
 
 from __future__ import annotations
 import argparse
-import json
 from pathlib import Path
 
 import numpy as np
-import pandas as pd
 from loguru import logger
 import lightkurve as lk
 from scipy.interpolate import UnivariateSpline
 from scipy.signal import find_peaks
 
 import matplotlib
+
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+
 
 def download_and_normalize(tic_id: int, sector: int):
     search = lk.search_lightcurve(f"TIC {tic_id}", sector=sector, author="SPOC", exptime=120)
@@ -38,43 +38,45 @@ def download_and_normalize(tic_id: int, sector: int):
     quality = np.array(getattr(lc.quality, "value", lc.quality), dtype=int)
     valid = np.isfinite(time) & np.isfinite(flux) & (quality == 0)
     time, flux = time[valid], flux[valid]
-    
+
     # Basit Detrending (Sadece uzun vadeli trendleri al)
     med = np.nanmedian(flux)
     flux = flux / med
     knots = np.arange(time.min(), time.max(), 1.0)
     if len(knots) >= 4:
-        spline = UnivariateSpline(time, flux, k=3, s=len(time)*0.8)
+        spline = UnivariateSpline(time, flux, k=3, s=len(time) * 0.8)
         flux = flux / spline(time)
-        
+
     return time, flux
+
 
 def scan_phase_space(phase: np.ndarray, flux: np.ndarray, window_width: float, steps: int = 500):
     """0.0 ile 1.0 arasındaki faz uzayını tarar."""
     scan_phases = np.linspace(-0.5, 0.5, steps)
     sig_map = np.zeros(steps)
     depth_map = np.zeros(steps)
-    
+
     for i, p_center in enumerate(scan_phases):
         shifted_phase = ((phase - p_center + 0.5) % 1.0) - 0.5
         in_w = np.abs(shifted_phase) < (window_width / 2.0)
-        
+
         if np.sum(in_w) < 5:
             continue
-            
+
         in_flux = flux[in_w]
         out_flux = flux[~in_w]
-        
+
         baseline = np.nanmedian(out_flux) if len(out_flux) > 10 else 1.0
         out_std = np.nanstd(out_flux) if len(out_flux) > 10 else 1e-5
-        
+
         depth = baseline - np.nanmedian(in_flux)
         sig = (depth / max(out_std, 1e-9)) * np.sqrt(len(in_flux))
-        
+
         depth_map[i] = depth * 1e6
         sig_map[i] = sig
-        
+
     return scan_phases, depth_map, sig_map
+
 
 def find_anomalous_peaks(scan_phases, sig_map, primary_phase_width):
     """
@@ -108,6 +110,7 @@ def find_anomalous_peaks(scan_phases, sig_map, primary_phase_width):
     valid_peaks.sort(key=lambda x: x[1], reverse=True)
     return valid_peaks
 
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--tic", type=int, required=True)
@@ -122,44 +125,48 @@ def main():
 
     logger.info(f"Kör Faz Taraması başlıyor: TIC {args.tic} S{args.sector}")
     time, flux = download_and_normalize(args.tic, args.sector)
-    
+
     # Phase fold
     phase = ((time - args.t0 + 0.5 * args.period) % args.period) / args.period - 0.5
     dur_phase = (args.duration_hours / 24.0) / args.period
-    
+
     # Taramayı yap
     scan_phases, depth_map, sig_map = scan_phase_space(phase, flux, dur_phase, steps=1000)
-    
+
     # Tepe noktalarını bul
     peaks = find_anomalous_peaks(scan_phases, sig_map, dur_phase)
 
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print(f"PHASE SPACE POWER MAP: TIC {args.tic} S{args.sector}")
-    print("="*60)
+    print("=" * 60)
     print(f"Primary Transit Phase: 0.0 (Width: {dur_phase:.3f})")
     clean_peaks = [(p, s, z) for p, s, z in peaks if z != "A_TRANSIT_ZONE"]
     transit_overlap = [(p, s, z) for p, s, z in peaks if z == "A_TRANSIT_ZONE"]
 
     def phase_label(p):
-        if abs(abs(p) - 0.5) < 0.05: return "(Secondary)"
-        if abs(p - 0.166) < 0.05: return "(L5)"
-        if abs(p + 0.166) < 0.05: return "(L4)"
-        if abs(abs(p) - 0.25) < 0.04: return "(Quadrature)"
+        if abs(abs(p) - 0.5) < 0.05:
+            return "(Secondary)"
+        if abs(p - 0.166) < 0.05:
+            return "(L5)"
+        if abs(p + 0.166) < 0.05:
+            return "(L4)"
+        if abs(abs(p) - 0.25) < 0.04:
+            return "(Quadrature)"
         return ""
 
-    print(f"\nZone B+C: Off-primary independent signals:")
+    print("\nZone B+C: Off-primary independent signals:")
     if clean_peaks:
         for i, (p, s, z) in enumerate(clean_peaks[:5]):
             lbl = phase_label(p)
-            print(f"  {i+1}. Phase: {p:+.4f}  |  {s:.1f} sigma  [{z}] {lbl}")
+            print(f"  {i + 1}. Phase: {p:+.4f}  |  {s:.1f} sigma  [{z}] {lbl}")
     else:
         print("  None above 3 sigma threshold.")
 
-    print(f"\nZone A: Transit-overlapping signals (may be shoulder/ingress/egress):")
+    print("\nZone A: Transit-overlapping signals (may be shoulder/ingress/egress):")
     if transit_overlap:
         for i, (p, s, z) in enumerate(transit_overlap[:3]):
             lbl = phase_label(p)
-            print(f"  {i+1}. Phase: {p:+.4f}  |  {s:.1f} sigma  [{z}] {lbl}")
+            print(f"  {i + 1}. Phase: {p:+.4f}  |  {s:.1f} sigma  [{z}] {lbl}")
     else:
         print("  None.")
 
@@ -182,17 +189,19 @@ def main():
         print("  ○ MODERATE SIGNAL IN CLEAN ZONE B — worth manual review")
     else:
         print("  ✓ NO SIGNIFICANT INDEPENDENT OFF-PRIMARY SIGNAL")
-    
+
     if any(s >= 6.0 for _, s in c_peaks):
         print("  ⚠ Strong secondary zone signal — EB scenario should be ruled out first")
-    print("="*60 + "\n")
+    print("=" * 60 + "\n")
 
     # Çizim
     fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(14, 10))
 
     # Üst panel: Full range
     ax1.plot(scan_phases, sig_map, color="blue", lw=1.5, label="Signal Power")
-    ax1.axvspan(-dur_phase * 3.0, dur_phase * 3.0, color="yellow", alpha=0.15, label="Zone A (transit)")
+    ax1.axvspan(
+        -dur_phase * 3.0, dur_phase * 3.0, color="yellow", alpha=0.15, label="Zone A (transit)"
+    )
     ax1.axvspan(-0.5, -dur_phase * 3.0, color="lightgreen", alpha=0.08)
     ax1.axvspan(dur_phase * 3.0, 0.5, color="lightgreen", alpha=0.08, label="Zone B+C (clean)")
     ax1.axvline(0, color="black", ls="--", alpha=0.6, label="Primary")
@@ -225,11 +234,12 @@ def main():
     ax2.set_ylim(-3, max(sig_map.max() * 1.1, 8))
 
     plt.tight_layout()
-    
+
     fig_path = outdir / f"TIC_{args.tic}_S{args.sector}_phase_map.png"
     plt.savefig(fig_path, dpi=150, bbox_inches="tight")
     plt.close()
     logger.info(f"Power Map çizildi: {fig_path}")
+
 
 if __name__ == "__main__":
     main()

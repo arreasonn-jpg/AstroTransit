@@ -58,7 +58,7 @@ def compute_triage_decision(row: dict) -> tuple[str, str]:
     p_eb = optional_float(row.get("p_eb"))
     p_beb = optional_float(row.get("p_beb"))
     dominant = row.get("dominant_scenario", "none")
-    n_neighbors = row.get("gaia_neighbors_within_60arcsec")
+    _n_neighbors = row.get("gaia_neighbors_within_60arcsec")
 
     notes = []
 

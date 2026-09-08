@@ -24,7 +24,7 @@ import numpy as np
 from loguru import logger
 
 try:
-    from transitleastsquares import transitleastsquares, transit_mask
+    from transitleastsquares import transitleastsquares
     _TLS_AVAILABLE = True
 except ImportError as _tls_import_error:
     _TLS_AVAILABLE = False

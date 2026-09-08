@@ -4,7 +4,6 @@ Turkce karakterler bozuk gorunuyorsa bu betik cozer.
 """
 
 from pathlib import Path
-import os
 import sys
 
 project_root = Path(__file__).resolve().parent.parent

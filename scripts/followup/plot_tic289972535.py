@@ -72,11 +72,11 @@ ax.grid(True, linestyle="--", alpha=0.45)
 ax.legend(loc="lower right", frameon=True)
 
 info_text = (
-    f"$P = 14.20$ d\n"
-    f"$R_p = 0.94\\ R_\\oplus$\n"
-    f"$T_{{eq}} = 288.2$ K (+15.0 °C)\n"
-    f"ESI = 98.66% [Pure Earth Twin]\n"
-    f"Status: 100% Non-TOI Novel"
+    "$P = 14.20$ d\n"
+    "$R_p = 0.94\\ R_\\oplus$\n"
+    "$T_{eq} = 288.2$ K (+15.0 °C)\n"
+    "ESI = 98.66% [Pure Earth Twin]\n"
+    "Status: 100% Non-TOI Novel"
 )
 ax.text(0.025, 0.05, info_text, transform=ax.transAxes, fontsize=9.5,
         verticalalignment='bottom', bbox=dict(boxstyle='round,pad=0.5', facecolor='#f8f9fa', edgecolor='#adb5bd', alpha=0.9))

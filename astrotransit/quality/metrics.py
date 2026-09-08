@@ -14,7 +14,6 @@ Literatür referansları:
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Optional
 
 import numpy as np
 from scipy import stats as scipy_stats
@@ -22,8 +21,6 @@ from loguru import logger
 
 from astrotransit.preprocessing.tess_detrend import DetrendedLightCurve
 from astrotransit.detection.cascade import CascadeCandidate
-from astrotransit.modeling.map_fit import MAPFitResult
-from astrotransit.modeling.pymc_fit import MCMCFitResult
 
 
 # ──────────────────────────────────────
@@ -274,7 +271,7 @@ class QualityMetricsCalculator:
         time = detrended.time
 
         if len(flux) < 10:
-            logger.warning(f"Çok az nokta: fotometrik metrik hesaplanamıyor.")
+            logger.warning("Çok az nokta: fotometrik metrik hesaplanamıyor.")
             return PhotometricMetrics()
 
         # Temel istatistikler

@@ -24,6 +24,8 @@ from astrotransit.science.earth_similarity import (
     score_earth_similarity,
 )
 from astrotransit.validation.followup import coerce_followup_result
+from astrotransit.validation.claims import ClaimStatus, infer_claim_status
+from astrotransit.validation.failures import failure_codes_as_json
 from astrotransit.utils.identifiers import extract_tic_number
 
 
@@ -205,6 +207,9 @@ class TransitCandidateRecord:
 
     # Tespit güveni ve vetting (Earth similarity'den ayrı)
     detection_confidence: str = "UNKNOWN"
+    # Machine-readable claim firewall: this is never a Bayesian probability.
+    claim_status: str = ClaimStatus.DETECTED.value
+    failure_codes: str = ""
     false_positive_probability: Optional[float] = None
 
     # Vetting
@@ -235,6 +240,7 @@ class TransitCandidateRecord:
     r_hat_max: Optional[float] = 0.0
     n_divergences: int = 0
     mcmc_converged: bool = False
+    mcmc_quality: str = "NOT_RUN"
     period_sampled: bool = False
     period_err_source: str = ""
     rp_rs_sampled: bool = False
@@ -260,6 +266,10 @@ class TransitCandidateRecord:
         self.source_id = str(self.source_id or "")
         self.mission = str(self.mission or "TESS")
         self.instrument = str(self.instrument or "TESS")
+        if self.claim_status == ClaimStatus.DETECTED.value:
+            self.claim_status = infer_claim_status(self).value
+        if not self.failure_codes:
+            self.failure_codes = failure_codes_as_json(self)
 
     def to_flat_dict(self) -> dict[str, Any]:
         """Parquet/CSV için tek seviyeli, serileştirilebilir sözlük döndürür."""
@@ -403,6 +413,8 @@ class TransitCandidateRecord:
                 "fpp_method": flat["fpp_method"],
                 "false_positive_probability": flat["false_positive_probability"],
                 "detection_confidence": flat["detection_confidence"],
+                "claim_status": flat["claim_status"],
+                "failure_codes": _json_load_list_or_empty(flat["failure_codes"]),
                 "is_false_positive": flat["is_false_positive"],
                 "is_variable_star": flat["is_variable_star"],
                 "is_binary_suspect": flat["is_binary_suspect"],
@@ -428,6 +440,7 @@ class TransitCandidateRecord:
                 "r_hat_max": flat["r_hat_max"],
                 "n_divergences": flat["n_divergences"],
                 "mcmc_converged": flat["mcmc_converged"],
+                "mcmc_quality": flat["mcmc_quality"],
                 "period_sampled": flat["period_sampled"],
                 "period_err_source": flat["period_err_source"],
                 "rp_rs_sampled": flat["rp_rs_sampled"],

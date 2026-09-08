@@ -78,9 +78,14 @@ def build_manifest(repo_root: Path, config_path: Path | None) -> dict:
     except PackageNotFoundError:
         package_version = "unknown"
 
+    lock_path = repo_root / "envs" / "requirements.lock"
     manifest = {
         "generated_at_utc": datetime.now(timezone.utc).isoformat(),
         "python_version": platform.python_version(),
+        "dependency_lock": {
+            "path": str(lock_path),
+            "sha256": _sha256(lock_path) if lock_path.is_file() else None,
+        },
         "platform": platform.platform(),
         "package": {
             "name": "astrotransit",

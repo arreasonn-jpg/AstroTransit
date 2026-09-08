@@ -90,7 +90,7 @@ def find_best_sector(tic_id: str) -> int:
             if "Sector" in m:
                 try:
                     return int(m.split("Sector")[-1].strip())
-                except:
+                except (ValueError, TypeError):
                     continue
     except Exception:
         pass
@@ -202,7 +202,7 @@ def main():
             # Sektor bul
             sector = find_best_sector(tic_id)
             if sector < 0:
-                print(f"  ⚠ Sektor bulunamadi, atlaniyor")
+                print("  ⚠ Sektor bulunamadi, atlaniyor")
                 progress.failed += 1
                 progress.failed_ids.append(tic_id)
                 save_checkpoint(progress, checkpoint_file)

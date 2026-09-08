@@ -24,7 +24,6 @@ from scipy.optimize import minimize, OptimizeResult
 from loguru import logger
 
 from astrotransit.preprocessing.tess_detrend import DetrendedLightCurve
-from astrotransit.detection.cascade import CascadeCandidate
 from astrotransit.modeling.parameters import (
     TransitPriors,
     DerivedParameters,
