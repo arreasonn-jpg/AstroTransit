@@ -390,7 +390,7 @@ class PyMCFitter:
             init_u2 = priors.u2
 
         try:
-            with pm.Model() as model:
+            with pm.Model():
 
                 # ── Controlled Full-A Priorlar ──
                 # Period ve limb darkening sabit

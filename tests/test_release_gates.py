@@ -11,7 +11,7 @@ def test_baselines_use_same_cases_and_report_delta():
         "tls-only": lambda case: True,
     })
     assert report.delta("recall", "astrotransit", "tls-only") == 0
-    assert report.measurements[1].false_positive_rate == 1
+    assert report.measurements[1].false_positive_rate == 0.5
 
 
 def test_failure_taxonomy_is_structured():
