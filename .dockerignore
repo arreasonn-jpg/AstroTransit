@@ -1,0 +1,36 @@
+# Keep the image lean: never bake VCS metadata, local data or virtualenvs
+# into the scientific image.
+.git/
+.gitignore
+.github/
+.gitattributes
+
+.venv/
+.venv-validate/
+.venv-wsl/
+.venv-test/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Local run outputs and caches are not image inputs.
+/outputs*/
+.cache/
+/campaign_runs/
+*.log
+
+# Repo metadata and documentation that the build does not need
+# (README.md, LICENSE, CITATION.cff, pyproject.toml are COPYed explicitly).
+docs/
+tests/
+scripts/
+release/
+*.egg-info/
+build/
+dist/
+.dockerignore
+Dockerfile

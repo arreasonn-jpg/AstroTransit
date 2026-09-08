@@ -141,3 +141,14 @@ jobs:
         with:
           name: package-build
           path: dist/*
+
+  docker:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Build image (locked requirements)
+        run: docker build -t astrotransit:ci .
+      - name: Smoke test CLI inside the image
+        run: docker run --rm astrotransit:ci version
