@@ -9,7 +9,7 @@ Durum sembolü: ✅ ölçüm yapıldı, sonuç donduruldu | 🟩 mevcut altyapı
 | # | Kapı | Tanım | Durum | Araç |
 |---|------|-------|-------|------|
 | 1 | Injection-recovery | Enjekte edilmiş transitlerin (P, Rp/R*, derinlik, gürültü gridi) kaçta kaçı geri kazanılıyor; `completeness(P, Rp/Rs, duration, noise)` haritası | 🟧 | `astrotransit/validation/injection_recovery.py` |
-| 2 | Bilinen gezegen geri kazanımı | TESS'ten bilinen onaylı gezegenler (örn. WASP-18b, WASP-19b) pipeline'dan geçirilir; beklenen/geri kazanılan periyot ve yarıçap hedef bazında raporlanır | 🟧 | `astrotransit benchmark` + `benchmarks/verified_targets.json` + `benchmark_report.py` |
+| 2 | Bilinen gezegen geri kazanımı | TESS'ten bilinen onaylı gezegenler (örn. WASP-18b, WASP-19b) pipeline'dan geçirilir; beklenen/geri kazanılan periyot ve yarıçap hedef bazında raporlanır | 🟧 (ground truth hazır: 59 etiketli hedef, TFOP KP/CP; ölçüm PENDING RUN) | `astrotransit benchmark` + `benchmarks/verified_targets.json` + `benchmark_report.py` |
 | 3 | Bilinen false positive'ler | Bilinen EB/sistematiği olayların ne oranında elendiği | 🟧 (etiketli **girdi** corpus hazır: 1817 FP + 1191 planet, TFOP disposition; quiet controls PENDING DATA; ölçüm PENDING RUN) | `corpus.py`, `build_labelled_corpus.py` + `benchmarks/corpora/tfop_disposition_corpus_v1.json` |
 | 4 | Cross-sektör tutarlılığı | Tek sektör başarısı yetmez; aynı aday sektörler arası periyot/derinlik tutarlılığı | 🟧 | çok sektör stitching + `source_sectors` |
 | 5 | Parametre geri kazanımı | Enjekte edilen P, Rp/R*, T0, derinlik ile geri kazanılan değerlerin dağılımı (bias, scatter) | 🟧 | `RecoveryTrial.period_error_fraction` + modeling |
@@ -39,6 +39,19 @@ sadece ground-truth JSON'unun varlığı performans kanıtı değildir.
 Etiketli false-positive/quiet-star corpus'u yapılandırılmamışsa rapor
 `false_positive_rejection: null` ve `not_evaluated` durumu taşır; bu değer
 sıfır false-positive iddiası değildir.
+
+**Ground truth genişletilmesi (59 hedef).** Özgün 9 el-küratörlü dev gezegenin
+yanına, TESS FOP WG disposition'larından (KP/CP; bağımsız etiket) 50 hedef
+deterministik olarak eklendi: yıldız başına tek giriş (en kısa periyotlu
+gezegen), BLS aralığı (0.3–30 gün), derinliğe göre kolay/orta/zor
+sınıflandırmasında round-robin dengesi (20/19/11). Her kayıt `reference`
+alanında TFOP disposition'unu ve TOI kimliğini taşır. Üretim komutu:
+
+```bash
+python scripts/validation/expand_verified_targets.py
+```
+
+Sözleşme testi: `tests/test_verified_targets_corpus.py`.
 
 **Regresyon protokolü.** Bilinen gezegen benchmark'ı her release'ten önce
 ve en az çeyreklik aralıklarla çalıştırılır; sonuç `benchmarks/results/`

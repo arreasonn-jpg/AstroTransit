@@ -5,7 +5,7 @@ results. `PASS` requires an immutable report and a reproducible command.
 
 | Gate | Required evidence | Status |
 |---|---|---|
-| Known planets | >=50 labelled targets, expected/recovered table | PENDING DATA |
+| Known planets | >=50 labelled targets, expected/recovered table | GROUND TRUTH READY (59 labelled targets, 9 legacy + 50 TFOP KP/CP, `benchmarks/verified_targets.json`) / RUN PENDING |
 | Injection recovery | period/depth/duration grid on real noise | IMPLEMENTED / PENDING RUN |
 | False positives | >=100 labelled FP and quiet controls | LABELLED FP/PLANET INPUT CORPUS READY (1817 FP + 1191 planet, TESS FOP WG dispositions, `benchmarks/corpora/tfop_disposition_corpus_v1.json`) / QUIET CONTROLS PENDING DATA / RUN PENDING |
 | Parameter recovery | bias, scatter, RMSE and coverage | IMPLEMENTED / PENDING RUN |

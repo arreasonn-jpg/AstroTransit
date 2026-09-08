@@ -230,5 +230,505 @@
       69,
       96
     ]
+  },
+  {
+    "tic_id": "1003831",
+    "name": "564.01",
+    "sector": null,
+    "period": 1.6511456,
+    "rp_rearth": 7.751406,
+    "difficulty": "easy",
+    "available_sectors": [],
+    "reference": "TESS FOP Working Group disposition 'CP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08); TOI 564.01"
+  },
+  {
+    "tic_id": "4070275",
+    "name": "4364.01",
+    "sector": null,
+    "period": 5.4240691,
+    "rp_rearth": 2.093707,
+    "difficulty": "medium",
+    "available_sectors": [],
+    "reference": "TESS FOP Working Group disposition 'CP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08); TOI 4364.01"
+  },
+  {
+    "tic_id": "55315929",
+    "name": "5556.01",
+    "sector": null,
+    "period": 0.7195712,
+    "rp_rearth": 1.610842,
+    "difficulty": "hard",
+    "available_sectors": [],
+    "reference": "TESS FOP Working Group disposition 'KP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08); TOI 5556.01"
+  },
+  {
+    "tic_id": "1129033",
+    "name": "398.01",
+    "sector": null,
+    "period": 1.3600283,
+    "rp_rearth": 13.091181,
+    "difficulty": "easy",
+    "available_sectors": [],
+    "reference": "TESS FOP Working Group disposition 'KP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08); TOI 398.01"
+  },
+  {
+    "tic_id": "4610830",
+    "name": "6833.01",
+    "sector": null,
+    "period": 8.2616616,
+    "rp_rearth": 3.30997,
+    "difficulty": "medium",
+    "available_sectors": [],
+    "reference": "TESS FOP Working Group disposition 'KP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08); TOI 6833.01"
+  },
+  {
+    "tic_id": "69747919",
+    "name": "1407.01",
+    "sector": null,
+    "period": 9.9783319,
+    "rp_rearth": 2.051533,
+    "difficulty": "hard",
+    "available_sectors": [],
+    "reference": "TESS FOP Working Group disposition 'KP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08); TOI 1407.01"
+  },
+  {
+    "tic_id": "1333933",
+    "name": "7719.01",
+    "sector": null,
+    "period": 3.2757945,
+    "rp_rearth": 10.434858,
+    "difficulty": "easy",
+    "available_sectors": [],
+    "reference": "TESS FOP Working Group disposition 'KP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08); TOI 7719.01"
+  },
+  {
+    "tic_id": "4646810",
+    "name": "461.01",
+    "sector": null,
+    "period": 10.9245478,
+    "rp_rearth": 1.901502,
+    "difficulty": "medium",
+    "available_sectors": [],
+    "reference": "TESS FOP Working Group disposition 'CP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08); TOI 461.01"
+  },
+  {
+    "tic_id": "100990000",
+    "name": "411.02",
+    "sector": null,
+    "period": 4.0403007,
+    "rp_rearth": 1.277885,
+    "difficulty": "hard",
+    "available_sectors": [],
+    "reference": "TESS FOP Working Group disposition 'CP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08); TOI 411.02"
+  },
+  {
+    "tic_id": "1528696",
+    "name": "448.01",
+    "sector": null,
+    "period": 0.8820624,
+    "rp_rearth": 8.388894,
+    "difficulty": "easy",
+    "available_sectors": [],
+    "reference": "TESS FOP Working Group disposition 'CP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08); TOI 448.01"
+  },
+  {
+    "tic_id": "4897275",
+    "name": "1774.01",
+    "sector": null,
+    "period": 16.7100422,
+    "rp_rearth": 2.739662,
+    "difficulty": "medium",
+    "available_sectors": [],
+    "reference": "TESS FOP Working Group disposition 'CP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08); TOI 1774.01"
+  },
+  {
+    "tic_id": "158241252",
+    "name": "4443.01",
+    "sector": null,
+    "period": 1.8498567,
+    "rp_rearth": 1.719326,
+    "difficulty": "hard",
+    "available_sectors": [],
+    "reference": "TESS FOP Working Group disposition 'CP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08); TOI 4443.01"
+  },
+  {
+    "tic_id": "4616072",
+    "name": "466.01",
+    "sector": null,
+    "period": 4.1876154,
+    "rp_rearth": 13.900237,
+    "difficulty": "easy",
+    "available_sectors": [],
+    "reference": "TESS FOP Working Group disposition 'KP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08); TOI 466.01"
+  },
+  {
+    "tic_id": "4918918",
+    "name": "5747.01",
+    "sector": null,
+    "period": 0.5734766,
+    "rp_rearth": 1.496953,
+    "difficulty": "medium",
+    "available_sectors": [],
+    "reference": "TESS FOP Working Group disposition 'CP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08); TOI 5747.01"
+  },
+  {
+    "tic_id": "178155732",
+    "name": "396.02",
+    "sector": null,
+    "period": 3.58529,
+    "rp_rearth": 1.77141,
+    "difficulty": "hard",
+    "available_sectors": [],
+    "reference": "TESS FOP Working Group disposition 'CP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08); TOI 396.02"
+  },
+  {
+    "tic_id": "5882269",
+    "name": "5083.01",
+    "sector": null,
+    "period": 4.7948642,
+    "rp_rearth": 3.3985,
+    "difficulty": "easy",
+    "available_sectors": [],
+    "reference": "TESS FOP Working Group disposition 'KP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08); TOI 5083.01"
+  },
+  {
+    "tic_id": "6892385",
+    "name": "5164.01",
+    "sector": null,
+    "period": 8.2669589,
+    "rp_rearth": 3.44807,
+    "difficulty": "medium",
+    "available_sectors": [],
+    "reference": "TESS FOP Working Group disposition 'KP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08); TOI 5164.01"
+  },
+  {
+    "tic_id": "188768068",
+    "name": "1462.01",
+    "sector": null,
+    "period": 2.1779407,
+    "rp_rearth": 1.28228,
+    "difficulty": "hard",
+    "available_sectors": [],
+    "reference": "TESS FOP Working Group disposition 'CP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08); TOI 1462.01"
+  },
+  {
+    "tic_id": "6663331",
+    "name": "1068.01",
+    "sector": null,
+    "period": 3.180362,
+    "rp_rearth": 13.446487,
+    "difficulty": "easy",
+    "available_sectors": [],
+    "reference": "TESS FOP Working Group disposition 'KP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08); TOI 1068.01"
+  },
+  {
+    "tic_id": "8260536",
+    "name": "5398.02",
+    "sector": null,
+    "period": 4.7728997,
+    "rp_rearth": 3.30213,
+    "difficulty": "medium",
+    "available_sectors": [],
+    "reference": "TESS FOP Working Group disposition 'CP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08); TOI 5398.02"
+  },
+  {
+    "tic_id": "202426247",
+    "name": "1860.01",
+    "sector": null,
+    "period": 1.0662082,
+    "rp_rearth": 1.0883,
+    "difficulty": "hard",
+    "available_sectors": [],
+    "reference": "TESS FOP Working Group disposition 'CP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08); TOI 1860.01"
+  },
+  {
+    "tic_id": "6893917",
+    "name": "5074.01",
+    "sector": null,
+    "period": 3.0801795,
+    "rp_rearth": 17.0613,
+    "difficulty": "easy",
+    "available_sectors": [],
+    "reference": "TESS FOP Working Group disposition 'KP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08); TOI 5074.01"
+  },
+  {
+    "tic_id": "8967242",
+    "name": "1799.01",
+    "sector": null,
+    "period": 7.093853,
+    "rp_rearth": 1.627715,
+    "difficulty": "medium",
+    "available_sectors": [],
+    "reference": "TESS FOP Working Group disposition 'CP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08); TOI 1799.01"
+  },
+  {
+    "tic_id": "260708537",
+    "name": "486.01",
+    "sector": null,
+    "period": 1.7446984,
+    "rp_rearth": 0.562851,
+    "difficulty": "hard",
+    "available_sectors": [],
+    "reference": "TESS FOP Working Group disposition 'CP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08); TOI 486.01"
+  },
+  {
+    "tic_id": "7020254",
+    "name": "4316.01",
+    "sector": null,
+    "period": 20.2730282,
+    "rp_rearth": 10.4386,
+    "difficulty": "easy",
+    "available_sectors": [],
+    "reference": "TESS FOP Working Group disposition 'KP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08); TOI 4316.01"
+  },
+  {
+    "tic_id": "9006668",
+    "name": "238.01",
+    "sector": null,
+    "period": 1.2730965,
+    "rp_rearth": 1.57925,
+    "difficulty": "medium",
+    "available_sectors": [],
+    "reference": "TESS FOP Working Group disposition 'CP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08); TOI 238.01"
+  },
+  {
+    "tic_id": "364186197",
+    "name": "1408.02",
+    "sector": null,
+    "period": 2.2222094,
+    "rp_rearth": 1.39527,
+    "difficulty": "hard",
+    "available_sectors": [],
+    "reference": "TESS FOP Working Group disposition 'CP/KP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08); TOI 1408.02"
+  },
+  {
+    "tic_id": "7059054",
+    "name": "5072.01",
+    "sector": null,
+    "period": 5.185768,
+    "rp_rearth": 7.50399,
+    "difficulty": "easy",
+    "available_sectors": [],
+    "reference": "TESS FOP Working Group disposition 'KP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08); TOI 5072.01"
+  },
+  {
+    "tic_id": "9989136",
+    "name": "5734.01",
+    "sector": null,
+    "period": 6.1841688,
+    "rp_rearth": 2.4076,
+    "difficulty": "medium",
+    "available_sectors": [],
+    "reference": "TESS FOP Working Group disposition 'CP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08); TOI 5734.01"
+  },
+  {
+    "tic_id": "407966340",
+    "name": "554.02",
+    "sector": null,
+    "period": 3.0440441,
+    "rp_rearth": 1.333743,
+    "difficulty": "hard",
+    "available_sectors": [],
+    "reference": "TESS FOP Working Group disposition 'CP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08); TOI 554.02"
+  },
+  {
+    "tic_id": "7088246",
+    "name": "1065.01",
+    "sector": null,
+    "period": 2.1605155,
+    "rp_rearth": 12.549193,
+    "difficulty": "easy",
+    "available_sectors": [],
+    "reference": "TESS FOP Working Group disposition 'KP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08); TOI 1065.01"
+  },
+  {
+    "tic_id": "10837041",
+    "name": "2411.01",
+    "sector": null,
+    "period": 0.7827075,
+    "rp_rearth": 1.748909,
+    "difficulty": "medium",
+    "available_sectors": [],
+    "reference": "TESS FOP Working Group disposition 'CP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08); TOI 2411.01"
+  },
+  {
+    "tic_id": "425997655",
+    "name": "174.04",
+    "sector": null,
+    "period": 3.9766833,
+    "rp_rearth": 0.757588,
+    "difficulty": "hard",
+    "available_sectors": [],
+    "reference": "TESS FOP Working Group disposition 'CP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08); TOI 174.04"
+  },
+  {
+    "tic_id": "7548817",
+    "name": "2583.01",
+    "sector": null,
+    "period": 4.52074,
+    "rp_rearth": 13.7321,
+    "difficulty": "easy",
+    "available_sectors": [],
+    "reference": "TESS FOP Working Group disposition 'CP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08); TOI 2583.01"
+  },
+  {
+    "tic_id": "12421862",
+    "name": "198.01",
+    "sector": null,
+    "period": 10.2152025,
+    "rp_rearth": 1.400095,
+    "difficulty": "medium",
+    "available_sectors": [],
+    "reference": "TESS FOP Working Group disposition 'CP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08); TOI 198.01"
+  },
+  {
+    "tic_id": "8348911",
+    "name": "2266.01",
+    "sector": null,
+    "period": 2.326343,
+    "rp_rearth": 1.976319,
+    "difficulty": "easy",
+    "available_sectors": [],
+    "reference": "TESS FOP Working Group disposition 'CP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08); TOI 2266.01"
+  },
+  {
+    "tic_id": "14336130",
+    "name": "1716.01",
+    "sector": null,
+    "period": 8.082354,
+    "rp_rearth": 2.72432,
+    "difficulty": "medium",
+    "available_sectors": [],
+    "reference": "TESS FOP Working Group disposition 'CP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08); TOI 1716.01"
+  },
+  {
+    "tic_id": "8400842",
+    "name": "1676.01",
+    "sector": null,
+    "period": 3.1915257,
+    "rp_rearth": 16.4091,
+    "difficulty": "easy",
+    "available_sectors": [],
+    "reference": "TESS FOP Working Group disposition 'KP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08); TOI 1676.01"
+  },
+  {
+    "tic_id": "14570099",
+    "name": "5558.01",
+    "sector": null,
+    "period": 26.1944549,
+    "rp_rearth": 2.994594,
+    "difficulty": "medium",
+    "available_sectors": [],
+    "reference": "TESS FOP Working Group disposition 'KP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08); TOI 5558.01"
+  },
+  {
+    "tic_id": "8599009",
+    "name": "4463.01",
+    "sector": null,
+    "period": 2.88069,
+    "rp_rearth": 22.4297,
+    "difficulty": "easy",
+    "available_sectors": [],
+    "reference": "TESS FOP Working Group disposition 'CP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08); TOI 4463.01"
+  },
+  {
+    "tic_id": "17307715",
+    "name": "5562.01",
+    "sector": null,
+    "period": 13.8532745,
+    "rp_rearth": 2.209884,
+    "difficulty": "medium",
+    "available_sectors": [],
+    "reference": "TESS FOP Working Group disposition 'KP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08); TOI 5562.01"
+  },
+  {
+    "tic_id": "8767448",
+    "name": "1767.01",
+    "sector": null,
+    "period": 4.3532339,
+    "rp_rearth": 16.2509,
+    "difficulty": "easy",
+    "available_sectors": [],
+    "reference": "TESS FOP Working Group disposition 'KP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08); TOI 1767.01"
+  },
+  {
+    "tic_id": "18310799",
+    "name": "5087.01",
+    "sector": null,
+    "period": 17.3070631,
+    "rp_rearth": 3.7275,
+    "difficulty": "medium",
+    "available_sectors": [],
+    "reference": "TESS FOP Working Group disposition 'KP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08); TOI 5087.01"
+  },
+  {
+    "tic_id": "9155187",
+    "name": "5373.01",
+    "sector": null,
+    "period": 4.1878375,
+    "rp_rearth": 11.769507,
+    "difficulty": "easy",
+    "available_sectors": [],
+    "reference": "TESS FOP Working Group disposition 'KP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08); TOI 5373.01"
+  },
+  {
+    "tic_id": "18318288",
+    "name": "6086.01",
+    "sector": null,
+    "period": 1.3888584,
+    "rp_rearth": 0.965062,
+    "difficulty": "medium",
+    "available_sectors": [],
+    "reference": "TESS FOP Working Group disposition 'CP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08); TOI 6086.01"
+  },
+  {
+    "tic_id": "9348006",
+    "name": "1775.01",
+    "sector": null,
+    "period": 10.2405483,
+    "rp_rearth": 8.69623,
+    "difficulty": "easy",
+    "available_sectors": [],
+    "reference": "TESS FOP Working Group disposition 'CP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08); TOI 1775.01"
+  },
+  {
+    "tic_id": "21535395",
+    "name": "1776.01",
+    "sector": null,
+    "period": 2.8009915,
+    "rp_rearth": 1.403391,
+    "difficulty": "medium",
+    "available_sectors": [],
+    "reference": "TESS FOP Working Group disposition 'CP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08); TOI 1776.01"
+  },
+  {
+    "tic_id": "9385460",
+    "name": "6546.01",
+    "sector": null,
+    "period": 3.3779614,
+    "rp_rearth": 14.332675,
+    "difficulty": "easy",
+    "available_sectors": [],
+    "reference": "TESS FOP Working Group disposition 'KP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08); TOI 6546.01"
+  },
+  {
+    "tic_id": "21832928",
+    "name": "2128.01",
+    "sector": null,
+    "period": 16.3413889,
+    "rp_rearth": 2.629079,
+    "difficulty": "medium",
+    "available_sectors": [],
+    "reference": "TESS FOP Working Group disposition 'CP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08); TOI 2128.01"
+  },
+  {
+    "tic_id": "9443323",
+    "name": "6052.01",
+    "sector": null,
+    "period": 4.01357,
+    "rp_rearth": 14.954479,
+    "difficulty": "easy",
+    "available_sectors": [],
+    "reference": "TESS FOP Working Group disposition 'KP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08); TOI 6052.01"
   }
 ]
