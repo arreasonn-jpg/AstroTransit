@@ -91,3 +91,12 @@ astrotransit release-gate --corpus benchmarks/labelled_corpus.json \
 A non-zero exit code is expected until the real corpora and immutable reports
 meet the minimum thresholds. `PENDING_DATA` and `PENDING_RUN` are intentionally
 not converted into zero-valued scientific metrics.
+
+Evaluate saved predictions without changing the corpus split:
+
+```bash
+astrotransit evaluate-corpus corpus.json predictions.json \
+  --split blind_test --output outputs/validation/blind.json
+astrotransit evaluate-fpp fpp_predictions.json \
+  --output outputs/validation/fpp_holdout.json
+```

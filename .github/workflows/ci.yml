@@ -97,6 +97,8 @@ jobs:
           python -m compileall -q astrotransit cli dashboard
           python -m cli.main version
           python -m cli.main release-gate --help
+          python -m cli.main evaluate-corpus --help
+          python -m cli.main evaluate-fpp --help
 
   build:
     runs-on: ubuntu-latest

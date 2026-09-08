@@ -626,6 +626,56 @@ def release_gate(
         raise typer.Exit(1)
 
 
+@app.command("evaluate-corpus")
+def evaluate_corpus_command(
+    corpus: str = typer.Argument(..., help="Labelled corpus JSON"),
+    predictions: str = typer.Argument(..., help="JSON: [{target_id, detected}]"),
+    split: str = typer.Option("blind_test", "--split"),
+    seed: int = typer.Option(0, "--seed"),
+    output: Optional[str] = typer.Option(None, "--output", "-o"),
+):
+    """Evaluate saved detector predictions on one deterministic corpus split."""
+    from astrotransit.validation.corpus import load_corpus
+    from astrotransit.validation.corpus_evaluation import evaluate_corpus
+
+    cases = load_corpus(corpus)
+    rows = json.loads(Path(predictions).read_text(encoding="utf-8"))
+    if isinstance(rows, dict):
+        rows = rows.get("predictions", rows.get("results", []))
+    if not isinstance(rows, list):
+        raise typer.BadParameter("predictions JSON'u liste olmalıdır")
+    prediction_map = {str(row["target_id"]): bool(row["detected"]) for row in rows}
+    report = evaluate_corpus(cases, lambda case: prediction_map[case.target_id], split=split, seed=seed)
+    rendered = json.dumps(report.to_dict(), indent=2, ensure_ascii=False)
+    if output:
+        Path(output).parent.mkdir(parents=True, exist_ok=True)
+        Path(output).write_text(rendered + "\\n", encoding="utf-8")
+    console.print(rendered)
+    if report.errors or report.n_evaluated != report.n_cases:
+        raise typer.Exit(1)
+
+
+@app.command("evaluate-fpp")
+def evaluate_fpp_command(
+    predictions: str = typer.Argument(..., help="JSON: [{target_id, is_false_positive, fpp}]"),
+    seed: int = typer.Option(0, "--seed"),
+    threshold: float = typer.Option(.5, "--threshold"),
+    output: Optional[str] = typer.Option(None, "--output", "-o"),
+):
+    """Evaluate FPP proxy metrics separately on deterministic holdout splits."""
+    from astrotransit.validation.fpp_benchmark import FPPBenchmarkCase, evaluate_fpp_holdout
+
+    rows = json.loads(Path(predictions).read_text(encoding="utf-8"))
+    rows = rows.get("cases", rows.get("predictions", [])) if isinstance(rows, dict) else rows
+    cases = [FPPBenchmarkCase(str(row["target_id"]), bool(row["is_false_positive"]), float(row["fpp"])) for row in rows]
+    reports = {name: report.to_dict() for name, report in evaluate_fpp_holdout(cases, threshold=threshold, seed=seed).items()}
+    rendered = json.dumps(reports, indent=2, ensure_ascii=False)
+    if output:
+        Path(output).parent.mkdir(parents=True, exist_ok=True)
+        Path(output).write_text(rendered + "\\n", encoding="utf-8")
+    console.print(rendered)
+
+
 @app.command()
 def version():
 
