@@ -10,7 +10,7 @@ Durum sembolü: ✅ ölçüm yapıldı, sonuç donduruldu | 🟩 mevcut altyapı
 |---|------|-------|-------|------|
 | 1 | Injection-recovery | Enjekte edilmiş transitlerin (P, Rp/R*, derinlik, gürültü gridi) kaçta kaçı geri kazanılıyor; `completeness(P, Rp/Rs, duration, noise)` haritası | 🟧 | `astrotransit/validation/injection_recovery.py` |
 | 2 | Bilinen gezegen geri kazanımı | TESS'ten bilinen onaylı gezegenler (örn. WASP-18b, WASP-19b) pipeline'dan geçirilir; beklenen/geri kazanılan periyot ve yarıçap hedef bazında raporlanır | 🟧 | `astrotransit benchmark` + `benchmarks/verified_targets.json` + `benchmark_report.py` |
-| 3 | Bilinen false positive'ler | Bilinen EB/sistematiği olayların ne oranında elendiği | 🟧 | `corpus.py`, `build_labelled_corpus.py` + etiketli FP seti |
+| 3 | Bilinen false positive'ler | Bilinen EB/sistematiği olayların ne oranında elendiği | 🟧 (etiketli **girdi** corpus hazır: 1817 FP + 1191 planet, TFOP disposition; quiet controls PENDING DATA; ölçüm PENDING RUN) | `corpus.py`, `build_labelled_corpus.py` + `benchmarks/corpora/tfop_disposition_corpus_v1.json` |
 | 4 | Cross-sektör tutarlılığı | Tek sektör başarısı yetmez; aynı aday sektörler arası periyot/derinlik tutarlılığı | 🟧 | çok sektör stitching + `source_sectors` |
 | 5 | Parametre geri kazanımı | Enjekte edilen P, Rp/R*, T0, derinlik ile geri kazanılan değerlerin dağılımı (bias, scatter) | 🟧 | `RecoveryTrial.period_error_fraction` + modeling |
 | 6 | FPP kalibrasyonu | `fpp ≈ 0.01` denilen adayların gerçekten ~%1 false-positive çıkması; Brier skor + precision/recall e eğrisi | 🟧 | `astrotransit/validation/fpp_benchmark.py` |
@@ -40,7 +40,57 @@ Etiketli false-positive/quiet-star corpus'u yapılandırılmamışsa rapor
 `false_positive_rejection: null` ve `not_evaluated` durumu taşır; bu değer
 sıfır false-positive iddiası değildir.
 
-### 3. FPP kalibrasyonu
+**Regresyon protokolü.** Bilinen gezegen benchmark'ı her release'ten önce
+ve en az çeyreklik aralıklarla çalıştırılır; sonuç `benchmarks/results/`
+altına dondurulur ve bu belgenin "Ölçülen ve dondurulan sonuçlar" tablosuna
+satır olarak eklenir. Referans komut (MAST erişimi gereken ortamda):
+
+```bash
+astrotransit benchmark \
+  --output benchmarks/results/known_planets_regression.json \
+  --csv-output benchmarks/results/known_planets_regression.csv
+```
+
+Kural: taze, provenance'lı (git commit + config hash) bir regresyon raporu
+olmadan "pipeline bilinen gezegenleri hâlâ doğru tespit ediyor" iddiası
+yapılamaz; `verified_targets.json`'un kendisi ground-truth'tür, performans
+kanıtı değildir.
+
+### 3. Bilinen false positive'ler
+
+Etiketli girdi corpus TESS FOP Working Group disposition'larından
+(bağımsız program etiketi; AstroTransit çıktısı değil) küratörlendi:
+
+```bash
+python scripts/validation/curate_tfop_false_positive_corpus.py
+python scripts/validation/build_labelled_corpus.py \
+  benchmarks/corpora/tfop_disposition_corpus_v1.csv \
+  --output benchmarks/corpora/tfop_disposition_corpus_v1.json
+```
+
+Mevcut durum: 1817 `false_positive` (FP/FA/APC) + 1191 `planet`
+(KP/CP) kaydı, her kayıt disposition referansı taşır; disposition'ları
+çelişen 6 hedef bilinçli olarak dışarıda bırakıldı. Sınırlar:
+
+- Bu bir **girdi** corpus'udur; pipeline bu hedefler üzerinde çalıştırılmadı,
+  dolayısıyla FPR/specificity ölçümü henüz yok.
+- `quiet_star` kontrolleri aday kataloğundan türetilemez; bağımsız bir
+  sessiz-yıldız listesi (TOI geçmişi olmayan TIC'ler + occurrence/üst sınır
+  argümanı) gerekir ve PENDING DATA'dır.
+- Özet, `corpus_summary()` ile `has_negative_controls: false` durumunu açıkça
+  taşır; bu, sıfır false-positive iddiası değildir.
+
+Ölçüm adımı (MAST erişimi gereken ortamda): önce pipeline corpus
+hedeflerinde çalıştırılıp tespit sonuçları `predictions.json` olarak
+dışa aktarılır (`[{"target_id": "...", "detected": true/false}]`); sonra:
+
+```bash
+astrotransit evaluate-corpus \
+  benchmarks/corpora/tfop_disposition_corpus_v1.json predictions.json \
+  --output benchmarks/results/fp_corpus_evaluation_v1.json
+```
+
+### 6. FPP kalibrasyonu
 
 `FPPBenchmarkCase(target_id, is_false_positive, fpp)` etiketli setiyle
 `Brier score`, `false_positive_recall`, `planet_precision` ve kafa karıştırma
