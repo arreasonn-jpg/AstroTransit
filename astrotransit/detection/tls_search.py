@@ -325,7 +325,7 @@ class TLSSearch:
 
         # ── TLS modelini oluştur ──
         tls_kwargs = {
-            "use_threads": 1,
+            "use_threads": 4,
         }
 
         if self.use_stellar_params:

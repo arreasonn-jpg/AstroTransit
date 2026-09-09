@@ -225,16 +225,18 @@ class ParquetWriter:
             self._writer.close()
         elif self.n_written == 0 and not self._existing_rows:
             # Boş yazıcıda bile geçerli bir dosya üretmek daha öngörülebilir.
-            try:
-                import pyarrow as pa
-                import pyarrow.parquet as pq
-                pq.write_table(
-                    pa.Table.from_pylist([], schema=self.schema),
-                    self.path,
-                    compression=self.compression,
-                )
-            except ImportError as exc:  # pragma: no cover
-                raise ImportError("Parquet çıktısı için 'pyarrow' gereklidir.") from exc
+            # Ancak dosya diskte zaten varsa ve doluysa üzerine boş tablo yazıp ezme!
+            if not self.path.exists() or self.path.stat().st_size == 0:
+                try:
+                    import pyarrow as pa
+                    import pyarrow.parquet as pq
+                    pq.write_table(
+                        pa.Table.from_pylist([], schema=self.schema),
+                        self.path,
+                        compression=self.compression,
+                    )
+                except ImportError as exc:  # pragma: no cover
+                    raise ImportError("Parquet çıktısı için 'pyarrow' gereklidir.") from exc
         self._closed = True
         logger.info(f"Parquet yazımı tamamlandı: {self.path} ({self.n_written} kayıt)")
 

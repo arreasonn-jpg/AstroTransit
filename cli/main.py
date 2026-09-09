@@ -530,8 +530,15 @@ def benchmark(
         if report is not None:
             report_json = Path(output or orchestrator.settings.benchmark.report_json)
             report_csv = Path(csv_output or orchestrator.settings.benchmark.report_csv)
+            from dataclasses import replace
             from astrotransit.validation.provenance import build_manifest
-            report.provenance = build_manifest(config=orchestrator.settings.model_dump())
+
+            report = replace(
+                report,
+                provenance=build_manifest(
+                    config=orchestrator.settings.model_dump()
+                ),
+            )
             from astrotransit.validation.artifacts import write_artifact
             write_artifact(report.to_dict(), report_json)
             report.write_csv(report_csv)

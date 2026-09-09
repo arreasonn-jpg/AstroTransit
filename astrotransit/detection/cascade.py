@@ -294,11 +294,32 @@ class CascadeDetector:
         if not passed_peaks:
             passed_peaks = [bls_result.best]
 
-        # En fazla 3 aday dene
-        candidates_to_try = passed_peaks[:1]  # hizli tarama modu: sadece en iyi BLS adayi
+        # Çoklu aday listesi: En iyi 2 BLS adayı
+        candidates_to_try = list(passed_peaks[:2])
+
+        # En güçlü adayın en kritik 2 harmoniğini (P/2 ve 2P) ekle (Hızlı De-aliasing)
+        top_p = bls_peak.period
+        obs_span = float(detrended.time[-1] - detrended.time[0]) if len(detrended.time) > 1 else 100.0
+        harmonic_factors = [0.5, 2.0]
+
+        existing_periods = [c.period for c in candidates_to_try]
+        for hf in harmonic_factors:
+            h_p = top_p * hf
+            if 0.2 <= h_p <= (obs_span / 2.0):
+                # Eğer bu periyot zaten listede varsa tekrar arama yapma
+                if not any(abs(h_p - ep) / ep < 0.05 for ep in existing_periods):
+                    from dataclasses import replace
+                    h_peak = replace(
+                        bls_peak,
+                        period=h_p,
+                        period_err=bls_peak.period_err * hf,
+                        duration=max(0.01, bls_peak.duration * (hf ** 0.33)),
+                    )
+                    candidates_to_try.append(h_peak)
+                    existing_periods.append(h_p)
 
         log.append(
-            f"BLS: {len(candidates_to_try)} aday TLS ile denenecek (hizli mod)"
+            f"BLS: {len(candidates_to_try)} aday/harmonik TLS ile denenecek (de-aliasing modu)"
         )
 
         best_tls_result = None
@@ -324,7 +345,8 @@ class CascadeDetector:
 
             # Bu adayın kalite skoru: SDE * SNR
             if tls_try.passed_threshold:
-                score = tls_try.sde * np.sqrt(max(1.0, tls_try.snr))
+                # Fiziksel transit model uyumunu (glitch/noise kaynaklı SNR şişmelerine karşı) korumak için doğrudan TLS SDE değerini temel skor kabul et
+                score = tls_try.sde
 
                 # Periyot BLS ile uyumlu mu?
                 period_ok, _ = self._check_period_agreement(

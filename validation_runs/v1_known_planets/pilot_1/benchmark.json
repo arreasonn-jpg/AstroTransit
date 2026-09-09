@@ -1,0 +1,75 @@
+{
+  "metadata": {
+    "report_type": "known_target_benchmark_performance",
+    "pipeline_version": "0.3.0",
+    "generated_at_utc": "2026-09-08T18:40:54.643023+00:00",
+    "period_tolerance_fraction": 0.02,
+    "radius_tolerance_fraction": 0.2
+  },
+  "metrics": {
+    "n_targets": 1,
+    "n_detected": 1,
+    "detection_recall": 1.0,
+    "n_correct": 1,
+    "correct_recovery_rate": 1.0,
+    "n_period_recovered": 1,
+    "period_recovery_rate": 1.0,
+    "period_recovery_error_mean_days": 2.2e-07,
+    "period_recovery_error_median_days": 2.2e-07,
+    "period_recovery_error_mean_fraction": 2.3e-07,
+    "period_recovery_error_median_fraction": 2.3e-07,
+    "n_radius_recovered": 1,
+    "radius_recovery_rate": 1.0,
+    "radius_recovery_error_mean_rearth": 1.3585,
+    "radius_recovery_error_median_rearth": 1.3585,
+    "radius_recovery_error_mean_fraction": 0.1013806,
+    "radius_recovery_error_median_fraction": 0.1013806,
+    "n_sector_consistency_evaluated": 1,
+    "sector_consistency_rate": 1.0,
+    "false_positive_rejection": null,
+    "false_positive_rejection_status": "not_evaluated_no_labeled_false_positive_set",
+    "n_false_positive_targets": 0
+  },
+  "targets": [
+    {
+      "target_id": "TIC 100100827",
+      "name": "WASP-18b",
+      "difficulty": "easy",
+      "expected_period_days": 0.9414518,
+      "recovered_period_days": 0.9414520190960539,
+      "expected_radius_rearth": 13.4,
+      "recovered_radius_rearth": 14.7585,
+      "detected": true,
+      "period_recovered": true,
+      "radius_recovered": true,
+      "correct": true,
+      "period_error_days": 2.1909605396608356e-07,
+      "period_error_fraction": 2.3272147757971633e-07,
+      "radius_error_rearth": 1.3584999999999994,
+      "radius_error_fraction": 0.10138059701492533,
+      "sector_consistent": true,
+      "n_sectors_evaluated": 9,
+      "notes": []
+    }
+  ],
+  "limitations": [
+    "Known-target recovery is not injection-recovery completeness.",
+    "False-positive rejection is not measured because no labeled FP set was supplied."
+  ],
+  "provenance": {
+    "target_id": null,
+    "sector": null,
+    "data_product": null,
+    "cadence": null,
+    "pipeline_version": "",
+    "git_commit": "32f50476d1e0d22bbf8c857bfb532a8eea8be890",
+    "config_hash": "4beab0ffa9beee4aa99f9fd4746e0d6ede1df06174ca7b7678e480637ae2a90e",
+    "schema_version": null,
+    "model_version": null,
+    "random_seed": null,
+    "run_timestamp_utc": "2026-09-08T18:40:54.930345Z",
+    "host_platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.39",
+    "input_hash": null,
+    "output_hash": "08ecb7f66637c2dd0fa8e632636ffc24fe0cb187c2a1543af09d23c75a6b7ed6"
+  }
+}

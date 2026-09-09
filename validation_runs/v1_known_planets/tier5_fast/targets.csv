@@ -1,0 +1,6 @@
+target_id,name,difficulty,expected_period_days,recovered_period_days,expected_radius_rearth,recovered_radius_rearth,detected,period_recovered,radius_recovered,correct,period_error_days,period_error_fraction,radius_error_rearth,radius_error_fraction,sector_consistent,n_sectors_evaluated,notes
+TIC 100100827,WASP-18b,easy,0.9414518,0.9414520063525735,13.4,14.7585,True,True,True,True,2.0635257358403436e-07,2.1918548945791423e-07,1.3584999999999994,0.10138059701492533,True,9,
+TIC 25155310,WASP-126b,easy,3.288776,3.288778101517489,10.4,10.3325,True,True,True,True,2.1015174889171817e-06,6.389968453057252e-07,0.06750000000000078,0.00649038461538469,False,42,
+TIC 38846515,TOI-125b,medium,4.6543,5.698837375749356,2.9,15.9996,True,False,False,False,1.0445373757493561,0.2244241616890523,13.099599999999999,4.517103448275861,False,43,period_not_recovered; radius_not_recovered
+TIC 279741379,WASP-100b,medium,2.849382,2.5096424097173937,15.4,0.4211,True,False,False,False,0.33973959028260614,0.11923272845922595,14.978900000000001,0.9726558441558442,False,6,period_not_recovered; radius_not_recovered
+TIC 281541555,HATS-24b,medium,1.348497,4.741781066755791,15.6,10.0809,True,False,False,False,3.3932840667557906,2.516345284235553,5.5191,0.35378846153846155,True,12,period_not_recovered; radius_not_recovered
