@@ -93,23 +93,23 @@ jobs:
         run: |
           SHARD="$CAMPAIGN_ROOT/shards/TIC-$TIC_ID"
           WORK="/tmp/astrotransit_known_planets_10_v1/$TIC_ID"
-          rm -rf "$SHARD"
-          mkdir -p "$SHARD/environment" "$SHARD/input" "$SHARD/results"
-          cp "$WORK/target.json" "$SHARD/input/target.json"
           python scripts/maintenance/make_environment_manifest.py \
             --config "$WORK/config.toml" \
             --output "$WORK/env_manifest.json"
-          cp "$WORK/env_manifest.json" "$SHARD/environment/env_manifest.json"
           python - <<'PY'
           import json
           import os
           from pathlib import Path
           tic_id = os.environ["TIC_ID"]
-          path = Path(os.environ["CAMPAIGN_ROOT"]) / "shards" / f"TIC-{tic_id}" / "environment/env_manifest.json"
+          path = Path(f"/tmp/astrotransit_known_planets_10_v1/{tic_id}/env_manifest.json")
           manifest = json.loads(path.read_text(encoding="utf-8"))
           if manifest.get("git", {}).get("dirty") is not False:
               raise SystemExit(f"Shard {tic_id} environment is not clean")
           PY
+          rm -rf "$SHARD"
+          mkdir -p "$SHARD/environment" "$SHARD/input" "$SHARD/results"
+          cp "$WORK/target.json" "$SHARD/input/target.json"
+          cp "$WORK/env_manifest.json" "$SHARD/environment/env_manifest.json"
 
       - name: Run benchmark shard
         env:
