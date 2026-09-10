@@ -1,0 +1,44 @@
+{
+  "target_id": null,
+  "sector": null,
+  "data_product": null,
+  "cadence": null,
+  "pipeline_version": "0.3.0",
+  "git_commit": "5987f798fdd36ef97eb61c4494482a6c2062a8cd",
+  "config_hash": "6af5caf7dd368b338d20b4252685362a4453502d9b3f05c1c44ec78d0bbbeba3",
+  "schema_version": null,
+  "model_version": null,
+  "random_seed": 42,
+  "run_timestamp_utc": "2026-09-10T12:56:19.834939Z",
+  "host_platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39",
+  "python_version": "3.11.16",
+  "package_versions": {
+    "astropy": "8.0.1",
+    "astrotransit": "0.3.0",
+    "lightkurve": "2.4.2",
+    "numpy": "2.4.6",
+    "pandas": "3.0.5",
+    "pydantic": "2.13.5",
+    "scipy": "1.17.1",
+    "transitleastsquares": "1.32",
+    "wotan": "1.10"
+  },
+  "input_hash": "76ab1c533c2f8be92ae9f80122039976cdcd8472c6c24050404b60472cdac501",
+  "environment_manifest_hash": "f885a566ecf3f5d0994e03af5291e1833cead9891f0275a460b2ba32bce6df96",
+  "output_hash": null,
+  "campaign": "known_planets_5_v1",
+  "scope": "five_targets_with_pipeline_evaluated_sectors",
+  "target_ids": [
+    "TIC 100100827",
+    "TIC 25155310",
+    "TIC 279741379",
+    "TIC 219338557",
+    "TIC 142090065"
+  ],
+  "artifacts": {
+    "environment/env_manifest.json": "f885a566ecf3f5d0994e03af5291e1833cead9891f0275a460b2ba32bce6df96",
+    "results/benchmark.json": "a0f2d49b52ee418a898c83eec6b3cb8bd04d648c3613e6f11ebcd32069f88028",
+    "results/benchmark.manifest.json": "c96192d7819380b708c3dc02d2dec5ed83cf7af37941fdcd6cf0ea2e0ec5dadd",
+    "results/targets.csv": "9f773e0814ee9d7cc6a2ec8902b8ad618d224c8a7f366a98d01d971d00434de8"
+  }
+}
