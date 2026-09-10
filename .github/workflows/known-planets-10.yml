@@ -1,0 +1,291 @@
+name: Sharded N=10 known-planet benchmark
+
+on:
+  push:
+    branches: ["validation/known-planets-10-v1"]
+    paths: [".github/workflows/known-planets-10.yml"]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: known-planets-10-v1
+  cancel-in-progress: false
+
+env:
+  CAMPAIGN_ROOT: validation_runs/v1_known_planets/known_planets_10_v1
+
+jobs:
+  benchmark-shards:
+    name: benchmark (${{ matrix.tic_id }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    strategy:
+      fail-fast: false
+      max-parallel: 5
+      matrix:
+        tic_id:
+          - "100100827"
+          - "25155310"
+          - "38846515"
+          - "279741379"
+          - "281541555"
+          - "219338557"
+          - "142090065"
+          - "183985250"
+          - "1003831"
+          - "55315929"
+    steps:
+      - name: Checkout validation branch
+        uses: actions/checkout@v4
+        with:
+          ref: validation/known-planets-10-v1
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install locked environment
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r envs/requirements.lock
+          python -m pip install --no-deps -e .
+
+      - name: Prepare immutable single-target shard
+        env:
+          TIC_ID: ${{ matrix.tic_id }}
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          tic_id = os.environ["TIC_ID"]
+          source = json.loads(Path("benchmarks/verified_targets.json").read_text(encoding="utf-8"))
+          selected = [row for row in source if str(row.get("tic_id")) == tic_id]
+          if len(selected) != 1:
+              raise SystemExit(f"Expected one target for TIC {tic_id}, got {len(selected)}")
+
+          work = Path(f"/tmp/astrotransit_known_planets_10_v1/{tic_id}")
+          work.mkdir(parents=True, exist_ok=True)
+          corpus = work / "target.json"
+          corpus.write_text(json.dumps(selected, indent=2) + "\n", encoding="utf-8")
+
+          config = Path("configs/default.toml").read_text(encoding="utf-8")
+          config = config.replace(
+              'verified_targets_file = "benchmarks/verified_targets.json"',
+              f'verified_targets_file = "{corpus.as_posix()}"',
+          ).replace(
+              'confirmed_targets_file = "benchmarks/verified_targets.json"',
+              f'confirmed_targets_file = "{corpus.as_posix()}"',
+          )
+          (work / "config.toml").write_text(config, encoding="utf-8")
+          PY
+
+      - name: Capture shard environment evidence
+        env:
+          TIC_ID: ${{ matrix.tic_id }}
+        run: |
+          SHARD="$CAMPAIGN_ROOT/shards/TIC-$TIC_ID"
+          mkdir -p "$SHARD/environment" "$SHARD/input" "$SHARD/results"
+          cp "/tmp/astrotransit_known_planets_10_v1/$TIC_ID/target.json" \
+            "$SHARD/input/target.json"
+          python scripts/maintenance/make_environment_manifest.py \
+            --config "/tmp/astrotransit_known_planets_10_v1/$TIC_ID/config.toml" \
+            --output "$SHARD/environment/env_manifest.json"
+
+      - name: Run benchmark shard
+        env:
+          TIC_ID: ${{ matrix.tic_id }}
+        run: |
+          SHARD="$CAMPAIGN_ROOT/shards/TIC-$TIC_ID"
+          astrotransit benchmark \
+            --config "/tmp/astrotransit_known_planets_10_v1/$TIC_ID/config.toml" \
+            --output "$SHARD/results/benchmark.json" \
+            --csv-output "$SHARD/results/targets.csv"
+
+      - name: Validate and manifest shard
+        env:
+          TIC_ID: ${{ matrix.tic_id }}
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          from astrotransit.validation.provenance import sha256_file
+
+          tic_id = os.environ["TIC_ID"]
+          root = Path(os.environ["CAMPAIGN_ROOT"]) / "shards" / f"TIC-{tic_id}"
+          report = json.loads((root / "results/benchmark.json").read_text(encoding="utf-8"))
+          targets = report.get("targets", [])
+          expected_id = f"TIC {int(tic_id)}"
+          if len(targets) != 1 or report.get("metrics", {}).get("n_targets") != 1:
+              raise SystemExit(f"Shard {tic_id} did not produce exactly one target")
+          if targets[0].get("target_id") != expected_id:
+              raise SystemExit(f"Shard target mismatch: {targets[0].get('target_id')} != {expected_id}")
+          if targets[0].get("n_sectors_evaluated", 0) < 1:
+              raise SystemExit(f"Shard {tic_id} produced no measured sector")
+          manifest = {
+              "campaign": "known_planets_10_v1",
+              "tic_id": tic_id,
+              "target_id": expected_id,
+              "git_commit": report.get("provenance", {}).get("git_commit"),
+              "canonical_output_hash": report.get("provenance", {}).get("output_hash"),
+              "artifacts": {
+                  str(path.relative_to(root)): sha256_file(path)
+                  for path in sorted(root.rglob("*"))
+                  if path.is_file()
+              },
+          }
+          (root / "manifest.json").write_text(
+              json.dumps(manifest, indent=2) + "\n",
+              encoding="utf-8",
+          )
+          PY
+
+      - name: Upload immutable shard
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-shard-${{ matrix.tic_id }}
+          path: ${{ env.CAMPAIGN_ROOT }}/shards/TIC-${{ matrix.tic_id }}
+          if-no-files-found: error
+          retention-days: 7
+
+  aggregate:
+    name: aggregate and freeze
+    needs: benchmark-shards
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout validation branch
+        uses: actions/checkout@v4
+        with:
+          ref: validation/known-planets-10-v1
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install package for aggregation
+        run: python -m pip install --no-deps -e .
+
+      - name: Download all successful shards
+        uses: actions/download-artifact@v4
+        with:
+          pattern: benchmark-shard-*
+          path: downloaded-shards
+
+      - name: Assemble frozen campaign corpus and shard tree
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          selected_ids = [
+              "100100827", "25155310", "38846515", "279741379", "281541555",
+              "219338557", "142090065", "183985250", "1003831", "55315929",
+          ]
+          source = json.loads(Path("benchmarks/verified_targets.json").read_text(encoding="utf-8"))
+          by_id = {str(row.get("tic_id")): row for row in source}
+          missing = [target_id for target_id in selected_ids if target_id not in by_id]
+          if missing:
+              raise SystemExit(f"Frozen corpus is missing targets: {missing}")
+
+          root = Path("validation_runs/v1_known_planets/known_planets_10_v1")
+          (root / "input").mkdir(parents=True, exist_ok=True)
+          corpus = [by_id[target_id] for target_id in selected_ids]
+          (root / "input/targets.json").write_text(
+              json.dumps(corpus, indent=2, ensure_ascii=False) + "\n",
+              encoding="utf-8",
+          )
+
+          shard_root = root / "shards"
+          shard_root.mkdir(parents=True, exist_ok=True)
+          downloads = Path("downloaded-shards")
+          artifacts = sorted(downloads.glob("benchmark-shard-*"))
+          if len(artifacts) != 10:
+              raise SystemExit(f"Expected 10 downloaded shards, got {len(artifacts)}")
+          for artifact in artifacts:
+              tic_id = artifact.name.removeprefix("benchmark-shard-")
+              destination = shard_root / f"TIC-{tic_id}"
+              destination.mkdir(parents=True, exist_ok=True)
+              for source_path in artifact.rglob("*"):
+                  if source_path.is_file():
+                      relative = source_path.relative_to(artifact)
+                      target = destination / relative
+                      target.parent.mkdir(parents=True, exist_ok=True)
+                      target.write_bytes(source_path.read_bytes())
+          PY
+
+      - name: Aggregate target rows and metrics
+        run: |
+          python scripts/validation/aggregate_benchmark_shards.py \
+            "$CAMPAIGN_ROOT"/shards/TIC-*/results/benchmark.json \
+            --target-order-file "$CAMPAIGN_ROOT/input/targets.json" \
+            --output "$CAMPAIGN_ROOT/aggregate/benchmark.json" \
+            --csv-output "$CAMPAIGN_ROOT/aggregate/targets.csv"
+
+      - name: Validate aggregate and build campaign manifest
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          from astrotransit.settings import load_toml
+          from astrotransit.validation.provenance import build_manifest, sha256_file
+
+          root = Path(os.environ["CAMPAIGN_ROOT"])
+          aggregate = json.loads((root / "aggregate/benchmark.json").read_text(encoding="utf-8"))
+          corpus = json.loads((root / "input/targets.json").read_text(encoding="utf-8"))
+          expected_ids = [f"TIC {int(row['tic_id'])}" for row in corpus]
+          measured_ids = [row.get("target_id") for row in aggregate.get("targets", [])]
+          if aggregate.get("metrics", {}).get("n_targets") != 10:
+              raise SystemExit("Aggregate does not contain exactly 10 targets")
+          if measured_ids != expected_ids:
+              raise SystemExit(f"Aggregate target order mismatch: {measured_ids}")
+          if aggregate.get("metadata", {}).get("n_shards") != 10:
+              raise SystemExit("Aggregate does not declare exactly 10 shards")
+
+          first_env = sorted(root.glob("shards/TIC-*/environment/env_manifest.json"))[0]
+          manifest = build_manifest(
+              input_path=root / "input/targets.json",
+              config={
+                  "campaign": "known_planets_10_v1",
+                  "aggregation": "deterministic_target_row_merge_v1",
+                  "target_ids": expected_ids,
+              },
+              seed=42,
+              pipeline_version="0.3.0",
+              environment_manifest_path=first_env,
+          )
+          manifest["campaign"] = "known_planets_10_v1"
+          manifest["scope"] = "ten_known_planets_sharded_real_tess_data"
+          manifest["source_shard_count"] = 10
+          manifest["target_ids"] = expected_ids
+          manifest["shard_environment_hashes"] = {
+              path.parts[-3]: sha256_file(path)
+              for path in sorted(root.glob("shards/TIC-*/environment/env_manifest.json"))
+          }
+          manifest["artifacts"] = {
+              str(path.relative_to(root)): sha256_file(path)
+              for path in sorted(root.rglob("*"))
+              if path.is_file()
+          }
+          (root / "manifest.json").write_text(
+              json.dumps(manifest, indent=2, ensure_ascii=False) + "\n",
+              encoding="utf-8",
+          )
+          PY
+
+      - name: Freeze measured N=10 evidence on branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f "$CAMPAIGN_ROOT"
+          git commit -m "validation: freeze sharded N=10 known-planet evidence"
+          git push origin HEAD:validation/known-planets-10-v1
