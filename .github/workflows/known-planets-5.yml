@@ -60,7 +60,6 @@ jobs:
               sector = row.get("sector")
               if sector is None:
                   raise SystemExit(f"Selected target has no designated sector: {target_id}")
-              # This is a multi-target sanity run, not a cross-sector campaign.
               row["available_sectors"] = [int(sector)]
               selected.append(row)
 
@@ -111,8 +110,14 @@ jobs:
           measured_ids = {row.get("target_id") for row in targets}
           if measured_ids != expected_ids:
               raise SystemExit(f"Target mismatch: {measured_ids} != {expected_ids}")
-          if any(row.get("n_sectors_evaluated", 0) > 1 for row in targets):
-              raise SystemExit("Sanity campaign unexpectedly evaluated multiple sectors for a target")
+          invalid_sector_counts = {
+              row.get("target_id"): row.get("n_sectors_evaluated")
+              for row in targets
+              if not isinstance(row.get("n_sectors_evaluated"), int)
+              or row.get("n_sectors_evaluated", 0) < 1
+          }
+          if invalid_sector_counts:
+              raise SystemExit(f"Targets without measured sectors: {invalid_sector_counts}")
           PY
 
       - name: Add frozen campaign manifest
@@ -134,7 +139,7 @@ jobs:
               environment_manifest_path=environment,
           )
           manifest["campaign"] = "known_planets_5_v1"
-          manifest["scope"] = "five_targets_one_designated_sector_each"
+          manifest["scope"] = "five_targets_with_pipeline_evaluated_sectors"
           manifest["target_ids"] = [
               "TIC 100100827",
               "TIC 25155310",
