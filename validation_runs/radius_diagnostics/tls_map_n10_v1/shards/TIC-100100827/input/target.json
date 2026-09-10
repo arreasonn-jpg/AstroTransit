@@ -1,0 +1,21 @@
+[
+  {
+    "tic_id": "100100827",
+    "name": "WASP-18b",
+    "sector": 2,
+    "period": 0.941452,
+    "rp_rearth": 13.4,
+    "difficulty": "easy",
+    "available_sectors": [
+      2,
+      3,
+      29,
+      30,
+      69,
+      96,
+      103
+    ],
+    "expected_period_days": 0.941452,
+    "expected_radius_rearth": 13.4
+  }
+]
