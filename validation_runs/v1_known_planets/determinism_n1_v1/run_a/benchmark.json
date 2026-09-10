@@ -1,0 +1,88 @@
+{
+  "metadata": {
+    "report_type": "known_target_benchmark_performance",
+    "pipeline_version": "0.3.0",
+    "generated_at_utc": "2026-09-10T07:33:32.571024+00:00",
+    "period_tolerance_fraction": 0.02,
+    "radius_tolerance_fraction": 0.2
+  },
+  "metrics": {
+    "n_targets": 1,
+    "n_detected": 1,
+    "detection_recall": 1.0,
+    "n_correct": 1,
+    "correct_recovery_rate": 1.0,
+    "n_period_recovered": 1,
+    "period_recovery_rate": 1.0,
+    "period_recovery_error_mean_days": 0.0,
+    "period_recovery_error_median_days": 0.0,
+    "period_recovery_error_mean_fraction": 0.0,
+    "period_recovery_error_median_fraction": 0.0,
+    "n_radius_recovered": 1,
+    "radius_recovery_rate": 1.0,
+    "radius_recovery_error_mean_rearth": 1.3585,
+    "radius_recovery_error_median_rearth": 1.3585,
+    "radius_recovery_error_mean_fraction": 0.1013806,
+    "radius_recovery_error_median_fraction": 0.1013806,
+    "n_sector_consistency_evaluated": 1,
+    "sector_consistency_rate": 1.0,
+    "false_positive_rejection": null,
+    "false_positive_rejection_status": "not_evaluated_no_labeled_false_positive_set",
+    "n_false_positive_targets": 0
+  },
+  "targets": [
+    {
+      "target_id": "TIC 100100827",
+      "name": "WASP-18b",
+      "difficulty": "easy",
+      "expected_period_days": 0.941452,
+      "recovered_period_days": 0.9414520040814421,
+      "expected_radius_rearth": 13.4,
+      "recovered_radius_rearth": 14.7585,
+      "detected": true,
+      "period_recovered": true,
+      "radius_recovered": true,
+      "correct": true,
+      "period_error_days": 4.081442184222794e-09,
+      "period_error_fraction": 4.3352631724429866e-09,
+      "radius_error_rearth": 1.3584999999999994,
+      "radius_error_fraction": 0.10138059701492533,
+      "sector_consistent": true,
+      "n_sectors_evaluated": 9,
+      "notes": []
+    }
+  ],
+  "limitations": [
+    "Known-target recovery is not injection-recovery completeness.",
+    "False-positive rejection is not measured because no labeled FP set was supplied."
+  ],
+  "provenance": {
+    "target_id": null,
+    "sector": null,
+    "data_product": null,
+    "cadence": null,
+    "pipeline_version": "",
+    "git_commit": "2502ebe92a628b2180ad8433cbdedcf91cf4f1d9",
+    "config_hash": "39b32358d8237af73451f6f2f488f8bd3378658d4f67b384bb91d330eddf9b50",
+    "schema_version": null,
+    "model_version": null,
+    "random_seed": null,
+    "run_timestamp_utc": "2026-09-10T07:33:32.574623Z",
+    "host_platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39",
+    "python_version": "3.11.16",
+    "package_versions": {
+      "astropy": "8.0.1",
+      "astrotransit": "0.3.0",
+      "lightkurve": "2.4.2",
+      "numpy": "2.4.6",
+      "pandas": "3.0.5",
+      "pydantic": "2.13.5",
+      "scipy": "1.17.1",
+      "transitleastsquares": "1.32",
+      "wotan": "1.10"
+    },
+    "input_hash": null,
+    "environment_manifest_hash": null,
+    "output_hash": "105157ae4f29015dfc8b8159152e34401219b4327d6b56c8a89db13faa721fe4"
+  }
+}
