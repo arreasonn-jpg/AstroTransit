@@ -1,0 +1,91 @@
+{
+  "metadata": {
+    "report_type": "known_target_benchmark_performance",
+    "pipeline_version": "0.3.0",
+    "generated_at_utc": "2026-09-10T17:10:51.515699+00:00",
+    "period_tolerance_fraction": 0.02,
+    "radius_tolerance_fraction": 0.2
+  },
+  "metrics": {
+    "n_targets": 1,
+    "n_detected": 1,
+    "detection_recall": 1.0,
+    "n_correct": 0,
+    "correct_recovery_rate": 0.0,
+    "n_period_recovered": 0,
+    "period_recovery_rate": 0.0,
+    "period_recovery_error_mean_days": 6.2905913,
+    "period_recovery_error_median_days": 6.2905913,
+    "period_recovery_error_mean_fraction": 14.08867032,
+    "period_recovery_error_median_fraction": 14.08867032,
+    "n_radius_recovered": 0,
+    "radius_recovery_rate": 0.0,
+    "radius_recovery_error_mean_rearth": 0.681,
+    "radius_recovery_error_median_rearth": 0.681,
+    "radius_recovery_error_mean_fraction": 0.47957746,
+    "radius_recovery_error_median_fraction": 0.47957746,
+    "n_sector_consistency_evaluated": 1,
+    "sector_consistency_rate": 0.0,
+    "false_positive_rejection": null,
+    "false_positive_rejection_status": "not_evaluated_no_labeled_false_positive_set",
+    "n_false_positive_targets": 0
+  },
+  "targets": [
+    {
+      "target_id": "TIC 219338557",
+      "name": "TOI-561b",
+      "difficulty": "hard",
+      "expected_period_days": 0.4465,
+      "recovered_period_days": 6.737091295741876,
+      "expected_radius_rearth": 1.42,
+      "recovered_radius_rearth": 0.739,
+      "detected": true,
+      "period_recovered": false,
+      "radius_recovered": false,
+      "correct": false,
+      "period_error_days": 6.2905912957418755,
+      "period_error_fraction": 14.088670315211367,
+      "radius_error_rearth": 0.6809999999999999,
+      "radius_error_fraction": 0.47957746478873237,
+      "sector_consistent": false,
+      "n_sectors_evaluated": 7,
+      "notes": [
+        "period_not_recovered",
+        "radius_not_recovered"
+      ]
+    }
+  ],
+  "limitations": [
+    "Known-target recovery is not injection-recovery completeness.",
+    "False-positive rejection is not measured because no labeled FP set was supplied."
+  ],
+  "provenance": {
+    "target_id": null,
+    "sector": null,
+    "data_product": null,
+    "cadence": null,
+    "pipeline_version": "",
+    "git_commit": "f8f8a37f777ae649d661fa4a69a025671f4ce03e",
+    "config_hash": "b29a066ff32acbfc502db41c81faaf1a4a384e2c88bba118040de5c74ace1223",
+    "schema_version": null,
+    "model_version": null,
+    "random_seed": null,
+    "run_timestamp_utc": "2026-09-10T17:10:51.519284Z",
+    "host_platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39",
+    "python_version": "3.11.16",
+    "package_versions": {
+      "astropy": "8.0.1",
+      "astrotransit": "0.3.0",
+      "lightkurve": "2.4.2",
+      "numpy": "2.4.6",
+      "pandas": "3.0.5",
+      "pydantic": "2.13.5",
+      "scipy": "1.17.1",
+      "transitleastsquares": "1.32",
+      "wotan": "1.10"
+    },
+    "input_hash": null,
+    "environment_manifest_hash": null,
+    "output_hash": "60abf6302fffeb82bdbfab6217cd67dd4f7da048f856d7a2d5af2cff64320efb"
+  }
+}
