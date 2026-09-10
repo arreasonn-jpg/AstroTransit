@@ -48,11 +48,13 @@ jobs:
           python-version: "3.11"
           cache: pip
 
-      - name: Install locked environment
+      - name: Install locked environment and restore clean tree
         run: |
           python -m pip install --upgrade pip
           python -m pip install -r envs/requirements.lock
           python -m pip install --no-deps -e .
+          git reset --hard HEAD
+          test -z "$(git status --porcelain)"
 
       - name: Prepare immutable single-target shard
         env:
@@ -85,17 +87,29 @@ jobs:
           (work / "config.toml").write_text(config, encoding="utf-8")
           PY
 
-      - name: Capture shard environment evidence
+      - name: Capture clean shard environment evidence
         env:
           TIC_ID: ${{ matrix.tic_id }}
         run: |
           SHARD="$CAMPAIGN_ROOT/shards/TIC-$TIC_ID"
+          WORK="/tmp/astrotransit_known_planets_10_v1/$TIC_ID"
+          rm -rf "$SHARD"
           mkdir -p "$SHARD/environment" "$SHARD/input" "$SHARD/results"
-          cp "/tmp/astrotransit_known_planets_10_v1/$TIC_ID/target.json" \
-            "$SHARD/input/target.json"
+          cp "$WORK/target.json" "$SHARD/input/target.json"
           python scripts/maintenance/make_environment_manifest.py \
-            --config "/tmp/astrotransit_known_planets_10_v1/$TIC_ID/config.toml" \
-            --output "$SHARD/environment/env_manifest.json"
+            --config "$WORK/config.toml" \
+            --output "$WORK/env_manifest.json"
+          cp "$WORK/env_manifest.json" "$SHARD/environment/env_manifest.json"
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          tic_id = os.environ["TIC_ID"]
+          path = Path(os.environ["CAMPAIGN_ROOT"]) / "shards" / f"TIC-{tic_id}" / "environment/env_manifest.json"
+          manifest = json.loads(path.read_text(encoding="utf-8"))
+          if manifest.get("git", {}).get("dirty") is not False:
+              raise SystemExit(f"Shard {tic_id} environment is not clean")
+          PY
 
       - name: Run benchmark shard
         env:
@@ -170,9 +184,14 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+          cache: pip
 
-      - name: Install package for aggregation
-        run: python -m pip install --no-deps -e .
+      - name: Install locked aggregation environment
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r envs/requirements.lock
+          python -m pip install --no-deps -e .
+          git reset --hard HEAD
 
       - name: Download all successful shards
         uses: actions/download-artifact@v4
@@ -182,6 +201,7 @@ jobs:
 
       - name: Assemble frozen campaign corpus and shard tree
         run: |
+          rm -rf "$CAMPAIGN_ROOT"
           python - <<'PY'
           import json
           from pathlib import Path
@@ -236,7 +256,6 @@ jobs:
           import json
           import os
           from pathlib import Path
-          from astrotransit.settings import load_toml
           from astrotransit.validation.provenance import build_manifest, sha256_file
 
           root = Path(os.environ["CAMPAIGN_ROOT"])
@@ -250,8 +269,12 @@ jobs:
               raise SystemExit(f"Aggregate target order mismatch: {measured_ids}")
           if aggregate.get("metadata", {}).get("n_shards") != 10:
               raise SystemExit("Aggregate does not declare exactly 10 shards")
+          env_paths = sorted(root.glob("shards/TIC-*/environment/env_manifest.json"))
+          if len(env_paths) != 10:
+              raise SystemExit(f"Expected 10 shard environment manifests, got {len(env_paths)}")
+          if any(json.loads(path.read_text(encoding="utf-8")).get("git", {}).get("dirty") is not False for path in env_paths):
+              raise SystemExit("At least one shard environment is not clean")
 
-          first_env = sorted(root.glob("shards/TIC-*/environment/env_manifest.json"))[0]
           manifest = build_manifest(
               input_path=root / "input/targets.json",
               config={
@@ -261,20 +284,19 @@ jobs:
               },
               seed=42,
               pipeline_version="0.3.0",
-              environment_manifest_path=first_env,
+              environment_manifest_path=env_paths[0],
           )
           manifest["campaign"] = "known_planets_10_v1"
           manifest["scope"] = "ten_known_planets_sharded_real_tess_data"
           manifest["source_shard_count"] = 10
           manifest["target_ids"] = expected_ids
           manifest["shard_environment_hashes"] = {
-              path.parts[-3]: sha256_file(path)
-              for path in sorted(root.glob("shards/TIC-*/environment/env_manifest.json"))
+              path.parts[-3]: sha256_file(path) for path in env_paths
           }
           manifest["artifacts"] = {
               str(path.relative_to(root)): sha256_file(path)
               for path in sorted(root.rglob("*"))
-              if path.is_file()
+              if path.is_file() and path != root / "manifest.json"
           }
           (root / "manifest.json").write_text(
               json.dumps(manifest, indent=2, ensure_ascii=False) + "\n",
@@ -287,5 +309,5 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -f "$CAMPAIGN_ROOT"
-          git commit -m "validation: freeze sharded N=10 known-planet evidence"
+          git commit -m "validation: freeze clean sharded N=10 evidence"
           git push origin HEAD:validation/known-planets-10-v1
