@@ -1,0 +1,137 @@
+name: N=1 deterministic benchmark
+
+on:
+  push:
+    branches: ["validation/n1-determinism-v1"]
+    paths: [".github/workflows/n1-determinism.yml"]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: n1-determinism-v1
+  cancel-in-progress: false
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - name: Checkout validation branch
+        uses: actions/checkout@v4
+        with:
+          ref: validation/n1-determinism-v1
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install locked environment
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r envs/requirements.lock
+          python -m pip install --no-deps -e .
+
+      - name: Prepare immutable N=1 corpus and config
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          source = Path("benchmarks/verified_targets.json")
+          targets = json.loads(source.read_text(encoding="utf-8"))
+          selected = [row for row in targets if str(row.get("tic_id")) == "100100827"]
+          if len(selected) != 1:
+              raise SystemExit(f"Expected exactly one TIC 100100827 row, got {len(selected)}")
+
+          work = Path(".validation/n1_determinism_v1")
+          work.mkdir(parents=True, exist_ok=True)
+          corpus = work / "target.json"
+          corpus.write_text(json.dumps(selected, indent=2) + "\n", encoding="utf-8")
+
+          config = Path("configs/default.toml").read_text(encoding="utf-8")
+          config = config.replace(
+              'verified_targets_file = "benchmarks/verified_targets.json"',
+              f'verified_targets_file = "{corpus.as_posix()}"',
+          ).replace(
+              'confirmed_targets_file = "benchmarks/verified_targets.json"',
+              f'confirmed_targets_file = "{corpus.as_posix()}"',
+          )
+          config_path = work / "config.toml"
+          config_path.write_text(config, encoding="utf-8")
+          PY
+
+      - name: Capture environment evidence
+        run: |
+          mkdir -p validation_runs/v1_known_planets/determinism_n1_v1/environment
+          python scripts/maintenance/make_environment_manifest.py \
+            --config .validation/n1_determinism_v1/config.toml \
+            --output validation_runs/v1_known_planets/determinism_n1_v1/environment/env_manifest.json
+
+      - name: Run A
+        run: |
+          mkdir -p validation_runs/v1_known_planets/determinism_n1_v1/run_a
+          astrotransit benchmark \
+            --config .validation/n1_determinism_v1/config.toml \
+            --output validation_runs/v1_known_planets/determinism_n1_v1/run_a/benchmark.json \
+            --csv-output validation_runs/v1_known_planets/determinism_n1_v1/run_a/targets.csv
+
+      - name: Run B
+        run: |
+          mkdir -p validation_runs/v1_known_planets/determinism_n1_v1/run_b
+          astrotransit benchmark \
+            --config .validation/n1_determinism_v1/config.toml \
+            --output validation_runs/v1_known_planets/determinism_n1_v1/run_b/benchmark.json \
+            --csv-output validation_runs/v1_known_planets/determinism_n1_v1/run_b/targets.csv
+
+      - name: Compare runs
+        run: |
+          python scripts/validation/compare_benchmark_reruns.py \
+            validation_runs/v1_known_planets/determinism_n1_v1/run_a/benchmark.json \
+            validation_runs/v1_known_planets/determinism_n1_v1/run_a/targets.csv \
+            validation_runs/v1_known_planets/determinism_n1_v1/run_b/benchmark.json \
+            validation_runs/v1_known_planets/determinism_n1_v1/run_b/targets.csv \
+            --output validation_runs/v1_known_planets/determinism_n1_v1/determinism.json
+
+      - name: Add frozen campaign manifest
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          from astrotransit.validation.provenance import build_manifest, sha256_file
+          from astrotransit.settings import load_toml
+
+          root = Path("validation_runs/v1_known_planets/determinism_n1_v1")
+          config = Path(".validation/n1_determinism_v1/config.toml")
+          corpus = Path(".validation/n1_determinism_v1/target.json")
+          environment = root / "environment/env_manifest.json"
+          manifest = build_manifest(
+              input_path=corpus,
+              config=load_toml(config),
+              seed=42,
+              pipeline_version="0.3.0",
+              environment_manifest_path=environment,
+          )
+          manifest["campaign"] = "determinism_n1_v1"
+          manifest["target_id"] = "TIC 100100827"
+          manifest["artifacts"] = {
+              str(path.relative_to(root)): sha256_file(path)
+              for path in sorted(root.rglob("*"))
+              if path.is_file()
+          }
+          (root / "manifest.json").write_text(
+              json.dumps(manifest, indent=2, ensure_ascii=False) + "\n",
+              encoding="utf-8",
+          )
+          PY
+
+      - name: Freeze measured evidence on branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f validation_runs/v1_known_planets/determinism_n1_v1
+          git commit -m "validation: freeze N=1 deterministic rerun evidence"
+          git push origin HEAD:validation/n1-determinism-v1
