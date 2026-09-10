@@ -1,0 +1,16 @@
+[
+  {
+    "tic_id": "183985250",
+    "name": "WASP-77Ab",
+    "sector": 2,
+    "period": 1.360029,
+    "rp_rearth": 13.0,
+    "difficulty": "easy",
+    "available_sectors": [
+      2,
+      29,
+      69,
+      96
+    ]
+  }
+]

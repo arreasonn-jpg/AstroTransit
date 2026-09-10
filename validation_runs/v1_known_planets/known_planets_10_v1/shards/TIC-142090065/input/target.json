@@ -1,0 +1,23 @@
+[
+  {
+    "tic_id": "142090065",
+    "name": "WASP-19b",
+    "sector": 19,
+    "period": 0.788839,
+    "rp_rearth": 15.4,
+    "difficulty": "easy",
+    "available_sectors": [
+      19,
+      20,
+      25,
+      26,
+      40,
+      52,
+      53,
+      59,
+      60,
+      79,
+      86
+    ]
+  }
+]
