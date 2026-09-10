@@ -1,0 +1,40 @@
+{
+  "target_id": "TIC 100100827",
+  "sector": null,
+  "data_product": null,
+  "cadence": null,
+  "pipeline_version": "0.3.0",
+  "git_commit": "2502ebe92a628b2180ad8433cbdedcf91cf4f1d9",
+  "config_hash": "d61f547515a81678a848f23414f07820708ec9be5434297ce01511f3e66e2cd7",
+  "schema_version": null,
+  "model_version": null,
+  "random_seed": 42,
+  "run_timestamp_utc": "2026-09-10T07:43:06.547209Z",
+  "host_platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39",
+  "python_version": "3.11.16",
+  "package_versions": {
+    "astropy": "8.0.1",
+    "astrotransit": "0.3.0",
+    "lightkurve": "2.4.2",
+    "numpy": "2.4.6",
+    "pandas": "3.0.5",
+    "pydantic": "2.13.5",
+    "scipy": "1.17.1",
+    "transitleastsquares": "1.32",
+    "wotan": "1.10"
+  },
+  "input_hash": "0008d04a924f4e32406d745052610de9a6a36dbea556d903481f74a26b0a99ef",
+  "environment_manifest_hash": "1efd3ac1f5a738558e29afd35779b60fa972bf5707dbd65fecfbe1e70138b16a",
+  "output_hash": null,
+  "campaign": "determinism_n1_v1",
+  "artifacts": {
+    "determinism.json": "b8767545edfdfbb620fa43537021c89c3d106fb7ea286642b67a57cf4cdfe522",
+    "environment/env_manifest.json": "1efd3ac1f5a738558e29afd35779b60fa972bf5707dbd65fecfbe1e70138b16a",
+    "run_a/benchmark.json": "109f2aeb5e25429cbb7690a15d3a49912ab0f2e7f2216b11631cf2a6e10ee386",
+    "run_a/benchmark.manifest.json": "2f741df65a3576272f0dc5009ef218dc2541e5d882d189fde89f7a9a389c1559",
+    "run_a/targets.csv": "70de707660fb062298611d9808873639ed822e30dbe74828c1badb426ccf7888",
+    "run_b/benchmark.json": "7d290ef42cc49686751aea8f00ae4788fee302cd135a76d94ad503e4c4d24808",
+    "run_b/benchmark.manifest.json": "d920639a3cc1ece48eeb123f52a00e59b75fc022cc7b1cf5255e1b496d4dc536",
+    "run_b/targets.csv": "70de707660fb062298611d9808873639ed822e30dbe74828c1badb426ccf7888"
+  }
+}

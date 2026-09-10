@@ -1,0 +1,14 @@
+{
+  "json_hash_a": "105157ae4f29015dfc8b8159152e34401219b4327d6b56c8a89db13faa721fe4",
+  "json_hash_b": "105157ae4f29015dfc8b8159152e34401219b4327d6b56c8a89db13faa721fe4",
+  "csv_hash_a": "70de707660fb062298611d9808873639ed822e30dbe74828c1badb426ccf7888",
+  "csv_hash_b": "70de707660fb062298611d9808873639ed822e30dbe74828c1badb426ccf7888",
+  "metrics_hash_a": "f01cc5154ae620e7ccb4079fa5fd5eaa115614faea1091515a565d7ce8966635",
+  "metrics_hash_b": "f01cc5154ae620e7ccb4079fa5fd5eaa115614faea1091515a565d7ce8966635",
+  "json_equal": true,
+  "csv_equal": true,
+  "metrics_equal": true,
+  "target_order_equal": true,
+  "differences": [],
+  "status": "PASS"
+}
