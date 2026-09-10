@@ -2,13 +2,13 @@
   "campaign": "known_planets_10_v1",
   "tic_id": "55315929",
   "target_id": "TIC 55315929",
-  "git_commit": "f8f8a37f777ae649d661fa4a69a025671f4ce03e",
-  "canonical_output_hash": "37abdf98bef57de5efb5f4311bc51bbcd9dc263861050f33e43ef91ae1815811",
+  "git_commit": "f68b24faa7b55a1938067875ff84aee200edb41d",
+  "canonical_output_hash": "bfc066e08edb47ed39577e6b6c66b2e8288c635a44e792352707d6a4f9e5e671",
   "artifacts": {
-    "environment/env_manifest.json": "4baf03cdcff74a1816c1fc4cd16f96aba2543dd179ef1f2c14fb031d02bbf4aa",
+    "environment/env_manifest.json": "b5f0adc46095beda6f0671d40d9555e12e753e359cc22ceb4f62b725f259cd8e",
     "input/target.json": "55e0b113e5310369c9a8373be5d1d598fa00bae6b6eb27d1c00ed91abdffc765",
-    "results/benchmark.json": "6605ff6f76fbff7f26dee271dd12a6d81c46856d7a644c105324625a7991c31b",
-    "results/benchmark.manifest.json": "db36c9e44ea7baa6cb40c81ef6cfefa937db01facf8172ca42251cdedcc3fcc8",
+    "results/benchmark.json": "2fdfcdef54385977910f356e298d627744fab88b8a0f8c30f227bfcfa5dbf8bc",
+    "results/benchmark.manifest.json": "76b77798a8ca26b753c5bfa3ecce117245b8c4b959ac72557fa703f91a1f8573",
     "results/targets.csv": "06ea1c8d4df81d1c718f263a6e47e793c202bb9697be8fa053b39874240d2666"
   }
 }

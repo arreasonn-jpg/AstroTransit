@@ -1,2 +1,2 @@
 target_id,name,difficulty,expected_period_days,recovered_period_days,expected_radius_rearth,recovered_radius_rearth,detected,period_recovered,radius_recovered,correct,period_error_days,period_error_fraction,radius_error_rearth,radius_error_fraction,sector_consistent,n_sectors_evaluated,notes
-TIC 100100827,WASP-18b,easy,0.941452,0.9414520091113693,13.4,14.7584,True,True,True,True,9.111369325687235e-09,9.677996675016076e-09,1.3583999999999996,0.10137313432835818,True,9,
+TIC 100100827,WASP-18b,easy,0.941452,0.9414520040814421,13.4,14.7585,True,True,True,True,4.081442184222794e-09,4.3352631724429866e-09,1.3584999999999994,0.10138059701492533,True,9,

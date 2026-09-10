@@ -2,7 +2,7 @@
   "metadata": {
     "report_type": "known_target_benchmark_performance",
     "pipeline_version": "0.3.0",
-    "generated_at_utc": "2026-09-10T17:06:10.368173+00:00",
+    "generated_at_utc": "2026-09-10T18:24:47.804986+00:00",
     "period_tolerance_fraction": 0.02,
     "radius_tolerance_fraction": 0.2
   },
@@ -62,12 +62,12 @@
     "data_product": null,
     "cadence": null,
     "pipeline_version": "",
-    "git_commit": "f8f8a37f777ae649d661fa4a69a025671f4ce03e",
+    "git_commit": "f68b24faa7b55a1938067875ff84aee200edb41d",
     "config_hash": "26a8b83421cd5816518af0a7cbb5ede3375da9f17d3afde61dee78b372d14c00",
     "schema_version": null,
     "model_version": null,
     "random_seed": null,
-    "run_timestamp_utc": "2026-09-10T17:06:10.373833Z",
+    "run_timestamp_utc": "2026-09-10T18:24:47.808798Z",
     "host_platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39",
     "python_version": "3.11.16",
     "package_versions": {
@@ -83,6 +83,6 @@
     },
     "input_hash": null,
     "environment_manifest_hash": null,
-    "output_hash": "b8a9e27c16a571c4f799c182857d91938607796ed721e01d57632ffc0808b37e"
+    "output_hash": "db1d04363f9a60d78daa8b628a554ce9e9bbee4493dce1aabcb11e6341c0dc05"
   }
 }

@@ -1,5 +1,5 @@
 {
-  "generated_at_utc": "2026-09-10T17:07:24.488336+00:00",
+  "generated_at_utc": "2026-09-10T18:25:58.561869+00:00",
   "python_version": "3.11.16",
   "dependency_lock": {
     "path": "/home/runner/work/AstroTransit/AstroTransit/envs/requirements.lock",
@@ -11,9 +11,9 @@
     "version": "0.3.0"
   },
   "git": {
-    "commit": "f8f8a37f777ae649d661fa4a69a025671f4ce03e",
+    "commit": "f68b24faa7b55a1938067875ff84aee200edb41d",
     "branch": "validation/known-planets-10-v1",
-    "dirty": true
+    "dirty": false
   },
   "dependencies": [
     "altair==6.2.2",
@@ -27,7 +27,7 @@
     "astropy==8.0.1",
     "astropy-iers-data==0.2026.9.7.0.56.14",
     "astroquery==0.4.11",
-    "-e git+https://github.com/arreasonn-jpg/AstroTransit@f8f8a37f777ae649d661fa4a69a025671f4ce03e#egg=astrotransit",
+    "-e git+https://github.com/arreasonn-jpg/AstroTransit@f68b24faa7b55a1938067875ff84aee200edb41d#egg=astrotransit",
     "asttokens==3.0.2",
     "async-lru==2.3.0",
     "attrs==26.1.0",
