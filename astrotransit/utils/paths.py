@@ -6,6 +6,7 @@ Proje genelinde kullanılan tüm dizin yollarını oluşturur ve döndürür.
 
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
 from loguru import logger
@@ -24,6 +25,23 @@ def ensure_dir(path: Path) -> Path:
 
     path.mkdir(parents=True, exist_ok=True)
     return path
+
+
+def _safe_target_name(target_id: str) -> str:
+    """Hedef kimliğini tek ve güvenli bir dizin bileşenine dönüştürür."""
+
+    raw = str(target_id).strip()
+    if not raw:
+        raise ValueError("target_id boş olamaz.")
+
+    # Yol ayraçları, denetim karakterleri ve kabuk açısından riskli karakterler
+    # tek bir alt çizgiye indirgenir. Baştaki/sondaki nokta ve alt çizgiler
+    # temizlenerek '.', '..' ve gizli dizin benzeri sonuçlar engellenir.
+    safe_name = re.sub(r"[^\w.-]+", "_", raw, flags=re.UNICODE).strip("._")
+    safe_name = re.sub(r"\.{2,}", ".", safe_name)
+    if not safe_name or safe_name in {".", ".."}:
+        raise ValueError(f"Geçersiz target_id: '{target_id}'")
+    return safe_name
 
 
 class ProjectPaths:
@@ -69,10 +87,16 @@ class ProjectPaths:
         logger.debug(f"Geçici dizin: {self.temp}")
 
     def target_dir(self, target_id: str) -> Path:
-        """Belirli bir hedef için çıktı alt dizini oluşturur."""
+        """Belirli bir hedef için güvenli çıktı alt dizini oluşturur."""
 
-        safe_name = target_id.replace(" ", "_").replace("/", "_")
-        return ensure_dir(self.outputs / "targets" / safe_name)
+        targets_root = ensure_dir(self.outputs / "targets").resolve()
+        target_path = (targets_root / _safe_target_name(target_id)).resolve()
+
+        # Savunma derinliği: normalizasyon gelecekte değişse bile hedef yolunun
+        # outputs/targets dışına çıkmasına izin verme.
+        if not target_path.is_relative_to(targets_root):
+            raise ValueError(f"target_id çıktı dizini dışına çıkamaz: '{target_id}'")
+        return ensure_dir(target_path)
 
     def target_figure_dir(self, target_id: str) -> Path:
         """Belirli bir hedef için görsel alt dizini oluşturur."""
