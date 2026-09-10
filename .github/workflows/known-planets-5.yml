@@ -1,0 +1,162 @@
+name: Five-target known-planet benchmark
+
+on:
+  push:
+    branches: ["validation/known-planets-5-v1"]
+    paths: [".github/workflows/known-planets-5.yml"]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: known-planets-5-v1
+  cancel-in-progress: false
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - name: Checkout validation branch
+        uses: actions/checkout@v4
+        with:
+          ref: validation/known-planets-5-v1
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install locked environment
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r envs/requirements.lock
+          python -m pip install --no-deps -e .
+
+      - name: Prepare frozen five-target execution corpus
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          selected_ids = [
+              "100100827",  # WASP-18b: easy, ultra-short hot Jupiter
+              "25155310",   # WASP-126b: easy, longer-period giant
+              "279741379",  # TOI-125b: medium, sub-Neptune
+              "219338557",  # TOI-561b: hard, small ultra-short-period planet
+              "142090065",  # WASP-19b: easy, independent southern field
+          ]
+          source = json.loads(Path("benchmarks/verified_targets.json").read_text(encoding="utf-8"))
+          by_id = {str(row.get("tic_id")): dict(row) for row in source}
+          missing = [target_id for target_id in selected_ids if target_id not in by_id]
+          if missing:
+              raise SystemExit(f"Missing selected targets: {missing}")
+
+          selected = []
+          for target_id in selected_ids:
+              row = by_id[target_id]
+              sector = row.get("sector")
+              if sector is None:
+                  raise SystemExit(f"Selected target has no designated sector: {target_id}")
+              # This is a multi-target sanity run, not a cross-sector campaign.
+              row["available_sectors"] = [int(sector)]
+              selected.append(row)
+
+          work = Path("/tmp/astrotransit_known_planets_5_v1")
+          work.mkdir(parents=True, exist_ok=True)
+          corpus = work / "targets.json"
+          corpus.write_text(json.dumps(selected, indent=2) + "\n", encoding="utf-8")
+
+          config = Path("configs/default.toml").read_text(encoding="utf-8")
+          config = config.replace(
+              'verified_targets_file = "benchmarks/verified_targets.json"',
+              f'verified_targets_file = "{corpus.as_posix()}"',
+          ).replace(
+              'confirmed_targets_file = "benchmarks/verified_targets.json"',
+              f'confirmed_targets_file = "{corpus.as_posix()}"',
+          )
+          (work / "config.toml").write_text(config, encoding="utf-8")
+          PY
+
+      - name: Capture clean environment evidence
+        run: |
+          mkdir -p validation_runs/v1_known_planets/known_planets_5_v1/environment
+          python scripts/maintenance/make_environment_manifest.py \
+            --config /tmp/astrotransit_known_planets_5_v1/config.toml \
+            --output validation_runs/v1_known_planets/known_planets_5_v1/environment/env_manifest.json
+
+      - name: Run five-target benchmark
+        run: |
+          mkdir -p validation_runs/v1_known_planets/known_planets_5_v1/results
+          astrotransit benchmark \
+            --config /tmp/astrotransit_known_planets_5_v1/config.toml \
+            --output validation_runs/v1_known_planets/known_planets_5_v1/results/benchmark.json \
+            --csv-output validation_runs/v1_known_planets/known_planets_5_v1/results/targets.csv
+
+      - name: Validate measured result contract
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          path = Path("validation_runs/v1_known_planets/known_planets_5_v1/results/benchmark.json")
+          report = json.loads(path.read_text(encoding="utf-8"))
+          targets = report.get("targets", [])
+          metrics = report.get("metrics", {})
+          if len(targets) != 5 or metrics.get("n_targets") != 5:
+              raise SystemExit(f"Expected exactly five measured targets, got {len(targets)}")
+          expected_ids = {"TIC 100100827", "TIC 25155310", "TIC 279741379", "TIC 219338557", "TIC 142090065"}
+          measured_ids = {row.get("target_id") for row in targets}
+          if measured_ids != expected_ids:
+              raise SystemExit(f"Target mismatch: {measured_ids} != {expected_ids}")
+          if any(row.get("n_sectors_evaluated", 0) > 1 for row in targets):
+              raise SystemExit("Sanity campaign unexpectedly evaluated multiple sectors for a target")
+          PY
+
+      - name: Add frozen campaign manifest
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          from astrotransit.settings import load_toml
+          from astrotransit.validation.provenance import build_manifest, sha256_file
+
+          root = Path("validation_runs/v1_known_planets/known_planets_5_v1")
+          work = Path("/tmp/astrotransit_known_planets_5_v1")
+          environment = root / "environment/env_manifest.json"
+          manifest = build_manifest(
+              input_path=work / "targets.json",
+              config=load_toml(work / "config.toml"),
+              seed=42,
+              pipeline_version="0.3.0",
+              environment_manifest_path=environment,
+          )
+          manifest["campaign"] = "known_planets_5_v1"
+          manifest["scope"] = "five_targets_one_designated_sector_each"
+          manifest["target_ids"] = [
+              "TIC 100100827",
+              "TIC 25155310",
+              "TIC 279741379",
+              "TIC 219338557",
+              "TIC 142090065",
+          ]
+          manifest["artifacts"] = {
+              str(path.relative_to(root)): sha256_file(path)
+              for path in sorted(root.rglob("*"))
+              if path.is_file()
+          }
+          (root / "manifest.json").write_text(
+              json.dumps(manifest, indent=2, ensure_ascii=False) + "\n",
+              encoding="utf-8",
+          )
+          PY
+
+      - name: Freeze measured evidence on branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f validation_runs/v1_known_planets/known_planets_5_v1
+          git commit -m "validation: freeze five-target known-planet sanity evidence"
+          git push origin HEAD:validation/known-planets-5-v1
