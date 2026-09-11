@@ -36,6 +36,7 @@ from astrotransit.modeling.parameterization import (
     quadratic_ld_to_unit_square,
     unit_square_to_quadratic_ld,
 )
+from astrotransit.modeling.reliability import assess_radius_reliability
 
 
 # ──────────────────────────────────────
@@ -111,6 +112,10 @@ class MAPFitResult:
     optimizer_boundary_hit: bool = False
     optimizer_boundary_hits: tuple[str, ...] = field(default_factory=tuple)
     limb_darkening_parameterization: str = LIMB_DARKENING_PARAMETERIZATION
+    radius_reliability_status: str = "uncalibrated_no_detected_flag"
+    radius_reliability_reasons: tuple[str, ...] = field(default_factory=tuple)
+    is_grazing_geometry: bool = False
+    radius_at_optimizer_boundary: bool = False
 
     def to_dict(self) -> dict:
         """Serileştirilebilir sözlük."""
@@ -137,6 +142,10 @@ class MAPFitResult:
             "optimizer_boundary_hit": self.optimizer_boundary_hit,
             "optimizer_boundary_hits": list(self.optimizer_boundary_hits),
             "limb_darkening_parameterization": self.limb_darkening_parameterization,
+            "radius_reliability_status": self.radius_reliability_status,
+            "radius_reliability_reasons": list(self.radius_reliability_reasons),
+            "is_grazing_geometry": self.is_grazing_geometry,
+            "radius_at_optimizer_boundary": self.radius_at_optimizer_boundary,
         }
         base.update(self.derived.to_dict())
         return base
@@ -521,6 +530,12 @@ class MAPFitter:
             and 0 < best_phys["period"] < 10000
         )
 
+        radius_reliability = assess_radius_reliability(
+            rp_rs=float(best_phys["rp_rs"]),
+            impact_parameter=float(best_phys["impact_parameter"]),
+            optimizer_boundary_hits=boundary_hits,
+        )
+
         map_result = MAPFitResult(
             target_id=target_id,
             sector=sector,
@@ -545,6 +560,10 @@ class MAPFitter:
             optimizer_boundary_hit=bool(boundary_hits),
             optimizer_boundary_hits=boundary_hits,
             limb_darkening_parameterization=LIMB_DARKENING_PARAMETERIZATION,
+            radius_reliability_status=radius_reliability.status,
+            radius_reliability_reasons=radius_reliability.reasons,
+            is_grazing_geometry=radius_reliability.is_grazing_geometry,
+            radius_at_optimizer_boundary=radius_reliability.radius_at_optimizer_boundary,
         )
 
         logger.info(
