@@ -15,7 +15,7 @@ from typing import Any, Iterable, Optional
 
 import numpy as np
 
-RADIUS_DIAGNOSTIC_SCHEMA_VERSION = "1.1"
+RADIUS_DIAGNOSTIC_SCHEMA_VERSION = "1.2"
 
 
 def _get(obj: Any, name: str, default: Any = None) -> Any:
@@ -113,6 +113,10 @@ class RadiusDiagnosticRow:
     n_in_transit_points: int
     n_local_baseline_points: int
     tls_transit_count: int
+    radius_reliability_status: str = ""
+    radius_reliability_reasons: tuple[str, ...] = field(default_factory=tuple)
+    is_grazing_geometry: bool = False
+    radius_at_optimizer_boundary: bool = False
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -259,6 +263,16 @@ def build_radius_diagnostic_row(
         n_in_transit_points=n_in,
         n_local_baseline_points=n_baseline,
         tls_transit_count=int(_get(tls, "transit_count", 0) or 0),
+        radius_reliability_status=str(
+            _get(fit, "radius_reliability_status", "") or ""
+        ),
+        radius_reliability_reasons=tuple(
+            str(item) for item in (_get(fit, "radius_reliability_reasons", ()) or ())
+        ),
+        is_grazing_geometry=bool(_get(fit, "is_grazing_geometry", False)),
+        radius_at_optimizer_boundary=bool(
+            _get(fit, "radius_at_optimizer_boundary", False)
+        ),
     )
 
 
