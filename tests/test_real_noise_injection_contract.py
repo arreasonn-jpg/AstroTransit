@@ -16,18 +16,9 @@ def _contract() -> dict:
 
 
 def test_grid_identity_and_trial_count_are_frozen() -> None:
-    contract = _contract()
-    axes = contract["grid"]["axes"]
-    rows = []
-    for period, depth, duration, phase in itertools.product(
-        axes["period_days"], axes["depth_ppm"], axes["duration_days"], axes["phase_fraction"]
-    ):
-        rows.append({
-            "period_days": period, "depth": depth / 1e6, "depth_ppm": depth,
-            "duration_days": duration, "phase_fraction": phase,
-            "period_bin": "short" if period < 5 else ("mid" if period <= 20 else "long"),
-            "execution_lane": "cascade_single_sector" if period <= 20 else "long_period_stitched",
-        })
+    contract = _contract(); axes = contract["grid"]["axes"]; rows = []
+    for period, depth, duration, phase in itertools.product(axes["period_days"], axes["depth_ppm"], axes["duration_days"], axes["phase_fraction"]):
+        rows.append({"period_days": period, "depth": depth / 1e6, "depth_ppm": depth, "duration_days": duration, "phase_fraction": phase, "period_bin": "short" if period < 5 else ("mid" if period <= 20 else "long"), "execution_lane": "cascade_single_sector" if period <= 20 else "long_period_stitched"})
     canonical = json.dumps(rows, sort_keys=True, separators=(",", ":")).encode()
     assert hashlib.sha256(canonical).hexdigest() == EXPECTED_GRID_HASH
     assert contract["grid"]["scenarios_per_host"] == len(rows) == 96
@@ -36,22 +27,24 @@ def test_grid_identity_and_trial_count_are_frozen() -> None:
 
 
 def test_period_bins_and_execution_lanes_do_not_overlap() -> None:
-    contract = _contract()
-    bins = contract["period_bins"]
+    contract = _contract(); bins = contract["period_bins"]
     assert bins["short"]["periods_days"] == [0.75, 2.0]
     assert bins["mid"]["periods_days"] == [5.0, 10.0, 20.0]
     assert bins["long"]["periods_days"] == [50.0]
     lanes = contract["execution_lanes"]
-    cascade = set(lanes["cascade_single_sector"]["periods_days"])
-    long_period = set(lanes["long_period_stitched"]["periods_days"])
+    cascade = set(lanes["cascade_single_sector"]["periods_days"]); long_period = set(lanes["long_period_stitched"]["periods_days"])
     assert not cascade & long_period
     assert cascade | long_period == set(contract["grid"]["axes"]["period_days"])
 
 
 def test_campaign_state_and_claim_boundary_are_consistent() -> None:
-    contract = _contract()
-    quiet_path = ROOT / "input/quiet_hosts.json"
-    if quiet_path.exists():
+    contract = _contract(); quiet_path = ROOT / "input/quiet_hosts.json"; report_path = ROOT / "report.json"
+    if report_path.exists():
+        report = json.loads(report_path.read_text(encoding="utf-8"))
+        assert contract["status"] == "measured"
+        assert report["recorded_trials"] == 960
+        assert report["claim_scope"] == contract["claim_scope"]
+    elif quiet_path.exists():
         quiet = json.loads(quiet_path.read_text(encoding="utf-8"))
         assert contract["status"] == "pending_run"
         assert contract["host_corpus"]["status"] == "frozen"
