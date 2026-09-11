@@ -72,10 +72,40 @@ target outputs while preserving all categorical counts, N=10 must not be
 represented as a deterministic-rerun PASS. A dedicated clean rerun comparison
 is still required for a broader determinism claim.
 
+## N=50 availability-aware measured baseline
+
+Fifty known targets were selected and executed as independent one-target
+shards. Forty-six produced evaluable measured-sector results. Four produced no
+measured sector: TIC 4610830, TIC 8348911, TIC 14570099 and TIC 17307715.
+Those four outcomes are preserved in `data_availability.json`, excluded from
+recovery denominators and not treated as failed detections.
+
+| Metric | Measured value |
+|---|---:|
+| Selected targets | 50 |
+| Evaluated targets | 46 |
+| No measured sector | 4 |
+| Detection on evaluable selected subset | 46/46 (1.0) |
+| Joint period + radius recovery | 21/46 (0.456522) |
+| Period recovery | 32/46 (0.695652) |
+| Radius recovery | 23/46 (0.5) |
+| Sector consistency | 20/38 (0.526316) |
+| False-positive rejection | Not evaluated |
+
+Evidence: `validation_runs/v1_known_planets/known_planets_50_v1/`.
+
+Frozen input SHA-256:
+`c90de0ff053026f16781a8b8ffcc3e35088cae1385a2138a62e6f93afd54673a`.
+Aggregate canonical output hash:
+`6efcb7834f8e310744a76c7ffec0c8b46fc20622b49e7d9203a0c1d123e889d0`.
+
 ## Interpretation boundary
 
-None of these campaigns measures injection-recovery completeness, calibrated
-precision, false-positive rejection, or release-scale known-planet recall. The
-N=10 run is an engineering and measured recovery baseline, not the >=50-target
-release gate. Future campaigns must preserve these frozen artifacts and report
-failures rather than replacing them with unsupported claims.
+The N=50 campaign closes the >=50 selected known-target execution milestone,
+but only 46 targets were evaluable. Its 46/46 detection result is conditional
+on that selected, evaluable subset. It is not population recall, completeness
+or precision. None of these campaigns measures injection-recovery
+completeness, calibrated false-positive rejection, quiet-control false-positive
+rate or blind-test performance. Future campaigns must preserve these frozen
+artifacts and report failures or unavailable data rather than replacing them
+with unsupported claims.

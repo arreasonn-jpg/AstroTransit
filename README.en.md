@@ -135,12 +135,33 @@ parameter such as the period was not sampled in the MCMC, it is processed as
 reference. Which candidate gets MCMC is decided in the `scripts/followup/`
 workflow; MCMC is computationally impractical in bulk scans.
 
+## Measured validation results
+
+The first availability-aware N=50 real-TESS known-target campaign is complete.
+Fifty targets were selected; 46 were evaluated with measured sectors and four
+had no measured sector, so they were excluded from recovery denominators.
+
+| Metric | Measured result |
+|---|---:|
+| Detection on evaluable selected targets | 46/46 (100.0%) |
+| Joint period + radius recovery | 21/46 (45.6522%) |
+| Period recovery | 32/46 (69.5652%) |
+| Radius recovery | 23/46 (50.0000%) |
+| Sector consistency | 20/38 (52.6316%) |
+| False-positive rejection | Not evaluated |
+
+The 46/46 value is conditional detection on the **selected, evaluable
+known-target subset**. It is not population recall, completeness or precision.
+For immutable evidence, hashes and remaining gates, see
+[`docs/measured_validation_results.md`](docs/measured_validation_results.md).
+
 ## Validation status and roadmap
 
-AstroTransit's current state: **a serious discovery/characterization
-framework; however the pipeline's scientific validation evidence
-(completeness maps, calibrated FPP, known-planet/FP benchmarks) is not yet a
-fully closed loop.** This is reported as a deliberate limit.
+AstroTransit's current state: **a serious discovery/characterization framework
+with a measured >=50 selected known-target campaign, but its scientific
+validation program (injection completeness, false-positive/quiet controls,
+calibrated FPP and blind testing) is not yet a fully closed loop.** This is
+reported as a deliberate limit.
 
 - Known-target performance report: `astrotransit/validation/benchmark_report.py`;
   when `astrotransit benchmark` runs, per-target expected/recovered period and
