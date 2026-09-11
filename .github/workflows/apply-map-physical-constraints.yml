@@ -1,0 +1,106 @@
+name: Apply MAP physical constraints patch
+
+on:
+  push:
+    branches: ["modeling/physical-limb-darkening"]
+    paths: [".github/workflows/apply-map-physical-constraints.yml"]
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: modeling/physical-limb-darkening
+          fetch-depth: 0
+
+      - name: Apply reviewable source patch
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path("astrotransit/modeling/map_fit.py")
+          text = path.read_text(encoding="utf-8")
+
+          replacements = [
+              (
+                  "from astrotransit.modeling.transit_model import TransitModel, TransitModelParams\n",
+                  "from astrotransit.modeling.transit_model import TransitModel, TransitModelParams\n"
+                  "from astrotransit.modeling.parameterization import (\n"
+                  "    LIMB_DARKENING_PARAMETERIZATION,\n"
+                  "    parameter_boundary_hits,\n"
+                  "    quadratic_ld_to_unit_square,\n"
+                  "    unit_square_to_quadratic_ld,\n"
+                  ")\n",
+              ),
+              (
+                  "    fit_method: str = \"map\"\n",
+                  "    fit_method: str = \"map\"\n"
+                  "    optimizer_boundary_hit: bool = False\n"
+                  "    optimizer_boundary_hits: tuple[str, ...] = field(default_factory=tuple)\n"
+                  "    limb_darkening_parameterization: str = LIMB_DARKENING_PARAMETERIZATION\n",
+              ),
+              (
+                  "            \"optimizer_message\": self.optimizer_message,\n",
+                  "            \"optimizer_message\": self.optimizer_message,\n"
+                  "            \"optimizer_boundary_hit\": self.optimizer_boundary_hit,\n"
+                  "            \"optimizer_boundary_hits\": list(self.optimizer_boundary_hits),\n"
+                  "            \"limb_darkening_parameterization\": self.limb_darkening_parameterization,\n",
+              ),
+              (
+                  "        \"u1\",\n        \"u2\",\n",
+                  "        \"ld_q1\",\n        \"ld_q2\",\n",
+              ),
+              (
+                  "        return np.array([\n            period,\n            t0,\n            np.log(max(rp_rs, 1e-6)),\n            impact_parameter,\n            u1,\n            u2,\n            log_jitter,\n            baseline,\n        ])\n",
+                  "        q1, q2 = quadratic_ld_to_unit_square(u1, u2)\n"
+                  "        return np.array([\n            period,\n            t0,\n            np.log(max(rp_rs, 1e-6)),\n            impact_parameter,\n            q1,\n            q2,\n            log_jitter,\n            baseline,\n        ])\n",
+              ),
+              (
+                  "        return {\n            \"period\": x[0],\n            \"t0\": x[1],\n            \"rp_rs\": np.exp(x[2]),\n            \"impact_parameter\": x[3],\n            \"u1\": x[4],\n            \"u2\": x[5],\n            \"log_jitter\": x[6],\n            \"baseline\": x[7],\n        }\n",
+                  "        u1, u2 = unit_square_to_quadratic_ld(x[4], x[5])\n"
+                  "        return {\n            \"period\": x[0],\n            \"t0\": x[1],\n            \"rp_rs\": np.exp(x[2]),\n            \"impact_parameter\": x[3],\n            \"u1\": u1,\n            \"u2\": u2,\n            \"log_jitter\": x[6],\n            \"baseline\": x[7],\n        }\n",
+              ),
+              (
+                  "            (0.0, 1.0),     # u1\n            (-1.0, 1.0),    # u2\n",
+                  "            (0.0, 1.0),     # Kipping q1\n            (0.0, 1.0),     # Kipping q2\n",
+              ),
+              (
+                  "        best_phys = ParameterVector.from_vector(best_result.x)\n\n        # Eğim hesapla\n",
+                  "        best_phys = ParameterVector.from_vector(best_result.x)\n"
+                  "        boundary_hits = parameter_boundary_hits(\n"
+                  "            best_result.x, bounds, ParameterVector.PARAM_NAMES\n"
+                  "        )\n\n        # Eğim hesapla\n",
+              ),
+              (
+                  "            optimizer_message=str(best_result.message),\n            fit_method=\"map\",\n",
+                  "            optimizer_message=str(best_result.message),\n"
+                  "            fit_method=\"map\",\n"
+                  "            optimizer_boundary_hit=bool(boundary_hits),\n"
+                  "            optimizer_boundary_hits=boundary_hits,\n"
+                  "            limb_darkening_parameterization=LIMB_DARKENING_PARAMETERIZATION,\n",
+              ),
+          ]
+
+          for old, new in replacements:
+              count = text.count(old)
+              if count != 1:
+                  raise SystemExit(f"Expected exactly one source match, found {count}: {old[:80]!r}")
+              text = text.replace(old, new)
+
+          path.write_text(text, encoding="utf-8")
+          PY
+
+      - name: Remove one-time patch workflow
+        run: rm .github/workflows/apply-map-physical-constraints.yml
+
+      - name: Commit generated source patch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add astrotransit/modeling/map_fit.py .github/workflows/apply-map-physical-constraints.yml
+          git commit -m "modeling: enforce physical limb-darkening coordinates"
+          git push origin HEAD:modeling/physical-limb-darkening
