@@ -1,0 +1,12 @@
+{
+  "artifacts": {
+    "environment/env_manifest.json": "07ac15ca1ad808168a3cad6d0c040061e016077b13ffbc75acf1c4956cf5121e",
+    "input/target.json": "0008d04a924f4e32406d745052610de9a6a36dbea556d903481f74a26b0a99ef",
+    "results/radius_diagnostics.csv": "961544b4ac343d34cbd0cd60792a6abd2964f7638779f2e8abba4ca95eb4ef7c",
+    "results/radius_diagnostics.json": "241b1cab8103f88d90a47b956ecee5801caa50b6c966d23fade5a186c8186aa4"
+  },
+  "campaign": "tls_map_n10_v2",
+  "canonical_output_hash": "ca1d1897aaed2284e770cccb90a14573242da8fe8762571948bf4e8bb379336d",
+  "target_id": "TIC 100100827",
+  "tic_id": "100100827"
+}

@@ -1,0 +1,205 @@
+name: Sharded N=10 TLS-MAP radius diagnostics v2
+
+on:
+  push:
+    branches: ["validation/tls-map-radius-n10-v2"]
+    paths: [".github/workflows/tls-map-radius-n10-v2.yml"]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: tls-map-radius-n10-v2
+  cancel-in-progress: false
+
+env:
+  CAMPAIGN_ROOT: validation_runs/radius_diagnostics/tls_map_n10_v2
+
+jobs:
+  diagnostic-shards:
+    name: v2 radius diagnostic (${{ matrix.tic_id }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    strategy:
+      fail-fast: false
+      max-parallel: 5
+      matrix:
+        tic_id: ["100100827", "25155310", "38846515", "279741379", "281541555", "219338557", "142090065", "183985250", "1003831", "55315929"]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: validation/tls-map-radius-n10-v2
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Install locked environment and restore clean tree
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r envs/requirements.lock
+          python -m pip install --no-deps -e .
+          git reset --hard HEAD
+          test -z "$(git status --porcelain)"
+      - name: Prepare immutable target input
+        env:
+          TIC_ID: ${{ matrix.tic_id }}
+        run: |
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+          tic_id = os.environ["TIC_ID"]
+          source = json.loads(Path("validation_runs/v1_known_planets/known_planets_10_v1/input/targets.json").read_text(encoding="utf-8"))
+          selected = [row for row in source if str(row.get("tic_id")) == tic_id]
+          if len(selected) != 1:
+              raise SystemExit(f"Expected one frozen target for TIC {tic_id}")
+          work = Path(f"/tmp/astrotransit_tls_map_n10_v2/{tic_id}")
+          work.mkdir(parents=True, exist_ok=True)
+          (work / "target.json").write_text(json.dumps(selected, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+          PY
+      - name: Capture clean environment before evidence writes
+        env:
+          TIC_ID: ${{ matrix.tic_id }}
+        run: |
+          WORK="/tmp/astrotransit_tls_map_n10_v2/$TIC_ID"
+          python scripts/maintenance/make_environment_manifest.py --config configs/default.toml --output "$WORK/env_manifest.json"
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+          tic_id = os.environ["TIC_ID"]
+          manifest = json.loads(Path(f"/tmp/astrotransit_tls_map_n10_v2/{tic_id}/env_manifest.json").read_text())
+          if manifest.get("git", {}).get("dirty") is not False:
+              raise SystemExit(f"Shard {tic_id} is dirty")
+          PY
+      - name: Run diagnostic shard
+        env:
+          TIC_ID: ${{ matrix.tic_id }}
+        run: |
+          SHARD="$CAMPAIGN_ROOT/shards/TIC-$TIC_ID"
+          WORK="/tmp/astrotransit_tls_map_n10_v2/$TIC_ID"
+          rm -rf "$SHARD"
+          mkdir -p "$SHARD/environment" "$SHARD/input" "$SHARD/results"
+          cp "$WORK/target.json" "$SHARD/input/target.json"
+          cp "$WORK/env_manifest.json" "$SHARD/environment/env_manifest.json"
+          python scripts/validation/run_radius_diagnostics.py --targets "$WORK/target.json" --output-dir "$SHARD/results"
+      - name: Validate shard contract
+        env:
+          TIC_ID: ${{ matrix.tic_id }}
+        run: |
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+          from astrotransit.modeling.parameterization import is_physical_quadratic_limb_darkening
+          from astrotransit.validation.provenance import canonical_hash, sha256_file
+          tic_id = os.environ["TIC_ID"]
+          root = Path(os.environ["CAMPAIGN_ROOT"]) / "shards" / f"TIC-{tic_id}"
+          report = json.loads((root / "results/radius_diagnostics.json").read_text())
+          rows = report.get("rows", [])
+          expected = f"TIC {int(tic_id)}"
+          if report.get("schema_version") != "1.1" or not rows:
+              raise SystemExit("Missing v2 diagnostic rows")
+          if any(row.get("target_id") != expected for row in rows):
+              raise SystemExit("Shard target mismatch")
+          evaluated = [row for row in rows if row.get("comparison_status") == "evaluated"]
+          for row in evaluated:
+              if row.get("limb_darkening_parameterization") != "kipping_q1_q2":
+                  raise SystemExit("Missing Kipping parameterization provenance")
+              if not is_physical_quadratic_limb_darkening(row["limb_darkening_u1"], row["limb_darkening_u2"]):
+                  raise SystemExit("Unphysical limb-darkening result")
+          manifest = {
+              "campaign": "tls_map_n10_v2", "tic_id": tic_id, "target_id": expected,
+              "canonical_output_hash": canonical_hash(report),
+              "artifacts": {str(path.relative_to(root)): sha256_file(path) for path in sorted(root.rglob("*")) if path.is_file()},
+          }
+          (root / "manifest.json").write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n")
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: radius-v2-shard-${{ matrix.tic_id }}
+          path: ${{ env.CAMPAIGN_ROOT }}/shards/TIC-${{ matrix.tic_id }}
+          if-no-files-found: error
+          retention-days: 7
+
+  aggregate:
+    name: aggregate and freeze v2
+    needs: diagnostic-shards
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: validation/tls-map-radius-n10-v2
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Install locked aggregation environment
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r envs/requirements.lock
+          python -m pip install --no-deps -e .
+          git reset --hard HEAD
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: radius-v2-shard-*
+          path: downloaded-shards
+      - name: Assemble and aggregate
+        run: |
+          rm -rf "$CAMPAIGN_ROOT"
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+          from astrotransit.validation.radius_diagnostics import RadiusDiagnosticReport, RadiusDiagnosticRow, write_radius_diagnostic_report
+          ids = ["100100827", "25155310", "38846515", "279741379", "281541555", "219338557", "142090065", "183985250", "1003831", "55315929"]
+          root = Path(os.environ["CAMPAIGN_ROOT"])
+          (root / "input").mkdir(parents=True, exist_ok=True)
+          frozen = Path("validation_runs/v1_known_planets/known_planets_10_v1/input/targets.json")
+          (root / "input/targets.json").write_bytes(frozen.read_bytes())
+          rows = []
+          for tic_id in ids:
+              artifact = Path("downloaded-shards") / f"radius-v2-shard-{tic_id}"
+              destination = root / "shards" / f"TIC-{tic_id}"
+              for source in artifact.rglob("*"):
+                  if source.is_file():
+                      target = destination / source.relative_to(artifact)
+                      target.parent.mkdir(parents=True, exist_ok=True)
+                      target.write_bytes(source.read_bytes())
+              shard = json.loads((destination / "results/radius_diagnostics.json").read_text())
+              rows.extend(RadiusDiagnosticRow(**row) for row in shard["rows"])
+          write_radius_diagnostic_report(RadiusDiagnosticReport(rows=rows), root / "aggregate")
+          PY
+      - name: Validate and manifest aggregate
+        run: |
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+          from astrotransit.modeling.parameterization import is_physical_quadratic_limb_darkening
+          from astrotransit.validation.provenance import build_manifest, canonical_hash, sha256_file
+          root = Path(os.environ["CAMPAIGN_ROOT"])
+          report = json.loads((root / "aggregate/radius_diagnostics.json").read_text())
+          corpus = json.loads((root / "input/targets.json").read_text())
+          expected = [f"TIC {int(row['tic_id'])}" for row in corpus]
+          measured = list(dict.fromkeys(row["target_id"] for row in report["rows"]))
+          if measured != expected or report["summary"]["n_rows"] < 10:
+              raise SystemExit("Aggregate target contract failed")
+          evaluated = [row for row in report["rows"] if row["comparison_status"] == "evaluated"]
+          if any(not is_physical_quadratic_limb_darkening(row["limb_darkening_u1"], row["limb_darkening_u2"]) for row in evaluated):
+              raise SystemExit("Aggregate contains unphysical limb darkening")
+          env_paths = sorted(root.glob("shards/TIC-*/environment/env_manifest.json"))
+          envs = [json.loads(path.read_text()) for path in env_paths]
+          commits = {item.get("git", {}).get("commit") for item in envs}
+          if len(env_paths) != 10 or any(item.get("git", {}).get("dirty") is not False for item in envs) or len(commits) != 1:
+              raise SystemExit("Environment provenance contract failed")
+          manifest = build_manifest(input_path=root / "input/targets.json", config={"campaign": "tls_map_n10_v2", "diagnostic_schema": "1.1", "target_ids": expected}, seed=42, pipeline_version="0.3.0", environment_manifest_path=env_paths[0])
+          manifest.update({"campaign": "tls_map_n10_v2", "scope": "physical_limb_darkening_diagnostic_on_frozen_n10", "source_commit": next(iter(commits)), "source_shard_count": 10, "target_ids": expected, "aggregate_canonical_output_hash": canonical_hash(report)})
+          manifest["artifacts"] = {str(path.relative_to(root)): sha256_file(path) for path in sorted(root.rglob("*")) if path.is_file() and path != root / "manifest.json"}
+          (root / "manifest.json").write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n")
+          PY
+      - name: Freeze clean v2 evidence
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f "$CAMPAIGN_ROOT"
+          git commit -m "validation: freeze clean N=10 radius diagnostics v2"
+          git push origin HEAD:validation/tls-map-radius-n10-v2
