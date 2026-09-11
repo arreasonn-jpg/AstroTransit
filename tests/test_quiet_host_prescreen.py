@@ -32,6 +32,7 @@ def test_current_host_corpus_state_is_consistent() -> None:
     root = Path("validation_runs/v1_injection_recovery/real_noise_v1")
     contract = json.loads((root / "contract.json").read_text(encoding="utf-8"))
     quiet_path = root / "input/quiet_hosts.json"
+    report_path = root / "report.json"
     if not quiet_path.exists():
         assert contract["status"] == "pending_data"
         assert contract["host_corpus"]["status"] == "pending_data"
@@ -40,7 +41,15 @@ def test_current_host_corpus_state_is_consistent() -> None:
     assert payload["status"] == "frozen"
     assert payload["selected_host_count"] == payload["required_host_count"] == 10
     assert len(payload["hosts"]) == 10
-    assert contract["status"] == "pending_run"
+    if report_path.exists():
+        report = json.loads(report_path.read_text(encoding="utf-8"))
+        assert contract["status"] == "measured"
+        assert contract["status_reason"] == "immutable_measured_report_frozen"
+        assert report["status"] == "measured"
+        assert report["recorded_trials"] == contract["grid"]["planned_total_trials"] == 960
+        assert contract["measured_report"]["path"] == str(report_path)
+    else:
+        assert contract["status"] == "pending_run"
     assert contract["host_corpus"]["status"] == "frozen"
     assert len({host["target_id"] for host in payload["hosts"]}) == 10
     for host in payload["hosts"]:
