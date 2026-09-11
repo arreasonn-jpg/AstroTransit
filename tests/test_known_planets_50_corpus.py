@@ -26,6 +26,10 @@ def test_known_planets_50_manifest_contract() -> None:
     assert manifest["target_count"] == 50
     assert manifest["unique_tic_count"] == 50
     assert manifest["selected_corpus_sha256"] == hashlib.sha256(payload).hexdigest()
-    assert manifest["selection_policy"] == "first_50_unique_registry_order_v1"
+    assert manifest["selection_policy"] == "frozen_n10_then_registry_order_to_50_v1"
+    assert manifest["selection_lineage_counts"] == {
+        "frozen_n10_prefix": 10,
+        "verified_registry_order": 40,
+    }
     assert sum(manifest["difficulty_counts"].values()) == 50
     assert sum(manifest["reference_status_counts"].values()) == 50
