@@ -1,0 +1,116 @@
+name: Apply radius reliability policy
+
+on:
+  push:
+    branches: ["modeling/radius-reliability-policy"]
+    paths: [".github/workflows/apply-radius-reliability-policy.yml"]
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: modeling/radius-reliability-policy
+          fetch-depth: 0
+      - name: Apply reliability fields
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          map_path = Path("astrotransit/modeling/map_fit.py")
+          text = map_path.read_text(encoding="utf-8")
+          replacements = [
+              (
+                  'from astrotransit.modeling.parameterization import (\n    LIMB_DARKENING_PARAMETERIZATION,\n    parameter_boundary_hits,\n    quadratic_ld_to_unit_square,\n    unit_square_to_quadratic_ld,\n)\n',
+                  'from astrotransit.modeling.parameterization import (\n    LIMB_DARKENING_PARAMETERIZATION,\n    parameter_boundary_hits,\n    quadratic_ld_to_unit_square,\n    unit_square_to_quadratic_ld,\n)\nfrom astrotransit.modeling.reliability import assess_radius_reliability\n',
+              ),
+              (
+                  '    limb_darkening_parameterization: str = LIMB_DARKENING_PARAMETERIZATION\n',
+                  '    limb_darkening_parameterization: str = LIMB_DARKENING_PARAMETERIZATION\n'
+                  '    radius_reliability_status: str = "uncalibrated_no_detected_flag"\n'
+                  '    radius_reliability_reasons: tuple[str, ...] = field(default_factory=tuple)\n'
+                  '    is_grazing_geometry: bool = False\n'
+                  '    radius_at_optimizer_boundary: bool = False\n',
+              ),
+              (
+                  '            "limb_darkening_parameterization": self.limb_darkening_parameterization,\n',
+                  '            "limb_darkening_parameterization": self.limb_darkening_parameterization,\n'
+                  '            "radius_reliability_status": self.radius_reliability_status,\n'
+                  '            "radius_reliability_reasons": list(self.radius_reliability_reasons),\n'
+                  '            "is_grazing_geometry": self.is_grazing_geometry,\n'
+                  '            "radius_at_optimizer_boundary": self.radius_at_optimizer_boundary,\n',
+              ),
+              (
+                  '        map_result = MAPFitResult(\n',
+                  '        radius_reliability = assess_radius_reliability(\n'
+                  '            rp_rs=float(best_phys["rp_rs"]),\n'
+                  '            impact_parameter=float(best_phys["impact_parameter"]),\n'
+                  '            optimizer_boundary_hits=boundary_hits,\n'
+                  '        )\n\n'
+                  '        map_result = MAPFitResult(\n',
+              ),
+              (
+                  '            limb_darkening_parameterization=LIMB_DARKENING_PARAMETERIZATION,\n',
+                  '            limb_darkening_parameterization=LIMB_DARKENING_PARAMETERIZATION,\n'
+                  '            radius_reliability_status=radius_reliability.status,\n'
+                  '            radius_reliability_reasons=radius_reliability.reasons,\n'
+                  '            is_grazing_geometry=radius_reliability.is_grazing_geometry,\n'
+                  '            radius_at_optimizer_boundary=radius_reliability.radius_at_optimizer_boundary,\n',
+              ),
+          ]
+          for old, new in replacements:
+              count = text.count(old)
+              if count != 1:
+                  raise SystemExit(f"MAP patch expected one match, found {count}: {old[:80]!r}")
+              text = text.replace(old, new)
+          map_path.write_text(text, encoding="utf-8")
+
+          diag_path = Path("astrotransit/validation/radius_diagnostics.py")
+          text = diag_path.read_text(encoding="utf-8")
+          replacements = [
+              ('RADIUS_DIAGNOSTIC_SCHEMA_VERSION = "1.1"', 'RADIUS_DIAGNOSTIC_SCHEMA_VERSION = "1.2"'),
+              (
+                  '    tls_transit_count: int\n\n    def to_dict',
+                  '    tls_transit_count: int\n'
+                  '    radius_reliability_status: str = ""\n'
+                  '    radius_reliability_reasons: tuple[str, ...] = field(default_factory=tuple)\n'
+                  '    is_grazing_geometry: bool = False\n'
+                  '    radius_at_optimizer_boundary: bool = False\n\n'
+                  '    def to_dict',
+              ),
+              (
+                  '        tls_transit_count=int(_get(tls, "transit_count", 0) or 0),\n    )\n',
+                  '        tls_transit_count=int(_get(tls, "transit_count", 0) or 0),\n'
+                  '        radius_reliability_status=str(\n'
+                  '            _get(fit, "radius_reliability_status", "") or ""\n'
+                  '        ),\n'
+                  '        radius_reliability_reasons=tuple(\n'
+                  '            str(item) for item in (_get(fit, "radius_reliability_reasons", ()) or ())\n'
+                  '        ),\n'
+                  '        is_grazing_geometry=bool(_get(fit, "is_grazing_geometry", False)),\n'
+                  '        radius_at_optimizer_boundary=bool(\n'
+                  '            _get(fit, "radius_at_optimizer_boundary", False)\n'
+                  '        ),\n'
+                  '    )\n',
+              ),
+          ]
+          for old, new in replacements:
+              count = text.count(old)
+              if count != 1:
+                  raise SystemExit(f"Diagnostic patch expected one match, found {count}: {old[:80]!r}")
+              text = text.replace(old, new)
+          diag_path.write_text(text, encoding="utf-8")
+          PY
+      - name: Remove one-time workflow
+        run: rm .github/workflows/apply-radius-reliability-policy.yml
+      - name: Commit policy integration
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add astrotransit/modeling/map_fit.py astrotransit/validation/radius_diagnostics.py .github/workflows/apply-radius-reliability-policy.yml
+          git commit -m "modeling: expose radius reliability evidence"
+          git push origin HEAD:modeling/radius-reliability-policy
