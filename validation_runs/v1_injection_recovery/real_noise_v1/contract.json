@@ -85,6 +85,12 @@
     "status": "frozen"
   },
   "injection_stage": "post_detrending_real_residual",
+  "measured_report": {
+    "output_sha256": "c142612b64fb888f76725b45df5e494b3ac8186804c3238b1a8df56a868ba810",
+    "path": "validation_runs/v1_injection_recovery/real_noise_v1/report.json",
+    "report_sha256": "86eb94c77b15c60d7e91de0ca2797e3f87cc64adf3b8ac897ed8b6a7220493d9",
+    "trials_sha256": "6dff856f848b89b17b14dca33a938ab2bc13ae5830fd25795998ed4dea199a47"
+  },
   "period_bins": {
     "long": {
       "condition": "P > 20 days",
@@ -148,6 +154,6 @@
   ],
   "schema_version": "1.0",
   "seed": 42,
-  "status": "pending_run",
-  "status_reason": "quiet_host_corpus_frozen_injection_trials_not_run"
+  "status": "measured",
+  "status_reason": "immutable_measured_report_frozen"
 }

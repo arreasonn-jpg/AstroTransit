@@ -1,0 +1,12 @@
+{
+  "evaluable_trials": 888,
+  "excluded_from_denominator": 72,
+  "outcomes": {
+    "harmonic_only_recovery": 16,
+    "no_candidate": 245,
+    "not_evaluated_no_observed_injection": 72,
+    "period_mismatch": 177,
+    "strict_recovery": 450
+  },
+  "planned_trials": 960
+}
