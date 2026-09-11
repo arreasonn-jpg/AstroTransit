@@ -1,0 +1,97 @@
+name: Freeze known-planets N=50 corpus
+
+on:
+  push:
+    branches: ["validation/known-planets-50-v1"]
+    paths: [".github/workflows/freeze-known-planets-50-corpus.yml"]
+
+permissions:
+  contents: write
+
+jobs:
+  freeze:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: validation/known-planets-50-v1
+          fetch-depth: 0
+      - name: Build deterministic corpus
+        run: |
+          python - <<'PY'
+          import hashlib, json
+          from collections import Counter
+          from pathlib import Path
+
+          source_path = Path("benchmarks/verified_targets.json")
+          source_bytes = source_path.read_bytes()
+          registry = json.loads(source_bytes)
+          n10 = json.loads(Path("validation_runs/v1_known_planets/known_planets_10_v1/input/targets.json").read_text())
+          n10_ids = [str(row["tic_id"]) for row in n10]
+
+          selected = []
+          seen = set()
+          for row in registry:
+              tic = str(row.get("tic_id") or "").strip()
+              if not tic or tic in seen:
+                  continue
+              period = float(row.get("expected_period_days", row.get("period")))
+              radius = float(row.get("expected_radius_rearth", row.get("rp_rearth")))
+              if period <= 0 or radius <= 0:
+                  continue
+              seen.add(tic)
+              reference = str(row.get("reference") or "").strip()
+              reference_status = "catalog_snapshot" if reference else "inherited_curated"
+              if not reference:
+                  reference = "AstroTransit curated verified-target registry; carried forward from the frozen N=10/N=5 evidence lineage"
+              selected.append({
+                  "tic_id": tic,
+                  "name": str(row.get("name") or f"TIC {tic}"),
+                  "sector": row.get("sector"),
+                  "period": period,
+                  "rp_rearth": radius,
+                  "expected_period_days": period,
+                  "expected_radius_rearth": radius,
+                  "difficulty": str(row.get("difficulty") or "unclassified"),
+                  "available_sectors": list(row.get("available_sectors") or []),
+                  "reference": reference,
+                  "reference_status": reference_status,
+                  "source_registry": str(source_path),
+              })
+              if len(selected) == 50:
+                  break
+
+          if len(selected) != 50:
+              raise SystemExit(f"Expected 50 eligible unique targets, found {len(selected)}")
+          if [row["tic_id"] for row in selected[:10]] != n10_ids:
+              raise SystemExit("Frozen N=10 prefix changed")
+
+          root = Path("validation_runs/v1_known_planets/known_planets_50_v1")
+          output = root / "input/targets.json"
+          output.parent.mkdir(parents=True, exist_ok=True)
+          output.write_text(json.dumps(selected, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+          manifest = {
+              "corpus_version": "known_planets_50_v1",
+              "selection_policy": "first_50_unique_registry_order_v1",
+              "selection_is_output_independent": True,
+              "population_representative": False,
+              "target_count": len(selected),
+              "unique_tic_count": len({row["tic_id"] for row in selected}),
+              "source_path": str(source_path),
+              "source_sha256": hashlib.sha256(source_bytes).hexdigest(),
+              "selected_corpus_sha256": hashlib.sha256(output.read_bytes()).hexdigest(),
+              "difficulty_counts": dict(sorted(Counter(row["difficulty"] for row in selected).items())),
+              "reference_status_counts": dict(sorted(Counter(row["reference_status"] for row in selected).items())),
+              "claim_boundary": "Not a population-representative sample; no recall, precision, or completeness claim is implied.",
+          }
+          (root / "corpus_manifest.json").write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+          PY
+      - name: Remove one-time workflow
+        run: rm .github/workflows/freeze-known-planets-50-corpus.yml
+      - name: Commit frozen corpus
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add validation_runs/v1_known_planets/known_planets_50_v1 .github/workflows/freeze-known-planets-50-corpus.yml
+          git commit -m "validation: freeze N=50 known-planet corpus"
+          git push origin HEAD:validation/known-planets-50-v1
