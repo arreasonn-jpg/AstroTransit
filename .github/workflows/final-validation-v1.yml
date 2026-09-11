@@ -2,6 +2,13 @@ name: Final validation program v1
 
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/final-validation-v1.yml'
+      - 'scripts/validation/**'
+      - 'validation_runs/final_acceptance_v1/**'
+      - 'validation_runs/v1_injection_recovery/real_noise_v1/**'
 
 permissions:
   contents: read
