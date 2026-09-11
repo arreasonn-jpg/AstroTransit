@@ -7,6 +7,8 @@ on:
         description: Maximum deterministic candidates to screen
         required: true
         default: "30"
+  pull_request:
+    types: [opened, synchronize, reopened]
 
 permissions:
   contents: write
@@ -17,13 +19,17 @@ concurrency:
 
 jobs:
   prescreen:
+    if: github.event_name == 'workflow_dispatch' || github.head_ref == 'validation/quiet-host-prescreen-v1'
     runs-on: ubuntu-latest
     timeout-minutes: 180
+    env:
+      BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
+      CANDIDATE_LIMIT: ${{ inputs.candidate_limit || '30' }}
     steps:
-      - name: Checkout selected branch
+      - name: Checkout source branch
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.ref_name }}
+          ref: ${{ env.BRANCH_NAME }}
           fetch-depth: 0
       - name: Set up Python 3.11
         uses: actions/setup-python@v5
@@ -42,7 +48,7 @@ jobs:
             --labelled-corpus benchmarks/corpora/tfop_disposition_corpus_v1.json \
             --contract validation_runs/v1_injection_recovery/real_noise_v1/contract.json \
             --output-dir validation_runs/v1_injection_recovery/real_noise_v1/input \
-            --candidate-limit "${{ inputs.candidate_limit }}" \
+            --candidate-limit "$CANDIDATE_LIMIT" \
             --required-hosts 10
           code=$?
           echo "exit_code=$code" >> "$GITHUB_OUTPUT"
@@ -51,7 +57,8 @@ jobs:
         if: steps.screen.outputs.exit_code == '0'
         run: |
           python scripts/maintenance/make_environment_manifest.py \
-            --output validation_runs/v1_injection_recovery/real_noise_v1/environment_manifest.json
+            --output validation_runs/v1_injection_recovery/real_noise_v1/environment_manifest.json \
+            --config configs/default.toml
       - name: Upload prescreen evidence
         if: always()
         uses: actions/upload-artifact@v4
@@ -67,7 +74,7 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add validation_runs/v1_injection_recovery/real_noise_v1 .github/workflows/quiet-host-prescreen-v1.yml
           git commit -m "validation: freeze real-TESS quiet host corpus"
-          git push origin "HEAD:${GITHUB_REF_NAME}"
+          git push origin "HEAD:${BRANCH_NAME}"
       - name: Enforce ten-host result
         if: steps.screen.outputs.exit_code != '0'
         run: |
