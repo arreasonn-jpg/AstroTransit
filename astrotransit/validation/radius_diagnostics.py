@@ -15,7 +15,7 @@ from typing import Any, Iterable, Optional
 
 import numpy as np
 
-RADIUS_DIAGNOSTIC_SCHEMA_VERSION = "1.0"
+RADIUS_DIAGNOSTIC_SCHEMA_VERSION = "1.1"
 
 
 def _get(obj: Any, name: str, default: Any = None) -> Any:
@@ -82,6 +82,9 @@ class RadiusDiagnosticRow:
     sector: int
     comparison_status: str
     fit_method: str
+    fit_optimizer_boundary_hit: bool
+    fit_optimizer_boundary_hits: tuple[str, ...]
+    limb_darkening_parameterization: str
     cascade_status: str
     tls_period_days: Optional[float]
     tls_duration_hours: Optional[float]
@@ -213,6 +216,15 @@ def build_radius_diagnostic_row(
         sector=int(_get(sector_result, "sector", -1)),
         comparison_status=status,
         fit_method=str(_get(fit, "fit_method", "") or ""),
+        fit_optimizer_boundary_hit=bool(
+            _get(fit, "optimizer_boundary_hit", False)
+        ),
+        fit_optimizer_boundary_hits=tuple(
+            str(item) for item in (_get(fit, "optimizer_boundary_hits", ()) or ())
+        ),
+        limb_darkening_parameterization=str(
+            _get(fit, "limb_darkening_parameterization", "") or ""
+        ),
         cascade_status=cascade_status,
         tls_period_days=_finite(period),
         tls_duration_hours=(None if _finite(duration) is None else _finite(duration) * 24.0),
