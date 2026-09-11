@@ -19,7 +19,20 @@
         {"path": "uncertainty_coverage.status", "operator": "equals", "value": "not_evaluated_no_per_trial_intervals"}
       ]
     },
-    {"id": "labelled_fp_quiet_controls", "status": "pending_run", "required_output": "validation_runs/final_acceptance_v1/false_positive_controls/report.json"},
+    {
+      "id": "labelled_fp_quiet_controls",
+      "status": "pending_run",
+      "required_output": "validation_runs/final_acceptance_v1/false_positive_controls/report.json",
+      "acceptance_checks": [
+        {"path": "corpora.false_positives.labelled_count", "operator": "gte", "value": 100},
+        {"path": "corpora.quiet_controls.labelled_count", "operator": "gte", "value": 100},
+        {"path": "corpora.quiet_controls.sha256", "operator": "equals", "value": "a59e245487fc80e440fb9481734cf1f95e8778433de2b2ab9abe58f258974aea"},
+        {"path": "corpora.quiet_controls.detector_used_for_selection", "operator": "equals", "value": false},
+        {"path": "evaluation.false_positives.evaluated_count", "operator": "gte", "value": 100},
+        {"path": "evaluation.quiet_controls.evaluated_count", "operator": "gte", "value": 100},
+        {"path": "evaluation.total_errors", "operator": "equals", "value": 0}
+      ]
+    },
     {"id": "adversarial_false_positives", "status": "pending_data", "required_output": "validation_runs/final_acceptance_v1/adversarial_fp/report.json"},
     {"id": "fpp_quality_calibration", "status": "pending_run", "required_output": "validation_runs/final_acceptance_v1/fpp_calibration/report.json"},
     {"id": "detrending_cadence_impact_robustness", "status": "pending_run", "required_output": "validation_runs/final_acceptance_v1/robustness/report.json"},

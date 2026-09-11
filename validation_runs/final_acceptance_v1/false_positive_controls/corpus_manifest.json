@@ -1,0 +1,38 @@
+{
+  "schema_version": "1.0",
+  "corpus": "independent_quiet_controls_v1",
+  "status": "frozen",
+  "materialization": "deterministic_rebuild_from_frozen_sources",
+  "required_count": 100,
+  "selected_count": 100,
+  "eligible_count": 283,
+  "selection": {
+    "method": "sha256_seeded_rank_after_catalog_only_exclusions_v1",
+    "seed": 20260912,
+    "detector_used_for_selection": false,
+    "prior_injection_hosts_excluded": true
+  },
+  "artifacts": {
+    "quiet_controls_json_sha256": "a59e245487fc80e440fb9481734cf1f95e8778433de2b2ab9abe58f258974aea",
+    "selection_audit_json_sha256": "f8165130969f457c273533aaf170e7aef270431f5077b4207acd2d5a63b4492d"
+  },
+  "sources": {
+    "pool": {
+      "path": "benchmarks/discovery_targets_v4_small_cool_1000_dedup.csv",
+      "sha256": "41438232e7dc1adeaea7ed608381ba634ba4f0b440ad773021f16bd5a2662ca0"
+    },
+    "labelled_corpus": {
+      "path": "benchmarks/corpora/tfop_disposition_corpus_v1.json",
+      "sha256": "c6490fa32c8fea72fcddf50a8af038d825de573b5da39cbb3063a4c0cecbb9b0"
+    },
+    "prior_injection_hosts": {
+      "path": "validation_runs/v1_injection_recovery/real_noise_v1/input/quiet_hosts.json",
+      "sha256": "8175058b8b519bffbff8a37a8c7978bb67ad8f1e03b777a9568ed35f21ffbe42"
+    }
+  },
+  "rejection_counts": {
+    "fewer_than_two_catalog_sectors": 660,
+    "prior_injection_host": 10
+  },
+  "claim_boundary": "Operational catalog-negative controls are not proof of planet absence and are not a population-representative false-positive sample."
+}
