@@ -4,7 +4,7 @@
   "status": "in_progress",
   "claim_policy": "Only immutable measured evidence can close a gate; pending work is never a score.",
   "gates": [
-    {"id": "parameter_recovery", "status": "ready_to_measure", "required_output": "validation_runs/v1_injection_recovery/real_noise_v1/parameter_recovery_report.json"},
+    {"id": "parameter_recovery", "status": "measured", "required_output": "validation_runs/v1_injection_recovery/real_noise_v1/parameter_recovery_report.json"},
     {"id": "labelled_fp_quiet_controls", "status": "pending_run", "required_output": "validation_runs/final_acceptance_v1/false_positive_controls/report.json"},
     {"id": "adversarial_false_positives", "status": "pending_data", "required_output": "validation_runs/final_acceptance_v1/adversarial_fp/report.json"},
     {"id": "fpp_quality_calibration", "status": "pending_run", "required_output": "validation_runs/final_acceptance_v1/fpp_calibration/report.json"},
