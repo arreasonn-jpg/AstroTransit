@@ -1,0 +1,55 @@
+{
+  "claim_boundary": "No population-level parameter-recovery or causal claim is implied.",
+  "comparison_type": "controlled_post_hoc_engineering_diagnostic",
+  "v1": {
+    "impact_strata": {
+      "b_0_5_to_0_85": {"median_absolute_fractional_delta": 0.07952829132330722, "median_signed_fractional_delta": 0.07367700754386815, "n": 75},
+      "b_gte_0_85": {"median_absolute_fractional_delta": 0.7587640707021059, "median_signed_fractional_delta": 0.7587640707021059, "n": 14},
+      "b_lt_0_5": {"median_absolute_fractional_delta": 0.04363548278317733, "median_signed_fractional_delta": 0.036715450519927445, "n": 44}
+    },
+    "limb_darkening_boundary_or_outside_count": 36,
+    "limb_darkening_closed_physical_count": 104,
+    "limb_darkening_outside_closed_physical_count": 29,
+    "limb_darkening_strict_interior_count": 97,
+    "median_absolute_fractional_delta": 0.070374826670434,
+    "median_signed_fractional_delta": 0.060955076522101706,
+    "n_abs_gt_0_25": 20,
+    "n_abs_gt_0_50": 12,
+    "n_evaluated": 133,
+    "n_not_evaluated": 20,
+    "n_rows": 153,
+    "radius_ratio_near_0_5_count": 4,
+    "radius_ratio_near_2_0_count": 6
+  },
+  "v2": {
+    "impact_strata": {
+      "b_0_5_to_0_85": {"median_absolute_fractional_delta": 0.07670747849299633, "median_signed_fractional_delta": 0.07452157127613275, "n": 76},
+      "b_gte_0_85": {"median_absolute_fractional_delta": 0.5126042124280403, "median_signed_fractional_delta": 0.5126042124280403, "n": 18},
+      "b_lt_0_5": {"median_absolute_fractional_delta": 0.044427767705139225, "median_signed_fractional_delta": 0.04159039852448031, "n": 39}
+    },
+    "limb_darkening_boundary_or_outside_count": 31,
+    "limb_darkening_closed_physical_count": 133,
+    "limb_darkening_outside_closed_physical_count": 0,
+    "limb_darkening_strict_interior_count": 102,
+    "median_absolute_fractional_delta": 0.07214598487019892,
+    "median_signed_fractional_delta": 0.06818600593388696,
+    "n_abs_gt_0_25": 21,
+    "n_abs_gt_0_50": 11,
+    "n_evaluated": 133,
+    "n_not_evaluated": 20,
+    "n_rows": 153,
+    "optimizer_boundary_hits": {
+      "impact_parameter:lower": 1,
+      "ld_q1:lower": 7,
+      "ld_q1:upper": 2,
+      "ld_q2:lower": 16,
+      "ld_q2:upper": 12,
+      "log_jitter:lower": 27,
+      "log_rp_rs:lower": 5,
+      "log_rp_rs:upper": 6
+    },
+    "optimizer_boundary_row_count": 49,
+    "radius_ratio_near_0_5_count": 5,
+    "radius_ratio_near_2_0_count": 6
+  }
+}
