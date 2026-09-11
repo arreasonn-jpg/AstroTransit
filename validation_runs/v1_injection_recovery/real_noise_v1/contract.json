@@ -1,0 +1,83 @@
+{
+  "campaign": "real_noise_injection_recovery_v1",
+  "claim_boundaries": [
+    "No numeric completeness claim before an immutable measured report exists.",
+    "Post-detrending injection measures the detection stage, not end-to-end preprocessing completeness.",
+    "Selected-host completeness is not population completeness.",
+    "Harmonic-aware recovery must be reported separately from strict recovery.",
+    "PENDING DATA and PENDING RUN are not numeric scores."
+  ],
+  "claim_scope": "detection_stage_completeness_on_selected_real_noise_hosts",
+  "execution_lanes": {
+    "cascade_single_sector": {
+      "detector": "astrotransit.detection.cascade.CascadeDetector",
+      "input": "DetrendedLightCurve",
+      "periods_days": [0.75, 2.0, 5.0, 10.0, 20.0],
+      "primary_acceptance": "candidate.confirmed and strict_period_match"
+    },
+    "long_period_stitched": {
+      "detector": "astrotransit.detection.long_period.LongPeriodTransitSearch",
+      "input": "stitched multi-sector DetrendedLightCurve",
+      "periods_days": [50.0],
+      "primary_acceptance": "has_candidate and strict_period_match"
+    }
+  },
+  "grid": {
+    "axes": {
+      "depth_ppm": [200, 500, 1000, 2000],
+      "duration_days": [0.08, 0.15],
+      "period_days": [0.75, 2.0, 5.0, 10.0, 20.0, 50.0],
+      "phase_fraction": [0.2, 0.7]
+    },
+    "expanded_grid_sha256": "a741396df50d6340bb73b4b09c874b32d08b149c8eb67ebe0799853a656ebb21",
+    "expansion_order": ["period_days", "depth_ppm", "duration_days", "phase_fraction"],
+    "planned_total_trials": 960,
+    "scenarios_per_host": 96
+  },
+  "host_corpus": {
+    "forbidden_substitutions": [
+      "synthetic_white_noise",
+      "known_planet_host_without_transit_masking",
+      "unknown_as_quiet_control"
+    ],
+    "path": "validation_runs/v1_injection_recovery/real_noise_v1/input/quiet_hosts.json",
+    "required_host_count": 10,
+    "selection_requirements": [
+      "real_TESS_SPOC_120s_data",
+      "no_TOI_or_TFOP_disposition_history_at_snapshot",
+      "no_pipeline_candidate_before_injection",
+      "at_least_20_days_valid_baseline",
+      "finite_catalog_stellar_radius_and_mass",
+      "residual_rms_and_variability_metrics_recorded"
+    ],
+    "status": "pending_data"
+  },
+  "injection_stage": "post_detrending_real_residual",
+  "period_bins": {
+    "long": {"condition": "P > 20 days", "periods_days": [50.0]},
+    "mid": {"condition": "5 <= P <= 20 days", "periods_days": [5.0, 10.0, 20.0]},
+    "short": {"condition": "P < 5 days", "periods_days": [0.75, 2.0]}
+  },
+  "provenance_requirements": [
+    "git_commit", "dirty_state", "config_sha256", "host_corpus_sha256",
+    "expanded_grid_sha256", "output_sha256", "python_version",
+    "dependency_lock_sha256", "seed"
+  ],
+  "recovery_contract": {
+    "availability_outcomes_excluded_from_denominators": true,
+    "detector_errors_count_as_failures": true,
+    "harmonic_factors": [0.3333333333333333, 0.5, 1.0, 2.0, 3.0],
+    "primary_metric": "strict_period_recovery",
+    "required_dimensions": ["period_bin", "depth_ppm", "duration_days", "host_noise_bin"],
+    "secondary_metric": "harmonic_aware_period_recovery",
+    "strict_period_tolerance_fraction": 0.02
+  },
+  "required_outputs": [
+    "trials.csv", "report.json", "data_availability.json",
+    "environment_manifest.json", "manifest.json"
+  ],
+  "schema_version": "1.0",
+  "seed": 42,
+  "status": "pending_data",
+  "status_reason": "quiet_host_corpus_not_frozen"
+}
