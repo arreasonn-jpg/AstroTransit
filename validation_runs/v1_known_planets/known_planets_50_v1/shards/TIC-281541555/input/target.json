@@ -1,0 +1,28 @@
+[
+  {
+    "tic_id": "281541555",
+    "name": "TOI-402.01",
+    "sector": 1,
+    "period": 4.7427,
+    "rp_rearth": 10.1,
+    "expected_period_days": 4.7427,
+    "expected_radius_rearth": 10.1,
+    "difficulty": "medium",
+    "available_sectors": [
+      1,
+      2,
+      28,
+      29,
+      68,
+      69,
+      95,
+      96,
+      102,
+      103
+    ],
+    "reference": "AstroTransit curated verified-target registry; carried forward from frozen N=10 evidence",
+    "reference_status": "inherited_curated",
+    "selection_lineage": "frozen_n10_prefix",
+    "source_registry": "benchmarks/verified_targets.json"
+  }
+]

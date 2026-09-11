@@ -1,0 +1,88 @@
+{
+  "metadata": {
+    "report_type": "known_target_benchmark_performance",
+    "pipeline_version": "0.3.0",
+    "generated_at_utc": "2026-09-11T09:46:46.222897+00:00",
+    "period_tolerance_fraction": 0.02,
+    "radius_tolerance_fraction": 0.2
+  },
+  "metrics": {
+    "n_targets": 1,
+    "n_detected": 1,
+    "detection_recall": 1.0,
+    "n_correct": 1,
+    "correct_recovery_rate": 1.0,
+    "n_period_recovered": 1,
+    "period_recovery_rate": 1.0,
+    "period_recovery_error_mean_days": 9.468e-05,
+    "period_recovery_error_median_days": 9.468e-05,
+    "period_recovery_error_mean_fraction": 2.261e-05,
+    "period_recovery_error_median_fraction": 2.261e-05,
+    "n_radius_recovered": 1,
+    "radius_recovery_rate": 1.0,
+    "radius_recovery_error_mean_rearth": 1.020437,
+    "radius_recovery_error_median_rearth": 1.020437,
+    "radius_recovery_error_mean_fraction": 0.07341148,
+    "radius_recovery_error_median_fraction": 0.07341148,
+    "n_sector_consistency_evaluated": 1,
+    "sector_consistency_rate": 1.0,
+    "false_positive_rejection": null,
+    "false_positive_rejection_status": "not_evaluated_no_labeled_false_positive_set",
+    "n_false_positive_targets": 0
+  },
+  "targets": [
+    {
+      "target_id": "TIC 4616072",
+      "name": "466.01",
+      "difficulty": "easy",
+      "expected_period_days": 4.1876154,
+      "recovered_period_days": 4.187520719933523,
+      "expected_radius_rearth": 13.900237,
+      "recovered_radius_rearth": 12.8798,
+      "detected": true,
+      "period_recovered": true,
+      "radius_recovered": true,
+      "correct": true,
+      "period_error_days": 9.468006647761484e-05,
+      "period_error_fraction": 2.2609542050498437e-05,
+      "radius_error_rearth": 1.0204370000000011,
+      "radius_error_fraction": 0.07341148212077256,
+      "sector_consistent": true,
+      "n_sectors_evaluated": 4,
+      "notes": []
+    }
+  ],
+  "limitations": [
+    "Known-target recovery is not injection-recovery completeness.",
+    "False-positive rejection is not measured because no labeled FP set was supplied."
+  ],
+  "provenance": {
+    "target_id": null,
+    "sector": null,
+    "data_product": null,
+    "cadence": null,
+    "pipeline_version": "",
+    "git_commit": "7fa285925b68f486388c74695f1093900748a042",
+    "config_hash": "08cf87f3685e662a29970ef8e91498cc0c6a80c482168ea9d7fa06c7e053d950",
+    "schema_version": null,
+    "model_version": null,
+    "random_seed": null,
+    "run_timestamp_utc": "2026-09-11T09:46:46.225702Z",
+    "host_platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39",
+    "python_version": "3.11.16",
+    "package_versions": {
+      "astropy": "8.0.1",
+      "astrotransit": "0.3.0",
+      "lightkurve": "2.4.2",
+      "numpy": "2.4.6",
+      "pandas": "3.0.5",
+      "pydantic": "2.13.5",
+      "scipy": "1.17.1",
+      "transitleastsquares": "1.32",
+      "wotan": "1.10"
+    },
+    "input_hash": null,
+    "environment_manifest_hash": null,
+    "output_hash": "59efa05cc8832992b42deda1e78f9bedd90c9299d9e0ddf5a1134eb001b957a1"
+  }
+}

@@ -1,0 +1,92 @@
+{
+  "metadata": {
+    "report_type": "known_target_benchmark_performance",
+    "pipeline_version": "0.3.0",
+    "generated_at_utc": "2026-09-11T10:38:21.635908+00:00",
+    "period_tolerance_fraction": 0.02,
+    "radius_tolerance_fraction": 0.2
+  },
+  "metrics": {
+    "n_targets": 1,
+    "n_detected": 0,
+    "detection_recall": 0.0,
+    "n_correct": 0,
+    "correct_recovery_rate": 0.0,
+    "n_period_recovered": 0,
+    "period_recovery_rate": 0.0,
+    "period_recovery_error_mean_days": null,
+    "period_recovery_error_median_days": null,
+    "period_recovery_error_mean_fraction": null,
+    "period_recovery_error_median_fraction": null,
+    "n_radius_recovered": 0,
+    "radius_recovery_rate": 0.0,
+    "radius_recovery_error_mean_rearth": null,
+    "radius_recovery_error_median_rearth": null,
+    "radius_recovery_error_mean_fraction": null,
+    "radius_recovery_error_median_fraction": null,
+    "n_sector_consistency_evaluated": 0,
+    "sector_consistency_rate": null,
+    "false_positive_rejection": null,
+    "false_positive_rejection_status": "not_evaluated_no_labeled_false_positive_set",
+    "n_false_positive_targets": 0
+  },
+  "targets": [
+    {
+      "target_id": "TIC 14570099",
+      "name": "5558.01",
+      "difficulty": "medium",
+      "expected_period_days": 26.1944549,
+      "recovered_period_days": null,
+      "expected_radius_rearth": 2.994594,
+      "recovered_radius_rearth": null,
+      "detected": false,
+      "period_recovered": false,
+      "radius_recovered": false,
+      "correct": false,
+      "period_error_days": null,
+      "period_error_fraction": null,
+      "radius_error_rearth": null,
+      "radius_error_fraction": null,
+      "sector_consistent": null,
+      "n_sectors_evaluated": 0,
+      "notes": [
+        "sector_consistency_not_evaluated"
+      ]
+    }
+  ],
+  "limitations": [
+    "Known-target recovery is not injection-recovery completeness.",
+    "False-positive rejection is not measured because no labeled FP set was supplied.",
+    "No successful pipeline target result was available for measurement.",
+    "Radius recovery is unavailable for all evaluated targets."
+  ],
+  "provenance": {
+    "target_id": null,
+    "sector": null,
+    "data_product": null,
+    "cadence": null,
+    "pipeline_version": "",
+    "git_commit": "25791b5fdc18759fe4096e8f8ba11564db522b52",
+    "config_hash": "fd066a9f5caf41ad24055016ac4ccd8215cf5e5f663f96fd418b20b07a21ade8",
+    "schema_version": null,
+    "model_version": null,
+    "random_seed": null,
+    "run_timestamp_utc": "2026-09-11T10:38:21.639158Z",
+    "host_platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39",
+    "python_version": "3.11.16",
+    "package_versions": {
+      "astropy": "8.0.1",
+      "astrotransit": "0.3.0",
+      "lightkurve": "2.4.2",
+      "numpy": "2.4.6",
+      "pandas": "3.0.5",
+      "pydantic": "2.13.5",
+      "scipy": "1.17.1",
+      "transitleastsquares": "1.32",
+      "wotan": "1.10"
+    },
+    "input_hash": null,
+    "environment_manifest_hash": null,
+    "output_hash": "8d8317a0f2dc9f23ec8edc2b8a036cac1d46359b7dec91abd7afe647b08d73a3"
+  }
+}

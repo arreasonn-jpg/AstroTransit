@@ -1,0 +1,24 @@
+[
+  {
+    "tic_id": "219338557",
+    "name": "TOI-561b",
+    "sector": 1,
+    "period": 0.4465,
+    "rp_rearth": 1.42,
+    "expected_period_days": 0.4465,
+    "expected_radius_rearth": 1.42,
+    "difficulty": "hard",
+    "available_sectors": [
+      1,
+      28,
+      68,
+      95,
+      96,
+      102
+    ],
+    "reference": "AstroTransit curated verified-target registry; carried forward from frozen N=10 evidence",
+    "reference_status": "inherited_curated",
+    "selection_lineage": "frozen_n10_prefix",
+    "source_registry": "benchmarks/verified_targets.json"
+  }
+]

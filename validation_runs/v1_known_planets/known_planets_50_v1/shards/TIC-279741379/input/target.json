@@ -1,0 +1,33 @@
+[
+  {
+    "tic_id": "279741379",
+    "name": "TOI-125b",
+    "sector": 1,
+    "period": 4.6543,
+    "rp_rearth": 2.9,
+    "expected_period_days": 4.6543,
+    "expected_radius_rearth": 2.9,
+    "difficulty": "medium",
+    "available_sectors": [
+      1,
+      2,
+      3,
+      4,
+      28,
+      29,
+      30,
+      34,
+      61,
+      64,
+      68,
+      69,
+      95,
+      96,
+      97
+    ],
+    "reference": "AstroTransit curated verified-target registry; carried forward from frozen N=10 evidence",
+    "reference_status": "inherited_curated",
+    "selection_lineage": "frozen_n10_prefix",
+    "source_registry": "benchmarks/verified_targets.json"
+  }
+]

@@ -1,0 +1,88 @@
+{
+  "metadata": {
+    "report_type": "known_target_benchmark_performance",
+    "pipeline_version": "0.3.0",
+    "generated_at_utc": "2026-09-11T09:49:56.201918+00:00",
+    "period_tolerance_fraction": 0.02,
+    "radius_tolerance_fraction": 0.2
+  },
+  "metrics": {
+    "n_targets": 1,
+    "n_detected": 1,
+    "detection_recall": 1.0,
+    "n_correct": 1,
+    "correct_recovery_rate": 1.0,
+    "n_period_recovered": 1,
+    "period_recovery_rate": 1.0,
+    "period_recovery_error_mean_days": 0.00163896,
+    "period_recovery_error_median_days": 0.00163896,
+    "period_recovery_error_mean_fraction": 0.00034181,
+    "period_recovery_error_median_fraction": 0.00034181,
+    "n_radius_recovered": 1,
+    "radius_recovery_rate": 1.0,
+    "radius_recovery_error_mean_rearth": 0.6212,
+    "radius_recovery_error_median_rearth": 0.6212,
+    "radius_recovery_error_mean_fraction": 0.18278652,
+    "radius_recovery_error_median_fraction": 0.18278652,
+    "n_sector_consistency_evaluated": 1,
+    "sector_consistency_rate": 1.0,
+    "false_positive_rejection": null,
+    "false_positive_rejection_status": "not_evaluated_no_labeled_false_positive_set",
+    "n_false_positive_targets": 0
+  },
+  "targets": [
+    {
+      "target_id": "TIC 5882269",
+      "name": "5083.01",
+      "difficulty": "easy",
+      "expected_period_days": 4.7948642,
+      "recovered_period_days": 4.796503156331076,
+      "expected_radius_rearth": 3.3985,
+      "recovered_radius_rearth": 2.7773,
+      "detected": true,
+      "period_recovered": true,
+      "radius_recovered": true,
+      "correct": true,
+      "period_error_days": 0.0016389563310754696,
+      "period_error_fraction": 0.0003418149634092806,
+      "radius_error_rearth": 0.6212,
+      "radius_error_fraction": 0.1827865234662351,
+      "sector_consistent": true,
+      "n_sectors_evaluated": 3,
+      "notes": []
+    }
+  ],
+  "limitations": [
+    "Known-target recovery is not injection-recovery completeness.",
+    "False-positive rejection is not measured because no labeled FP set was supplied."
+  ],
+  "provenance": {
+    "target_id": null,
+    "sector": null,
+    "data_product": null,
+    "cadence": null,
+    "pipeline_version": "",
+    "git_commit": "7fa285925b68f486388c74695f1093900748a042",
+    "config_hash": "33ffe0f846b703a96936f1c9dc0789fca3994bc4575c0ea6616127b822fafc72",
+    "schema_version": null,
+    "model_version": null,
+    "random_seed": null,
+    "run_timestamp_utc": "2026-09-11T09:49:56.204991Z",
+    "host_platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39",
+    "python_version": "3.11.16",
+    "package_versions": {
+      "astropy": "8.0.1",
+      "astrotransit": "0.3.0",
+      "lightkurve": "2.4.2",
+      "numpy": "2.4.6",
+      "pandas": "3.0.5",
+      "pydantic": "2.13.5",
+      "scipy": "1.17.1",
+      "transitleastsquares": "1.32",
+      "wotan": "1.10"
+    },
+    "input_hash": null,
+    "environment_manifest_hash": null,
+    "output_hash": "5fad85de8126a41411ba14c93728929889162943b2e14da4b858fba1040dc3db"
+  }
+}

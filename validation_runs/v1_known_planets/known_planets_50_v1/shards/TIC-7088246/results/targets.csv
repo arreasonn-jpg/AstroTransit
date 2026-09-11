@@ -1,0 +1,2 @@
+target_id,name,difficulty,expected_period_days,recovered_period_days,expected_radius_rearth,recovered_radius_rearth,detected,period_recovered,radius_recovered,correct,period_error_days,period_error_fraction,radius_error_rearth,radius_error_fraction,sector_consistent,n_sectors_evaluated,notes
+TIC 7088246,1065.01,easy,2.1605155,2.160543833184644,12.549193,12.9226,True,True,True,True,2.8333184644235843e-05,1.3114085339464514e-05,0.3734069999999985,0.029755459175741298,True,4,

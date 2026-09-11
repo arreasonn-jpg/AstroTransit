@@ -1,0 +1,17 @@
+[
+  {
+    "tic_id": "8599009",
+    "name": "4463.01",
+    "sector": null,
+    "period": 2.88069,
+    "rp_rearth": 22.4297,
+    "expected_period_days": 2.88069,
+    "expected_radius_rearth": 22.4297,
+    "difficulty": "easy",
+    "available_sectors": [],
+    "reference": "TESS FOP Working Group disposition 'CP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08); TOI 4463.01",
+    "reference_status": "catalog_snapshot",
+    "selection_lineage": "verified_registry_order",
+    "source_registry": "benchmarks/verified_targets.json"
+  }
+]

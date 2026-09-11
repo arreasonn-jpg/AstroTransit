@@ -1,0 +1,22 @@
+[
+  {
+    "tic_id": "183985250",
+    "name": "WASP-77Ab",
+    "sector": 2,
+    "period": 1.360029,
+    "rp_rearth": 13.0,
+    "expected_period_days": 1.360029,
+    "expected_radius_rearth": 13.0,
+    "difficulty": "easy",
+    "available_sectors": [
+      2,
+      29,
+      69,
+      96
+    ],
+    "reference": "AstroTransit curated verified-target registry; carried forward from frozen N=10 evidence",
+    "reference_status": "inherited_curated",
+    "selection_lineage": "frozen_n10_prefix",
+    "source_registry": "benchmarks/verified_targets.json"
+  }
+]
