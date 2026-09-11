@@ -1,0 +1,191 @@
+{
+  "by_depth_ppm": {
+    "1000": {
+      "evaluable": 222,
+      "harmonic_aware_completeness": 0.6846846846846847,
+      "harmonic_recovered": 152,
+      "planned": 240,
+      "strict_completeness": 0.6621621621621622,
+      "strict_recovered": 147
+    },
+    "200": {
+      "evaluable": 222,
+      "harmonic_aware_completeness": 0.1981981981981982,
+      "harmonic_recovered": 44,
+      "planned": 240,
+      "strict_completeness": 0.18468468468468469,
+      "strict_recovered": 41
+    },
+    "2000": {
+      "evaluable": 222,
+      "harmonic_aware_completeness": 0.7027027027027027,
+      "harmonic_recovered": 156,
+      "planned": 240,
+      "strict_completeness": 0.6846846846846847,
+      "strict_recovered": 152
+    },
+    "500": {
+      "evaluable": 222,
+      "harmonic_aware_completeness": 0.5135135135135135,
+      "harmonic_recovered": 114,
+      "planned": 240,
+      "strict_completeness": 0.4954954954954955,
+      "strict_recovered": 110
+    }
+  },
+  "by_duration_days": {
+    "0.08": {
+      "evaluable": 444,
+      "harmonic_aware_completeness": 0.49324324324324326,
+      "harmonic_recovered": 219,
+      "planned": 480,
+      "strict_completeness": 0.48423423423423423,
+      "strict_recovered": 215
+    },
+    "0.15": {
+      "evaluable": 444,
+      "harmonic_aware_completeness": 0.5563063063063063,
+      "harmonic_recovered": 247,
+      "planned": 480,
+      "strict_completeness": 0.5292792792792793,
+      "strict_recovered": 235
+    }
+  },
+  "by_host_noise_bin": {
+    "high": {
+      "evaluable": 264,
+      "harmonic_aware_completeness": 0.4621212121212121,
+      "harmonic_recovered": 122,
+      "planned": 288,
+      "strict_completeness": 0.45454545454545453,
+      "strict_recovered": 120
+    },
+    "low": {
+      "evaluable": 368,
+      "harmonic_aware_completeness": 0.5896739130434783,
+      "harmonic_recovered": 217,
+      "planned": 384,
+      "strict_completeness": 0.5733695652173914,
+      "strict_recovered": 211
+    },
+    "medium": {
+      "evaluable": 256,
+      "harmonic_aware_completeness": 0.49609375,
+      "harmonic_recovered": 127,
+      "planned": 288,
+      "strict_completeness": 0.46484375,
+      "strict_recovered": 119
+    }
+  },
+  "by_lane": {
+    "cascade_single_sector": {
+      "evaluable": 800,
+      "harmonic_aware_completeness": 0.58125,
+      "harmonic_recovered": 465,
+      "planned": 800,
+      "strict_completeness": 0.56125,
+      "strict_recovered": 449
+    },
+    "long_period_stitched": {
+      "evaluable": 88,
+      "harmonic_aware_completeness": 0.011363636363636364,
+      "harmonic_recovered": 1,
+      "planned": 160,
+      "strict_completeness": 0.011363636363636364,
+      "strict_recovered": 1
+    }
+  },
+  "by_period_bin": {
+    "long": {
+      "evaluable": 88,
+      "harmonic_aware_completeness": 0.011363636363636364,
+      "harmonic_recovered": 1,
+      "planned": 160,
+      "strict_completeness": 0.011363636363636364,
+      "strict_recovered": 1
+    },
+    "mid": {
+      "evaluable": 480,
+      "harmonic_aware_completeness": 0.4041666666666667,
+      "harmonic_recovered": 194,
+      "planned": 480,
+      "strict_completeness": 0.38333333333333336,
+      "strict_recovered": 184
+    },
+    "short": {
+      "evaluable": 320,
+      "harmonic_aware_completeness": 0.846875,
+      "harmonic_recovered": 271,
+      "planned": 320,
+      "strict_completeness": 0.828125,
+      "strict_recovered": 265
+    }
+  },
+  "by_stellar_type": {
+    "F_or_hotter": {
+      "evaluable": 88,
+      "harmonic_aware_completeness": 0.6477272727272727,
+      "harmonic_recovered": 57,
+      "planned": 96,
+      "strict_completeness": 0.5681818181818182,
+      "strict_recovered": 50
+    },
+    "G": {
+      "evaluable": 448,
+      "harmonic_aware_completeness": 0.5111607142857143,
+      "harmonic_recovered": 229,
+      "planned": 480,
+      "strict_completeness": 0.5,
+      "strict_recovered": 224
+    },
+    "K": {
+      "evaluable": 176,
+      "harmonic_aware_completeness": 0.4715909090909091,
+      "harmonic_recovered": 83,
+      "planned": 192,
+      "strict_completeness": 0.4602272727272727,
+      "strict_recovered": 81
+    },
+    "M": {
+      "evaluable": 176,
+      "harmonic_aware_completeness": 0.5511363636363636,
+      "harmonic_recovered": 97,
+      "planned": 192,
+      "strict_completeness": 0.5397727272727273,
+      "strict_recovered": 95
+    }
+  },
+  "campaign": "real_noise_injection_recovery_v1",
+  "claim_boundary": "Measured detection-stage completeness on frozen selected real-noise hosts; not population or end-to-end preprocessing completeness.",
+  "claim_scope": "detection_stage_completeness_on_selected_real_noise_hosts",
+  "evaluable_trials": 888,
+  "generated_at_utc": "2026-09-11T18:18:54.081456Z",
+  "harmonic_aware_95pct_wilson": [
+    0.4918930553624967,
+    0.5574430677396769
+  ],
+  "harmonic_aware_completeness": 0.5247747747747747,
+  "harmonic_aware_recovered": 466,
+  "harmonic_confusion_trials": 16,
+  "not_evaluated_trials": 72,
+  "outcomes": {
+    "harmonic_only_recovery": 16,
+    "no_candidate": 245,
+    "not_evaluated_no_observed_injection": 72,
+    "period_mismatch": 177,
+    "strict_recovery": 450
+  },
+  "planned_trials": 960,
+  "recorded_trials": 960,
+  "schema_version": "1.0",
+  "status": "measured",
+  "strict_completeness": 0.5067567567567568,
+  "strict_completeness_95pct_wilson": [
+    0.4739154962558971,
+    0.5395398100446958
+  ],
+  "strict_recovered": 450,
+  "uncertainty_coverage": {
+    "status": "not_evaluated_no_intervals"
+  }
+}
