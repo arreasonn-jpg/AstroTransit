@@ -1,0 +1,27 @@
+{
+  "claim_boundary": "Not a population-representative sample; no recall, precision, or completeness claim is implied.",
+  "corpus_version": "known_planets_50_v1",
+  "difficulty_counts": {
+    "easy": 19,
+    "hard": 13,
+    "medium": 18
+  },
+  "n10_source_path": "validation_runs/v1_known_planets/known_planets_10_v1/input/targets.json",
+  "n10_source_sha256": "2e05fd8f726cf1d1079d1c04c73ce548b57676bae5ddcae7514e03e8da692b57",
+  "population_representative": false,
+  "reference_status_counts": {
+    "catalog_snapshot": 41,
+    "inherited_curated": 9
+  },
+  "selected_corpus_sha256": "c90de0ff053026f16781a8b8ffcc3e35088cae1385a2138a62e6f93afd54673a",
+  "selection_is_output_independent": true,
+  "selection_lineage_counts": {
+    "frozen_n10_prefix": 10,
+    "verified_registry_order": 40
+  },
+  "selection_policy": "frozen_n10_then_registry_order_to_50_v1",
+  "source_path": "benchmarks/verified_targets.json",
+  "source_sha256": "9f6660845d1f916328caba5859c0af56e31d94f5fbd9a14efc5f82af3ddd89c5",
+  "target_count": 50,
+  "unique_tic_count": 50
+}
