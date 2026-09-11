@@ -1,0 +1,64 @@
+name: Quiet control corpus v1
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "scripts/validation/build_quiet_controls.py"
+      - "tests/test_quiet_control_corpus.py"
+      - "benchmarks/discovery_targets_v4_small_cool_1000_dedup.csv"
+      - "benchmarks/corpora/tfop_disposition_corpus_v1.json"
+      - "validation_runs/v1_injection_recovery/real_noise_v1/input/quiet_hosts.json"
+      - ".github/workflows/quiet-controls-v1.yml"
+  push:
+    branches: [main]
+    paths:
+      - "scripts/validation/build_quiet_controls.py"
+      - "tests/test_quiet_control_corpus.py"
+      - "benchmarks/discovery_targets_v4_small_cool_1000_dedup.csv"
+      - "benchmarks/corpora/tfop_disposition_corpus_v1.json"
+      - "validation_runs/v1_injection_recovery/real_noise_v1/input/quiet_hosts.json"
+      - ".github/workflows/quiet-controls-v1.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  build-corpus:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Build frozen corpus artifact
+        run: |
+          python scripts/validation/build_quiet_controls.py \
+            --pool benchmarks/discovery_targets_v4_small_cool_1000_dedup.csv \
+            --labelled-corpus benchmarks/corpora/tfop_disposition_corpus_v1.json \
+            --prior-hosts validation_runs/v1_injection_recovery/real_noise_v1/input/quiet_hosts.json \
+            --required 100 \
+            --seed 20260912 \
+            --output outputs/quiet_controls_v1/quiet_controls.json \
+            --audit outputs/quiet_controls_v1/selection_audit.json
+      - name: Validate measured artifact contract
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          root = Path("outputs/quiet_controls_v1")
+          corpus = json.loads((root / "quiet_controls.json").read_text())
+          audit = json.loads((root / "selection_audit.json").read_text())
+          assert corpus["status"] == audit["status"] == "frozen"
+          assert corpus["selected_count"] == audit["selected_count"] == 100
+          assert corpus["selection"]["detector_used_for_selection"] is False
+          assert len({case["target_id"] for case in corpus["cases"]}) == 100
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: quiet-controls-v1-corpus
+          path: outputs/quiet_controls_v1
+          if-no-files-found: error
+          retention-days: 90
