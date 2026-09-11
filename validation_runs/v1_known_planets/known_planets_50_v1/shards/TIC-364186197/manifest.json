@@ -1,0 +1,14 @@
+{
+  "campaign": "known_planets_50_v1",
+  "tic_id": "364186197",
+  "target_id": "TIC 364186197",
+  "git_commit": "7fa285925b68f486388c74695f1093900748a042",
+  "canonical_output_hash": "c04f3ab6bb3e0202f00b27f9192b3f5f5fb042986461995a7efc1bc2d143daac",
+  "artifacts": {
+    "environment/env_manifest.json": "36366a43f0d3bcc7bc0934c6776e8e4be57bde3fcbf0f85727a02c98492bb6f0",
+    "input/target.json": "350a5671537f9503fb27b9f76d60ca9d8161e640ed656cfc6fe9f8afe1ec642d",
+    "results/benchmark.json": "07bb1ece8a970816aa03ca0ecf91ed3582bf307e51741020947c8cc555c0312b",
+    "results/benchmark.manifest.json": "19462d873d4b510f1745f1a7aedefc4e9a144d6d16031dc897e4b8c8d8dbeb71",
+    "results/targets.csv": "3593d3c0447224594caf40da9386bd9a7bcd36950f8b9ca3761ce4e7bb5b4b65"
+  }
+}

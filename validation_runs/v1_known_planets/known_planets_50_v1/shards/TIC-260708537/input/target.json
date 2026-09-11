@@ -1,0 +1,17 @@
+[
+  {
+    "tic_id": "260708537",
+    "name": "486.01",
+    "sector": null,
+    "period": 1.7446984,
+    "rp_rearth": 0.562851,
+    "expected_period_days": 1.7446984,
+    "expected_radius_rearth": 0.562851,
+    "difficulty": "hard",
+    "available_sectors": [],
+    "reference": "TESS FOP Working Group disposition 'CP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08); TOI 486.01",
+    "reference_status": "catalog_snapshot",
+    "selection_lineage": "verified_registry_order",
+    "source_registry": "benchmarks/verified_targets.json"
+  }
+]

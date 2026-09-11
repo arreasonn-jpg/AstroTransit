@@ -1,0 +1,91 @@
+{
+  "metadata": {
+    "report_type": "known_target_benchmark_performance",
+    "pipeline_version": "0.3.0",
+    "generated_at_utc": "2026-09-11T09:46:47.053982+00:00",
+    "period_tolerance_fraction": 0.02,
+    "radius_tolerance_fraction": 0.2
+  },
+  "metrics": {
+    "n_targets": 1,
+    "n_detected": 1,
+    "detection_recall": 1.0,
+    "n_correct": 0,
+    "correct_recovery_rate": 0.0,
+    "n_period_recovered": 0,
+    "period_recovery_rate": 0.0,
+    "period_recovery_error_mean_days": 3.32358921,
+    "period_recovery_error_median_days": 3.32358921,
+    "period_recovery_error_mean_fraction": 5.79550972,
+    "period_recovery_error_median_fraction": 5.79550972,
+    "n_radius_recovered": 0,
+    "radius_recovery_rate": 0.0,
+    "radius_recovery_error_mean_rearth": 1.151747,
+    "radius_recovery_error_median_rearth": 1.151747,
+    "radius_recovery_error_mean_fraction": 0.76939423,
+    "radius_recovery_error_median_fraction": 0.76939423,
+    "n_sector_consistency_evaluated": 1,
+    "sector_consistency_rate": 1.0,
+    "false_positive_rejection": null,
+    "false_positive_rejection_status": "not_evaluated_no_labeled_false_positive_set",
+    "n_false_positive_targets": 0
+  },
+  "targets": [
+    {
+      "target_id": "TIC 4918918",
+      "name": "5747.01",
+      "difficulty": "medium",
+      "expected_period_days": 0.5734766,
+      "recovered_period_days": 3.8970658115394814,
+      "expected_radius_rearth": 1.496953,
+      "recovered_radius_rearth": 2.6487,
+      "detected": true,
+      "period_recovered": false,
+      "radius_recovered": false,
+      "correct": false,
+      "period_error_days": 3.323589211539481,
+      "period_error_fraction": 5.795509723569333,
+      "radius_error_rearth": 1.1517469999999999,
+      "radius_error_fraction": 0.7693942294781465,
+      "sector_consistent": true,
+      "n_sectors_evaluated": 2,
+      "notes": [
+        "period_not_recovered",
+        "radius_not_recovered"
+      ]
+    }
+  ],
+  "limitations": [
+    "Known-target recovery is not injection-recovery completeness.",
+    "False-positive rejection is not measured because no labeled FP set was supplied."
+  ],
+  "provenance": {
+    "target_id": null,
+    "sector": null,
+    "data_product": null,
+    "cadence": null,
+    "pipeline_version": "",
+    "git_commit": "7fa285925b68f486388c74695f1093900748a042",
+    "config_hash": "60a37479682c9809949e1f79ad737876faab36fe404e8018f8653fc0b531fce3",
+    "schema_version": null,
+    "model_version": null,
+    "random_seed": null,
+    "run_timestamp_utc": "2026-09-11T09:46:47.057334Z",
+    "host_platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39",
+    "python_version": "3.11.16",
+    "package_versions": {
+      "astropy": "8.0.1",
+      "astrotransit": "0.3.0",
+      "lightkurve": "2.4.2",
+      "numpy": "2.4.6",
+      "pandas": "3.0.5",
+      "pydantic": "2.13.5",
+      "scipy": "1.17.1",
+      "transitleastsquares": "1.32",
+      "wotan": "1.10"
+    },
+    "input_hash": null,
+    "environment_manifest_hash": null,
+    "output_hash": "451a1ca7898b2d4f688943ef42e7475cd550deabf0e6a3ceb03c3e527319ad9c"
+  }
+}

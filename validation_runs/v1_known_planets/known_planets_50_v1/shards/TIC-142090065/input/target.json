@@ -1,0 +1,29 @@
+[
+  {
+    "tic_id": "142090065",
+    "name": "WASP-19b",
+    "sector": 19,
+    "period": 0.788839,
+    "rp_rearth": 15.4,
+    "expected_period_days": 0.788839,
+    "expected_radius_rearth": 15.4,
+    "difficulty": "easy",
+    "available_sectors": [
+      19,
+      20,
+      25,
+      26,
+      40,
+      52,
+      53,
+      59,
+      60,
+      79,
+      86
+    ],
+    "reference": "AstroTransit curated verified-target registry; carried forward from frozen N=10 evidence",
+    "reference_status": "inherited_curated",
+    "selection_lineage": "frozen_n10_prefix",
+    "source_registry": "benchmarks/verified_targets.json"
+  }
+]

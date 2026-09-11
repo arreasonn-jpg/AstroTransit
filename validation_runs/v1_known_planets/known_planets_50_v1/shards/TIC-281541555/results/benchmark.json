@@ -1,0 +1,88 @@
+{
+  "metadata": {
+    "report_type": "known_target_benchmark_performance",
+    "pipeline_version": "0.3.0",
+    "generated_at_utc": "2026-09-11T09:41:00.272538+00:00",
+    "period_tolerance_fraction": 0.02,
+    "radius_tolerance_fraction": 0.2
+  },
+  "metrics": {
+    "n_targets": 1,
+    "n_detected": 1,
+    "detection_recall": 1.0,
+    "n_correct": 1,
+    "correct_recovery_rate": 1.0,
+    "n_period_recovered": 1,
+    "period_recovery_rate": 1.0,
+    "period_recovery_error_mean_days": 2.768e-05,
+    "period_recovery_error_median_days": 2.768e-05,
+    "period_recovery_error_mean_fraction": 5.84e-06,
+    "period_recovery_error_median_fraction": 5.84e-06,
+    "n_radius_recovered": 1,
+    "radius_recovery_rate": 1.0,
+    "radius_recovery_error_mean_rearth": 0.002,
+    "radius_recovery_error_median_rearth": 0.002,
+    "radius_recovery_error_mean_fraction": 0.00019802,
+    "radius_recovery_error_median_fraction": 0.00019802,
+    "n_sector_consistency_evaluated": 1,
+    "sector_consistency_rate": 1.0,
+    "false_positive_rejection": null,
+    "false_positive_rejection_status": "not_evaluated_no_labeled_false_positive_set",
+    "n_false_positive_targets": 0
+  },
+  "targets": [
+    {
+      "target_id": "TIC 281541555",
+      "name": "TOI-402.01",
+      "difficulty": "medium",
+      "expected_period_days": 4.7427,
+      "recovered_period_days": 4.742672317528834,
+      "expected_radius_rearth": 10.1,
+      "recovered_radius_rearth": 10.102,
+      "detected": true,
+      "period_recovered": true,
+      "radius_recovered": true,
+      "correct": true,
+      "period_error_days": 2.768247116602396e-05,
+      "period_error_fraction": 5.836858997200742e-06,
+      "radius_error_rearth": 0.002000000000000668,
+      "radius_error_fraction": 0.00019801980198026417,
+      "sector_consistent": true,
+      "n_sectors_evaluated": 12,
+      "notes": []
+    }
+  ],
+  "limitations": [
+    "Known-target recovery is not injection-recovery completeness.",
+    "False-positive rejection is not measured because no labeled FP set was supplied."
+  ],
+  "provenance": {
+    "target_id": null,
+    "sector": null,
+    "data_product": null,
+    "cadence": null,
+    "pipeline_version": "",
+    "git_commit": "7fa285925b68f486388c74695f1093900748a042",
+    "config_hash": "342ccbc23cdd450a1a42039c277e24de8739682f754009febf10ad5acd7db858",
+    "schema_version": null,
+    "model_version": null,
+    "random_seed": null,
+    "run_timestamp_utc": "2026-09-11T09:41:00.282363Z",
+    "host_platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39",
+    "python_version": "3.11.16",
+    "package_versions": {
+      "astropy": "8.0.1",
+      "astrotransit": "0.3.0",
+      "lightkurve": "2.4.2",
+      "numpy": "2.4.6",
+      "pandas": "3.0.5",
+      "pydantic": "2.13.5",
+      "scipy": "1.17.1",
+      "transitleastsquares": "1.32",
+      "wotan": "1.10"
+    },
+    "input_hash": null,
+    "environment_manifest_hash": null,
+    "output_hash": "542c892fa0ce7e5bf60913ab24e014096bbf0bcb4148a5f05b542ede212935d3"
+  }
+}

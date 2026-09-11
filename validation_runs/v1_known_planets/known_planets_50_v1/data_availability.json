@@ -1,0 +1,25 @@
+{
+  "campaign": "known_planets_50_v1",
+  "selected_target_count": 50,
+  "evaluated_target_count": 46,
+  "not_evaluated_target_count": 4,
+  "not_evaluated": [
+    {
+      "target_id": "TIC 4610830",
+      "reason": "no_measured_sector"
+    },
+    {
+      "target_id": "TIC 8348911",
+      "reason": "no_measured_sector"
+    },
+    {
+      "target_id": "TIC 14570099",
+      "reason": "no_measured_sector"
+    },
+    {
+      "target_id": "TIC 17307715",
+      "reason": "no_measured_sector"
+    }
+  ],
+  "interpretation": "No-sector targets are data-availability outcomes and are excluded from recovery denominators."
+}

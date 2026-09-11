@@ -1,0 +1,17 @@
+[
+  {
+    "tic_id": "6663331",
+    "name": "1068.01",
+    "sector": null,
+    "period": 3.180362,
+    "rp_rearth": 13.446487,
+    "expected_period_days": 3.180362,
+    "expected_radius_rearth": 13.446487,
+    "difficulty": "easy",
+    "available_sectors": [],
+    "reference": "TESS FOP Working Group disposition 'KP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08); TOI 1068.01",
+    "reference_status": "catalog_snapshot",
+    "selection_lineage": "verified_registry_order",
+    "source_registry": "benchmarks/verified_targets.json"
+  }
+]
