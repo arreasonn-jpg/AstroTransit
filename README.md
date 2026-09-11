@@ -134,12 +134,33 @@ işlenir ve belirsizlik MAP referansından gelir. Hangi adaya MCMC çalıştır�
 `scripts/followup/` iş akışında; toplu taramada MCMC hesapsal olarak uygulanabilir
 değildir.
 
+## Ölçülmüş doğrulama sonuçları
+
+İlk availability-aware N=50 gerçek-TESS known-target kampanyası tamamlandı.
+50 hedef seçildi; 46 hedef ölçülmüş sektörlerle değerlendirildi, dört hedefte
+ölçülmüş sektör bulunamadı ve recovery paydalarından çıkarıldı.
+
+| Metrik | Ölçülen değer |
+|---|---:|
+| Değerlendirilebilir seçili hedeflerde detection | 46/46 (%100,0) |
+| Birleşik dönem + yarıçap recovery | 21/46 (%45,6522) |
+| Dönem recovery | 32/46 (%69,5652) |
+| Yarıçap recovery | 23/46 (%50,0) |
+| Sektör tutarlılığı | 20/38 (%52,6316) |
+| False-positive rejection | Değerlendirilmedi |
+
+46/46 değeri yalnızca **seçilmiş ve değerlendirilebilir known-target alt kümesi**
+için koşullu detection sonucudur; population recall, completeness veya precision
+değildir. Ayrıntılı kanıt, hash'ler ve kalan kapılar:
+[`docs/measured_validation_results.md`](docs/measured_validation_results.md).
+
 ## Doğrulama durumu ve yol haritası
 
 AstroTransit'in mevcut durumu: **ciddi bir keşif/örüntüleme (characterization)
-framework'ü; ancak pipeline'ın bilimsel doğrulama kanıtı (completeness
-haritaları, kalibre FPP, bilinen gezegen/FP benchmark'ları) henüz tam
-kapalı çevrimde değildir.** Bu bilinçli bir sınır olarak raporlanır.
+framework'ü; >=50 seçili known-target kampanyası ölçülmüştür, ancak pipeline'ın
+bilimsel doğrulama programı (injection completeness, false-positive/quiet
+controls, kalibre FPP ve blind test) henüz tam kapalı çevrimde değildir.** Bu
+bilinçli bir sınır olarak raporlanır.
 
 - Known-target performans raporu: `astrotransit/validation/benchmark_report.py`;
   `astrotransit benchmark` çalıştırıldığında hedef bazında expected period/radius,
