@@ -1,0 +1,455 @@
+{
+  "screened": [
+    {
+      "accepted": false,
+      "candidate_period_days": 11.360808390628222,
+      "pool_index": 0,
+      "reason": "pre_injection_candidate_period_mismatch_sector_18",
+      "screen_sectors": [
+        18,
+        86
+      ],
+      "target_id": "TIC 373236404"
+    },
+    {
+      "accepted": false,
+      "candidate_period_days": 11.528196094271635,
+      "pool_index": 1,
+      "reason": "pre_injection_candidate_confirmed_sector_18",
+      "screen_sectors": [
+        18,
+        86
+      ],
+      "target_id": "TIC 373062137"
+    },
+    {
+      "accepted": true,
+      "pool_index": 2,
+      "reason": "accepted",
+      "screen_sectors": [
+        17,
+        58
+      ],
+      "target_id": "TIC 461408984"
+    },
+    {
+      "accepted": false,
+      "candidate_period_days": 11.340574979566624,
+      "pool_index": 3,
+      "reason": "pre_injection_candidate_confirmed_sector_18",
+      "screen_sectors": [
+        18,
+        53
+      ],
+      "target_id": "TIC 461585810"
+    },
+    {
+      "accepted": false,
+      "candidate_period_days": 12.516451855446409,
+      "pool_index": 4,
+      "reason": "pre_injection_candidate_period_mismatch_sector_85",
+      "screen_sectors": [
+        57,
+        85
+      ],
+      "target_id": "TIC 347304330"
+    },
+    {
+      "accepted": false,
+      "candidate_period_days": 14.139278914196176,
+      "pool_index": 5,
+      "reason": "pre_injection_candidate_confirmed_sector_57",
+      "screen_sectors": [
+        57,
+        85
+      ],
+      "target_id": "TIC 326682209"
+    },
+    {
+      "accepted": false,
+      "pool_index": 6,
+      "reason": "valid_baseline_below_20_days_sector_78",
+      "screen_sectors": [
+        18,
+        78
+      ],
+      "target_id": "TIC 373149896"
+    },
+    {
+      "accepted": false,
+      "candidate_period_days": 1.4646159434057089,
+      "pool_index": 7,
+      "reason": "pre_injection_candidate_period_mismatch_sector_85",
+      "screen_sectors": [
+        57,
+        85
+      ],
+      "target_id": "TIC 369730972"
+    },
+    {
+      "accepted": false,
+      "candidate_period_days": 6.7198919810645,
+      "pool_index": 8,
+      "reason": "pre_injection_candidate_confirmed_sector_17",
+      "screen_sectors": [
+        17,
+        84
+      ],
+      "target_id": "TIC 439949948"
+    },
+    {
+      "accepted": true,
+      "pool_index": 9,
+      "reason": "accepted",
+      "screen_sectors": [
+        18,
+        53
+      ],
+      "target_id": "TIC 461579208"
+    },
+    {
+      "accepted": false,
+      "candidate_period_days": 11.4393354717959,
+      "pool_index": 10,
+      "reason": "pre_injection_candidate_period_mismatch_sector_17",
+      "screen_sectors": [
+        17,
+        84
+      ],
+      "target_id": "TIC 352179145"
+    },
+    {
+      "accepted": false,
+      "candidate_period_days": 8.428107516752256,
+      "pool_index": 11,
+      "reason": "pre_injection_candidate_period_mismatch_sector_18",
+      "screen_sectors": [
+        18,
+        52
+      ],
+      "target_id": "TIC 388605264"
+    },
+    {
+      "accepted": true,
+      "pool_index": 12,
+      "reason": "accepted",
+      "screen_sectors": [
+        18,
+        59
+      ],
+      "target_id": "TIC 388633928"
+    },
+    {
+      "accepted": false,
+      "candidate_period_days": 10.911747827050359,
+      "pool_index": 13,
+      "reason": "pre_injection_candidate_period_mismatch_sector_83",
+      "screen_sectors": [
+        42,
+        83
+      ],
+      "target_id": "TIC 403021108"
+    },
+    {
+      "accepted": false,
+      "candidate_period_days": 9.84326915050253,
+      "pool_index": 14,
+      "reason": "pre_injection_candidate_period_mismatch_sector_24",
+      "screen_sectors": [
+        24,
+        85
+      ],
+      "target_id": "TIC 461342461"
+    },
+    {
+      "accepted": false,
+      "candidate_period_days": 11.155256510821877,
+      "pool_index": 15,
+      "reason": "pre_injection_candidate_confirmed_sector_18",
+      "screen_sectors": [
+        18,
+        53
+      ],
+      "target_id": "TIC 388637626"
+    },
+    {
+      "accepted": false,
+      "pool_index": 16,
+      "reason": "missing_finite_catalog_radius_or_mass",
+      "screen_sectors": [
+        17,
+        24
+      ],
+      "stellar_source": "TIC",
+      "target_id": "TIC 327000122"
+    },
+    {
+      "accepted": false,
+      "candidate_period_days": 11.68990756918433,
+      "pool_index": 17,
+      "reason": "pre_injection_candidate_period_mismatch_sector_17",
+      "screen_sectors": [
+        17,
+        84
+      ],
+      "target_id": "TIC 238432056"
+    },
+    {
+      "accepted": false,
+      "pool_index": 18,
+      "reason": "missing_finite_catalog_radius_or_mass",
+      "screen_sectors": [
+        18,
+        26
+      ],
+      "stellar_source": "TIC",
+      "target_id": "TIC 468258381"
+    },
+    {
+      "accepted": false,
+      "candidate_period_days": 10.236173609295385,
+      "pool_index": 19,
+      "reason": "pre_injection_candidate_period_mismatch_sector_17",
+      "screen_sectors": [
+        17,
+        84
+      ],
+      "target_id": "TIC 437739969"
+    },
+    {
+      "accepted": false,
+      "candidate_period_days": 0.623140772093098,
+      "pool_index": 20,
+      "reason": "pre_injection_candidate_confirmed_sector_18",
+      "screen_sectors": [
+        18,
+        25
+      ],
+      "target_id": "TIC 373150657"
+    },
+    {
+      "accepted": false,
+      "candidate_period_days": 11.29777069180695,
+      "pool_index": 21,
+      "reason": "pre_injection_candidate_period_mismatch_sector_18",
+      "screen_sectors": [
+        18,
+        26
+      ],
+      "target_id": "TIC 388583017"
+    },
+    {
+      "accepted": true,
+      "pool_index": 22,
+      "reason": "accepted",
+      "screen_sectors": [
+        42,
+        83
+      ],
+      "target_id": "TIC 405305758"
+    },
+    {
+      "accepted": false,
+      "pool_index": 23,
+      "reason": "missing_finite_catalog_radius_or_mass",
+      "screen_sectors": [
+        57,
+        84
+      ],
+      "stellar_source": "TIC",
+      "target_id": "TIC 117956546"
+    },
+    {
+      "accepted": false,
+      "candidate_period_days": 12.799422203815716,
+      "pool_index": 24,
+      "reason": "pre_injection_candidate_period_mismatch_sector_24",
+      "screen_sectors": [
+        24,
+        58
+      ],
+      "target_id": "TIC 347299560"
+    },
+    {
+      "accepted": true,
+      "pool_index": 25,
+      "reason": "accepted",
+      "screen_sectors": [
+        18,
+        52
+      ],
+      "target_id": "TIC 407516437"
+    },
+    {
+      "accepted": false,
+      "candidate_period_days": 11.74147081519583,
+      "pool_index": 26,
+      "reason": "pre_injection_candidate_period_mismatch_sector_17",
+      "screen_sectors": [
+        17,
+        84
+      ],
+      "target_id": "TIC 365963199"
+    },
+    {
+      "accepted": false,
+      "candidate_period_days": 11.741452117730994,
+      "pool_index": 27,
+      "reason": "pre_injection_candidate_period_mismatch_sector_17",
+      "screen_sectors": [
+        17,
+        84
+      ],
+      "target_id": "TIC 22527304"
+    },
+    {
+      "accepted": true,
+      "pool_index": 28,
+      "reason": "accepted",
+      "screen_sectors": [
+        17,
+        84
+      ],
+      "target_id": "TIC 201503102"
+    },
+    {
+      "accepted": true,
+      "pool_index": 29,
+      "reason": "accepted",
+      "screen_sectors": [
+        42,
+        43
+      ],
+      "target_id": "TIC 468869378"
+    },
+    {
+      "accepted": false,
+      "candidate_period_days": 11.666006868616156,
+      "pool_index": 30,
+      "reason": "pre_injection_candidate_confirmed_sector_18",
+      "screen_sectors": [
+        18,
+        25
+      ],
+      "target_id": "TIC 373150643"
+    },
+    {
+      "accepted": false,
+      "candidate_period_days": 10.646643747747031,
+      "pool_index": 31,
+      "reason": "pre_injection_candidate_period_mismatch_sector_18",
+      "screen_sectors": [
+        18,
+        25
+      ],
+      "target_id": "TIC 373278642"
+    },
+    {
+      "accepted": false,
+      "candidate_period_days": 6.8701931964878185,
+      "pool_index": 32,
+      "reason": "pre_injection_candidate_period_mismatch_sector_42",
+      "screen_sectors": [
+        42,
+        70
+      ],
+      "target_id": "TIC 405187645"
+    },
+    {
+      "accepted": false,
+      "candidate_period_days": 8.669730823537941,
+      "pool_index": 33,
+      "reason": "pre_injection_candidate_period_mismatch_sector_18",
+      "screen_sectors": [
+        18,
+        26
+      ],
+      "target_id": "TIC 388633951"
+    },
+    {
+      "accepted": false,
+      "candidate_period_days": 0.6168909345576964,
+      "pool_index": 34,
+      "reason": "pre_injection_candidate_confirmed_sector_42",
+      "screen_sectors": [
+        42,
+        43
+      ],
+      "target_id": "TIC 58732360"
+    },
+    {
+      "accepted": false,
+      "candidate_period_days": 10.447391871264177,
+      "pool_index": 35,
+      "reason": "pre_injection_candidate_confirmed_sector_57",
+      "screen_sectors": [
+        57,
+        84
+      ],
+      "target_id": "TIC 258866681"
+    },
+    {
+      "accepted": false,
+      "candidate_period_days": 2.5185526687689985,
+      "pool_index": 36,
+      "reason": "pre_injection_candidate_confirmed_sector_17",
+      "screen_sectors": [
+        17,
+        84
+      ],
+      "target_id": "TIC 83940523"
+    },
+    {
+      "accepted": false,
+      "candidate_period_days": 11.431964273986848,
+      "pool_index": 37,
+      "reason": "pre_injection_candidate_period_mismatch_sector_17",
+      "screen_sectors": [
+        17,
+        57
+      ],
+      "target_id": "TIC 365961623"
+    },
+    {
+      "accepted": true,
+      "pool_index": 39,
+      "reason": "accepted",
+      "screen_sectors": [
+        18,
+        25
+      ],
+      "target_id": "TIC 373144098"
+    },
+    {
+      "accepted": false,
+      "pool_index": 40,
+      "reason": "missing_finite_catalog_radius_or_mass",
+      "screen_sectors": [
+        18,
+        26
+      ],
+      "stellar_source": "TIC",
+      "target_id": "TIC 388604517"
+    },
+    {
+      "accepted": true,
+      "pool_index": 41,
+      "reason": "accepted",
+      "screen_sectors": [
+        18,
+        25
+      ],
+      "target_id": "TIC 388634757"
+    },
+    {
+      "accepted": true,
+      "pool_index": 42,
+      "reason": "accepted",
+      "screen_sectors": [
+        17,
+        24
+      ],
+      "target_id": "TIC 406767163"
+    }
+  ]
+}
