@@ -1,0 +1,239 @@
+name: Recover N=50 data-availability outcomes
+
+on:
+  push:
+    branches: ["validation/run-known-planets-50-v1"]
+    paths: [".github/workflows/recover-known-planets-50.yml"]
+
+permissions:
+  actions: read
+  contents: write
+
+env:
+  CAMPAIGN_ROOT: validation_runs/v1_known_planets/known_planets_50_v1
+  PRIOR_RUN_ID: "34584228210"
+
+jobs:
+  unavailable-shards:
+    name: availability (${{ matrix.tic_id }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix:
+        tic_id: ["4610830", "8348911", "14570099", "17307715"]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: validation/run-known-planets-50-v1
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Install locked clean environment
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r envs/requirements.lock
+          python -m pip install --no-deps -e .
+          git reset --hard HEAD
+          test -z "$(git status --porcelain)"
+      - name: Prepare target and environment
+        env:
+          TIC_ID: ${{ matrix.tic_id }}
+        run: |
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+          tic = os.environ["TIC_ID"]
+          corpus = json.loads(Path("validation_runs/v1_known_planets/known_planets_50_v1/input/targets.json").read_text())
+          rows = [row for row in corpus if str(row["tic_id"]) == tic]
+          if len(rows) != 1:
+              raise SystemExit(f"Expected one frozen row for {tic}")
+          work = Path(f"/tmp/astrotransit_known_planets_50_recovery/{tic}")
+          work.mkdir(parents=True, exist_ok=True)
+          target = work / "target.json"
+          target.write_text(json.dumps(rows, indent=2) + "\n")
+          config = Path("configs/default.toml").read_text()
+          config = config.replace('verified_targets_file = "benchmarks/verified_targets.json"', f'verified_targets_file = "{target}"')
+          config = config.replace('confirmed_targets_file = "benchmarks/verified_targets.json"', f'confirmed_targets_file = "{target}"')
+          (work / "config.toml").write_text(config)
+          PY
+          WORK="/tmp/astrotransit_known_planets_50_recovery/$TIC_ID"
+          python scripts/maintenance/make_environment_manifest.py --config "$WORK/config.toml" --output "$WORK/env_manifest.json"
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+          tic = os.environ["TIC_ID"]
+          manifest = json.loads(Path(f"/tmp/astrotransit_known_planets_50_recovery/{tic}/env_manifest.json").read_text())
+          if manifest.get("git", {}).get("dirty") is not False:
+              raise SystemExit("Recovery environment is not clean")
+          PY
+      - name: Reproduce and preserve unavailable result
+        env:
+          TIC_ID: ${{ matrix.tic_id }}
+        run: |
+          ROOT="$CAMPAIGN_ROOT/shards/TIC-$TIC_ID"
+          WORK="/tmp/astrotransit_known_planets_50_recovery/$TIC_ID"
+          rm -rf "$ROOT"
+          mkdir -p "$ROOT/input" "$ROOT/environment" "$ROOT/results"
+          cp "$WORK/target.json" "$ROOT/input/target.json"
+          cp "$WORK/env_manifest.json" "$ROOT/environment/env_manifest.json"
+          astrotransit benchmark --config "$WORK/config.toml" --output "$ROOT/results/benchmark.json" --csv-output "$ROOT/results/targets.csv"
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+          from astrotransit.validation.provenance import sha256_file
+          tic = os.environ["TIC_ID"]
+          root = Path(os.environ["CAMPAIGN_ROOT"]) / "shards" / f"TIC-{tic}"
+          report = json.loads((root / "results/benchmark.json").read_text())
+          rows = report.get("targets", [])
+          if len(rows) != 1 or rows[0].get("target_id") != f"TIC {int(tic)}":
+              raise SystemExit("Unavailable shard identity contract failed")
+          sectors = int(rows[0].get("n_sectors_evaluated", 0) or 0)
+          if sectors != 0:
+              raise SystemExit(f"Expected reproduced no-sector outcome for {tic}, got {sectors}")
+          manifest = {
+              "campaign": "known_planets_50_v1",
+              "tic_id": tic,
+              "target_id": f"TIC {int(tic)}",
+              "evaluation_status": "not_evaluated_no_measured_sector",
+              "git_commit": report.get("provenance", {}).get("git_commit"),
+              "canonical_output_hash": report.get("provenance", {}).get("output_hash"),
+              "artifacts": {str(p.relative_to(root)): sha256_file(p) for p in sorted(root.rglob("*")) if p.is_file()},
+          }
+          (root / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: recovery-shard-${{ matrix.tic_id }}
+          path: ${{ env.CAMPAIGN_ROOT }}/shards/TIC-${{ matrix.tic_id }}
+          if-no-files-found: error
+          retention-days: 7
+
+  aggregate:
+    name: aggregate 46 evaluated plus 4 unavailable
+    needs: unavailable-shards
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: validation/run-known-planets-50-v1
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Install locked aggregation environment
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r envs/requirements.lock
+          python -m pip install --no-deps -e .
+          git reset --hard HEAD
+          test -z "$(git status --porcelain)"
+      - name: Download 46 successful original shards
+        uses: actions/download-artifact@v4
+        with:
+          pattern: benchmark-shard-*
+          path: original-shards
+          run-id: ${{ env.PRIOR_RUN_ID }}
+          github-token: ${{ github.token }}
+      - name: Download four reproduced unavailable shards
+        uses: actions/download-artifact@v4
+        with:
+          pattern: recovery-shard-*
+          path: recovery-shards
+      - name: Assemble 50-target evidence tree and availability report
+        run: |
+          rm -rf "$CAMPAIGN_ROOT/shards" "$CAMPAIGN_ROOT/aggregate" "$CAMPAIGN_ROOT/manifest.json" "$CAMPAIGN_ROOT/data_availability.json"
+          python - <<'PY'
+          import json, os, shutil
+          from pathlib import Path
+          root = Path(os.environ["CAMPAIGN_ROOT"])
+          destinations = root / "shards"
+          destinations.mkdir(parents=True)
+          sources = list(Path("original-shards").glob("benchmark-shard-*")) + list(Path("recovery-shards").glob("recovery-shard-*"))
+          if len(sources) != 50:
+              raise SystemExit(f"Expected 50 shard artifacts, got {len(sources)}")
+          for source in sources:
+              tic = source.name.split("-shard-")[-1]
+              shutil.copytree(source, destinations / f"TIC-{tic}", dirs_exist_ok=True)
+          corpus = json.loads((root / "input/targets.json").read_text())
+          unavailable = []
+          evaluated = []
+          for row in corpus:
+              tic = str(row["tic_id"])
+              report_path = destinations / f"TIC-{tic}" / "results/benchmark.json"
+              report = json.loads(report_path.read_text())
+              target = report["targets"][0]
+              if int(target.get("n_sectors_evaluated", 0) or 0) < 1:
+                  unavailable.append({"target_id": f"TIC {int(tic)}", "reason": "no_measured_sector"})
+              else:
+                  evaluated.append(row)
+          expected_unavailable = {"TIC 4610830", "TIC 8348911", "TIC 14570099", "TIC 17307715"}
+          if {row["target_id"] for row in unavailable} != expected_unavailable:
+              raise SystemExit(f"Unexpected availability set: {unavailable}")
+          availability = {
+              "campaign": "known_planets_50_v1",
+              "selected_target_count": 50,
+              "evaluated_target_count": len(evaluated),
+              "not_evaluated_target_count": len(unavailable),
+              "not_evaluated": unavailable,
+              "interpretation": "No-sector targets are data-availability outcomes and are excluded from recovery denominators.",
+          }
+          (root / "data_availability.json").write_text(json.dumps(availability, indent=2) + "\n")
+          Path("/tmp/evaluable_targets.json").write_text(json.dumps(evaluated, indent=2) + "\n")
+          Path("/tmp/evaluable_reports.txt").write_text("\n".join(str(destinations / f"TIC-{row['tic_id']}" / "results/benchmark.json") for row in evaluated) + "\n")
+          PY
+      - name: Aggregate only evaluated targets
+        run: |
+          mapfile -t SHARDS < /tmp/evaluable_reports.txt
+          python scripts/validation/aggregate_benchmark_shards.py "${SHARDS[@]}" \
+            --target-order-file /tmp/evaluable_targets.json \
+            --output "$CAMPAIGN_ROOT/aggregate/benchmark.json" \
+            --csv-output "$CAMPAIGN_ROOT/aggregate/targets.csv"
+      - name: Validate and freeze campaign manifest
+        run: |
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+          from astrotransit.validation.provenance import build_manifest, sha256_file
+          root = Path(os.environ["CAMPAIGN_ROOT"])
+          aggregate = json.loads((root / "aggregate/benchmark.json").read_text())
+          availability = json.loads((root / "data_availability.json").read_text())
+          corpus = json.loads((root / "input/targets.json").read_text())
+          if availability["selected_target_count"] != 50 or availability["evaluated_target_count"] != 46 or availability["not_evaluated_target_count"] != 4:
+              raise SystemExit("Availability accounting mismatch")
+          if aggregate.get("metrics", {}).get("n_targets") != 46 or aggregate.get("metadata", {}).get("n_shards") != 46:
+              raise SystemExit("Evaluated aggregate denominator mismatch")
+          env_paths = sorted(root.glob("shards/TIC-*/environment/env_manifest.json"))
+          if len(env_paths) != 50:
+              raise SystemExit("Expected 50 clean environment manifests")
+          environments = [json.loads(p.read_text()) for p in env_paths]
+          if any(e.get("git", {}).get("dirty") is not False for e in environments):
+              raise SystemExit("Dirty shard environment found")
+          source_commits = sorted({e.get("git", {}).get("commit") for e in environments})
+          manifest = build_manifest(input_path=root / "input/targets.json", config={"campaign": "known_planets_50_v1", "aggregation": "evaluated_target_row_merge_v1"}, seed=42, pipeline_version="0.3.0", environment_manifest_path=env_paths[0])
+          manifest.update({
+              "campaign": "known_planets_50_v1",
+              "scope": "fifty_selected_known_planets_real_tess_data_46_evaluated",
+              "selected_target_count": 50,
+              "evaluated_target_count": 46,
+              "not_evaluated_target_count": 4,
+              "source_shard_count": 50,
+              "source_git_commits": source_commits,
+              "target_ids": [f"TIC {int(row['tic_id'])}" for row in corpus],
+              "artifacts": {str(p.relative_to(root)): sha256_file(p) for p in sorted(root.rglob("*")) if p.is_file() and p != root / "manifest.json"},
+              "claim_boundary": "Recovery metrics use 46 evaluated targets; four no-sector targets are excluded, not counted as failures.",
+          })
+          (root / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")
+          PY
+          rm .github/workflows/known-planets-50.yml .github/workflows/recover-known-planets-50.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f "$CAMPAIGN_ROOT"
+          git add .github/workflows/known-planets-50.yml .github/workflows/recover-known-planets-50.yml
+          git commit -m "validation: freeze N=50 availability-aware evidence"
+          git push origin HEAD:validation/run-known-planets-50-v1
