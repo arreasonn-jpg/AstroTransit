@@ -12,25 +12,56 @@
     "cascade_single_sector": {
       "detector": "astrotransit.detection.cascade.CascadeDetector",
       "input": "DetrendedLightCurve",
-      "periods_days": [0.75, 2.0, 5.0, 10.0, 20.0],
+      "periods_days": [
+        0.75,
+        2.0,
+        5.0,
+        10.0,
+        20.0
+      ],
       "primary_acceptance": "candidate.confirmed and strict_period_match"
     },
     "long_period_stitched": {
       "detector": "astrotransit.detection.long_period.LongPeriodTransitSearch",
       "input": "stitched multi-sector DetrendedLightCurve",
-      "periods_days": [50.0],
+      "periods_days": [
+        50.0
+      ],
       "primary_acceptance": "has_candidate and strict_period_match"
     }
   },
   "grid": {
     "axes": {
-      "depth_ppm": [200, 500, 1000, 2000],
-      "duration_days": [0.08, 0.15],
-      "period_days": [0.75, 2.0, 5.0, 10.0, 20.0, 50.0],
-      "phase_fraction": [0.2, 0.7]
+      "depth_ppm": [
+        200,
+        500,
+        1000,
+        2000
+      ],
+      "duration_days": [
+        0.08,
+        0.15
+      ],
+      "period_days": [
+        0.75,
+        2.0,
+        5.0,
+        10.0,
+        20.0,
+        50.0
+      ],
+      "phase_fraction": [
+        0.2,
+        0.7
+      ]
     },
     "expanded_grid_sha256": "a741396df50d6340bb73b4b09c874b32d08b149c8eb67ebe0799853a656ebb21",
-    "expansion_order": ["period_days", "depth_ppm", "duration_days", "phase_fraction"],
+    "expansion_order": [
+      "period_days",
+      "depth_ppm",
+      "duration_days",
+      "phase_fraction"
+    ],
     "planned_total_trials": 960,
     "scenarios_per_host": 96
   },
@@ -50,34 +81,73 @@
       "finite_catalog_stellar_radius_and_mass",
       "residual_rms_and_variability_metrics_recorded"
     ],
-    "status": "pending_data"
+    "sha256": "8175058b8b519bffbff8a37a8c7978bb67ad8f1e03b777a9568ed35f21ffbe42",
+    "status": "frozen"
   },
   "injection_stage": "post_detrending_real_residual",
   "period_bins": {
-    "long": {"condition": "P > 20 days", "periods_days": [50.0]},
-    "mid": {"condition": "5 <= P <= 20 days", "periods_days": [5.0, 10.0, 20.0]},
-    "short": {"condition": "P < 5 days", "periods_days": [0.75, 2.0]}
+    "long": {
+      "condition": "P > 20 days",
+      "periods_days": [
+        50.0
+      ]
+    },
+    "mid": {
+      "condition": "5 <= P <= 20 days",
+      "periods_days": [
+        5.0,
+        10.0,
+        20.0
+      ]
+    },
+    "short": {
+      "condition": "P < 5 days",
+      "periods_days": [
+        0.75,
+        2.0
+      ]
+    }
   },
   "provenance_requirements": [
-    "git_commit", "dirty_state", "config_sha256", "host_corpus_sha256",
-    "expanded_grid_sha256", "output_sha256", "python_version",
-    "dependency_lock_sha256", "seed"
+    "git_commit",
+    "dirty_state",
+    "config_sha256",
+    "host_corpus_sha256",
+    "expanded_grid_sha256",
+    "output_sha256",
+    "python_version",
+    "dependency_lock_sha256",
+    "seed"
   ],
   "recovery_contract": {
     "availability_outcomes_excluded_from_denominators": true,
     "detector_errors_count_as_failures": true,
-    "harmonic_factors": [0.3333333333333333, 0.5, 1.0, 2.0, 3.0],
+    "harmonic_factors": [
+      0.3333333333333333,
+      0.5,
+      1.0,
+      2.0,
+      3.0
+    ],
     "primary_metric": "strict_period_recovery",
-    "required_dimensions": ["period_bin", "depth_ppm", "duration_days", "host_noise_bin"],
+    "required_dimensions": [
+      "period_bin",
+      "depth_ppm",
+      "duration_days",
+      "host_noise_bin"
+    ],
     "secondary_metric": "harmonic_aware_period_recovery",
     "strict_period_tolerance_fraction": 0.02
   },
   "required_outputs": [
-    "trials.csv", "report.json", "data_availability.json",
-    "environment_manifest.json", "manifest.json"
+    "trials.csv",
+    "report.json",
+    "data_availability.json",
+    "environment_manifest.json",
+    "manifest.json"
   ],
   "schema_version": "1.0",
   "seed": 42,
-  "status": "pending_data",
-  "status_reason": "quiet_host_corpus_not_frozen"
+  "status": "pending_run",
+  "status_reason": "quiet_host_corpus_frozen_injection_trials_not_run"
 }

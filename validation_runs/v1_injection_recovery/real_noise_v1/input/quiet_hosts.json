@@ -1,0 +1,497 @@
+{
+  "candidate_limit": 60,
+  "claim_boundary": "Selected real-noise injection hosts are not a population-representative quiet-star sample.",
+  "corpus": "real_noise_injection_quiet_hosts_v1",
+  "created_at_utc": "2026-09-11T16:34:37.842430Z",
+  "hosts": [
+    {
+      "combined_baseline_days": 1145.3554291849837,
+      "median_noise_ppm": 802.7457749916939,
+      "median_variability_mad_ppm": 788.3965140594718,
+      "pool_index": 2,
+      "sector_measurements": [
+        {
+          "baseline_days": 23.335165039703497,
+          "n_points": 14478,
+          "noise_ppm": 816.0145490362571,
+          "pre_injection_candidate": false,
+          "residual_rms": 0.0008161604986367666,
+          "sector": 17,
+          "time_end_btjd": 1788.0262070938397,
+          "time_start_btjd": 1764.6910420541362,
+          "variability_mad_ppm": 792.9072350085036
+        },
+        {
+          "baseline_days": 27.709679407055773,
+          "n_points": 19469,
+          "noise_ppm": 789.4770009471308,
+          "pre_injection_candidate": false,
+          "residual_rms": 0.0007894928137651187,
+          "sector": 58,
+          "time_end_btjd": 2910.04647123912,
+          "time_start_btjd": 2882.336791832064,
+          "variability_mad_ppm": 783.88579311044
+        }
+      ],
+      "sectors": [
+        17,
+        58
+      ],
+      "selection_evidence": {
+        "no_labelled_toi_or_tfop_history_at_snapshot": true,
+        "no_pre_injection_pipeline_candidate": true,
+        "real_tess_spoc_120s": true
+      },
+      "stellar": {
+        "mass_msun": 0.614588,
+        "radius_rsun": 0.633477,
+        "source": "TIC",
+        "teff_k": 3835.0,
+        "tmag": 9.4702
+      },
+      "target_id": "TIC 461408984",
+      "tic_id": "461408984"
+    },
+    {
+      "combined_baseline_days": 978.3095121781314,
+      "median_noise_ppm": 949.5262785861819,
+      "median_variability_mad_ppm": 940.0953950872358,
+      "pool_index": 9,
+      "sector_measurements": [
+        {
+          "baseline_days": 23.029572394787465,
+          "n_points": 14231,
+          "noise_ppm": 968.6103666298181,
+          "pre_injection_candidate": false,
+          "residual_rms": 0.0009687453403113351,
+          "sector": 18,
+          "time_end_btjd": 1813.69220064571,
+          "time_start_btjd": 1790.6626282509226,
+          "variability_mad_ppm": 954.080103520202
+        },
+        {
+          "baseline_days": 24.973850684414174,
+          "n_points": 16584,
+          "noise_ppm": 930.4421905425455,
+          "pre_injection_candidate": false,
+          "residual_rms": 0.000930452138250362,
+          "sector": 53,
+          "time_end_btjd": 2768.972140429054,
+          "time_start_btjd": 2743.99828974464,
+          "variability_mad_ppm": 926.1106866542696
+        }
+      ],
+      "sectors": [
+        18,
+        53
+      ],
+      "selection_evidence": {
+        "no_labelled_toi_or_tfop_history_at_snapshot": true,
+        "no_pre_injection_pipeline_candidate": true,
+        "real_tess_spoc_120s": true
+      },
+      "stellar": {
+        "mass_msun": 1.119,
+        "radius_rsun": 1.19557,
+        "source": "TIC",
+        "teff_k": 6032.0,
+        "tmag": 9.85852
+      },
+      "target_id": "TIC 461579208",
+      "tic_id": "461579208"
+    },
+    {
+      "combined_baseline_days": 1146.0218815471142,
+      "median_noise_ppm": 911.1189537524489,
+      "median_variability_mad_ppm": 890.6107644599293,
+      "pool_index": 12,
+      "sector_measurements": [
+        {
+          "baseline_days": 22.866964647598707,
+          "n_points": 13941,
+          "noise_ppm": 920.0083108753579,
+          "pre_injection_candidate": false,
+          "residual_rms": 0.000920238046749055,
+          "sector": 18,
+          "time_end_btjd": 1813.5298377606885,
+          "time_start_btjd": 1790.6628731130897,
+          "variability_mad_ppm": 894.4515543865695
+        },
+        {
+          "baseline_days": 24.915139344520867,
+          "n_points": 16155,
+          "noise_ppm": 902.2295966295399,
+          "pre_injection_candidate": false,
+          "residual_rms": 0.0009023282335753549,
+          "sector": 59,
+          "time_end_btjd": 2936.684754660204,
+          "time_start_btjd": 2911.769615315683,
+          "variability_mad_ppm": 886.7699745332892
+        }
+      ],
+      "sectors": [
+        18,
+        59
+      ],
+      "selection_evidence": {
+        "no_labelled_toi_or_tfop_history_at_snapshot": true,
+        "no_pre_injection_pipeline_candidate": true,
+        "real_tess_spoc_120s": true
+      },
+      "stellar": {
+        "mass_msun": 0.995,
+        "radius_rsun": 1.06472,
+        "source": "TIC",
+        "teff_k": 5621.0,
+        "tmag": 9.753
+      },
+      "target_id": "TIC 388633928",
+      "tic_id": "388633928"
+    },
+    {
+      "combined_baseline_days": 1136.6766050310125,
+      "median_noise_ppm": 412.1362569084206,
+      "median_variability_mad_ppm": 399.44019999239805,
+      "pool_index": 22,
+      "sector_measurements": [
+        {
+          "baseline_days": 23.0287616775704,
+          "n_points": 11088,
+          "noise_ppm": 401.9394228065767,
+          "pre_injection_candidate": false,
+          "residual_rms": 0.0004020704193003111,
+          "sector": 42,
+          "time_end_btjd": 2470.7284813924985,
+          "time_start_btjd": 2447.699719714928,
+          "variability_mad_ppm": 387.7074074839003
+        },
+        {
+          "baseline_days": 24.911530535640395,
+          "n_points": 17321,
+          "noise_ppm": 422.3330910102644,
+          "pre_injection_candidate": false,
+          "residual_rms": 0.0004223348075641236,
+          "sector": 83,
+          "time_end_btjd": 3584.3763247459406,
+          "time_start_btjd": 3559.4647942103,
+          "variability_mad_ppm": 411.1729925008958
+        }
+      ],
+      "sectors": [
+        42,
+        83
+      ],
+      "selection_evidence": {
+        "no_labelled_toi_or_tfop_history_at_snapshot": true,
+        "no_pre_injection_pipeline_candidate": true,
+        "real_tess_spoc_120s": true
+      },
+      "stellar": {
+        "mass_msun": 1.04,
+        "radius_rsun": 0.822457,
+        "source": "TIC",
+        "teff_k": 5804.0,
+        "tmag": 8.0181
+      },
+      "target_id": "TIC 405305758",
+      "tic_id": "405305758"
+    },
+    {
+      "combined_baseline_days": 952.40579380795,
+      "median_noise_ppm": 794.2842374350271,
+      "median_variability_mad_ppm": 770.1553877633869,
+      "pool_index": 25,
+      "sector_measurements": [
+        {
+          "baseline_days": 23.61405297741885,
+          "n_points": 15052,
+          "noise_ppm": 792.7251045899511,
+          "pre_injection_candidate": false,
+          "residual_rms": 0.0007932375815007565,
+          "sector": 18,
+          "time_end_btjd": 1814.277257163994,
+          "time_start_btjd": 1790.663204186575,
+          "variability_mad_ppm": 758.9979834605928
+        },
+        {
+          "baseline_days": 24.43205611307667,
+          "n_points": 16735,
+          "noise_ppm": 795.8433702801029,
+          "pre_injection_candidate": false,
+          "residual_rms": 0.0007958770690033776,
+          "sector": 52,
+          "time_end_btjd": 2743.068997994525,
+          "time_start_btjd": 2718.6369418814484,
+          "variability_mad_ppm": 781.3127920661811
+        }
+      ],
+      "sectors": [
+        18,
+        52
+      ],
+      "selection_evidence": {
+        "no_labelled_toi_or_tfop_history_at_snapshot": true,
+        "no_pre_injection_pipeline_candidate": true,
+        "real_tess_spoc_120s": true
+      },
+      "stellar": {
+        "mass_msun": 1.085,
+        "radius_rsun": 1.05993,
+        "source": "TIC",
+        "teff_k": 5941.0,
+        "tmag": 9.41063
+      },
+      "target_id": "TIC 407516437",
+      "tic_id": "407516437"
+    },
+    {
+      "combined_baseline_days": 1845.6473445337062,
+      "median_noise_ppm": 1081.1360235208895,
+      "median_variability_mad_ppm": 1063.4012723478381,
+      "pool_index": 28,
+      "sector_measurements": [
+        {
+          "baseline_days": 23.011111390652786,
+          "n_points": 12854,
+          "noise_ppm": 1119.969650909449,
+          "pre_injection_candidate": false,
+          "residual_rms": 0.0011204467416461152,
+          "sector": 17,
+          "time_end_btjd": 1787.703627434142,
+          "time_start_btjd": 1764.6925160434891,
+          "variability_mad_ppm": 1096.5432772934246
+        },
+        {
+          "baseline_days": 25.741829759114353,
+          "n_points": 16439,
+          "noise_ppm": 1042.3023961323302,
+          "pre_injection_candidate": false,
+          "residual_rms": 0.0010423402861662369,
+          "sector": 84,
+          "time_end_btjd": 3610.3398605771954,
+          "time_start_btjd": 3584.598030818081,
+          "variability_mad_ppm": 1030.2592674022517
+        }
+      ],
+      "sectors": [
+        17,
+        84
+      ],
+      "selection_evidence": {
+        "no_labelled_toi_or_tfop_history_at_snapshot": true,
+        "no_pre_injection_pipeline_candidate": true,
+        "real_tess_spoc_120s": true
+      },
+      "stellar": {
+        "mass_msun": 0.69,
+        "radius_rsun": 0.711844,
+        "source": "TIC",
+        "teff_k": 4409.0,
+        "tmag": 10.0684
+      },
+      "target_id": "TIC 201503102",
+      "tic_id": "201503102"
+    },
+    {
+      "combined_baseline_days": 50.671708324290194,
+      "median_noise_ppm": 974.1297095222801,
+      "median_variability_mad_ppm": 961.9979856602115,
+      "pool_index": 29,
+      "sector_measurements": [
+        {
+          "baseline_days": 23.02869274247041,
+          "n_points": 11090,
+          "noise_ppm": 986.6167065130885,
+          "pre_injection_candidate": false,
+          "residual_rms": 0.0009867176616072087,
+          "sector": 42,
+          "time_end_btjd": 2470.728585092473,
+          "time_start_btjd": 2447.6998923500028,
+          "variability_mad_ppm": 964.8554432392605
+        },
+        {
+          "baseline_days": 24.194345575690022,
+          "n_points": 13754,
+          "noise_ppm": 961.6427125314717,
+          "pre_injection_candidate": false,
+          "residual_rms": 0.000961660558664945,
+          "sector": 43,
+          "time_end_btjd": 2498.371600674293,
+          "time_start_btjd": 2474.177255098603,
+          "variability_mad_ppm": 959.1405280811625
+        }
+      ],
+      "sectors": [
+        42,
+        43
+      ],
+      "selection_evidence": {
+        "no_labelled_toi_or_tfop_history_at_snapshot": true,
+        "no_pre_injection_pipeline_candidate": true,
+        "real_tess_spoc_120s": true
+      },
+      "stellar": {
+        "mass_msun": 0.632279,
+        "radius_rsun": 0.656909,
+        "source": "TIC",
+        "teff_k": 3803.0,
+        "tmag": 9.81829
+      },
+      "target_id": "TIC 468869378",
+      "tic_id": "468869378"
+    },
+    {
+      "combined_baseline_days": 218.6350582992818,
+      "median_noise_ppm": 1073.3562240283754,
+      "median_variability_mad_ppm": 1040.5146798403287,
+      "pool_index": 39,
+      "sector_measurements": [
+        {
+          "baseline_days": 23.616713786196215,
+          "n_points": 15063,
+          "noise_ppm": 1090.4631538488745,
+          "pre_injection_candidate": false,
+          "residual_rms": 0.00109057841132611,
+          "sector": 18,
+          "time_end_btjd": 1814.2801142729854,
+          "time_start_btjd": 1790.6634004867892,
+          "variability_mad_ppm": 1060.558987328165
+        },
+        {
+          "baseline_days": 25.66406164159116,
+          "n_points": 17232,
+          "noise_ppm": 1056.2492942078763,
+          "pre_injection_candidate": false,
+          "residual_rms": 0.0010565521583760366,
+          "sector": 25,
+          "time_end_btjd": 2009.298458786071,
+          "time_start_btjd": 1983.6343971444799,
+          "variability_mad_ppm": 1020.4703723524925
+        }
+      ],
+      "sectors": [
+        18,
+        25
+      ],
+      "selection_evidence": {
+        "no_labelled_toi_or_tfop_history_at_snapshot": true,
+        "no_pre_injection_pipeline_candidate": true,
+        "real_tess_spoc_120s": true
+      },
+      "stellar": {
+        "mass_msun": 1.074,
+        "radius_rsun": 0.947444,
+        "source": "TIC",
+        "teff_k": 5906.0,
+        "tmag": 9.77818
+      },
+      "target_id": "TIC 373144098",
+      "tic_id": "373144098"
+    },
+    {
+      "combined_baseline_days": 218.63531016196794,
+      "median_noise_ppm": 1633.8203608080908,
+      "median_variability_mad_ppm": 1609.498950087458,
+      "pool_index": 41,
+      "sector_measurements": [
+        {
+          "baseline_days": 23.225165474202413,
+          "n_points": 14342,
+          "noise_ppm": 1568.9861939189734,
+          "pre_injection_candidate": false,
+          "residual_rms": 0.0015690487643098662,
+          "sector": 18,
+          "time_end_btjd": 1813.8883436691942,
+          "time_start_btjd": 1790.6631781949918,
+          "variability_mad_ppm": 1544.3707764279984
+        },
+        {
+          "baseline_days": 25.66392517419581,
+          "n_points": 17229,
+          "noise_ppm": 1698.6545276972083,
+          "pre_injection_candidate": false,
+          "residual_rms": 0.001698919437454187,
+          "sector": 25,
+          "time_end_btjd": 2009.2984883569598,
+          "time_start_btjd": 1983.634563182764,
+          "variability_mad_ppm": 1674.6271237469175
+        }
+      ],
+      "sectors": [
+        18,
+        25
+      ],
+      "selection_evidence": {
+        "no_labelled_toi_or_tfop_history_at_snapshot": true,
+        "no_pre_injection_pipeline_candidate": true,
+        "real_tess_spoc_120s": true
+      },
+      "stellar": {
+        "mass_msun": 0.986,
+        "radius_rsun": 0.808651,
+        "source": "TIC",
+        "teff_k": 5583.0,
+        "tmag": 10.8631
+      },
+      "target_id": "TIC 388634757",
+      "tic_id": "388634757"
+    },
+    {
+      "combined_baseline_days": 217.57987166596854,
+      "median_noise_ppm": 1686.8682096263542,
+      "median_variability_mad_ppm": 1676.1060033185545,
+      "pool_index": 42,
+      "sector_measurements": [
+        {
+          "baseline_days": 22.8529249085052,
+          "n_points": 12739,
+          "noise_ppm": 1626.6600657841743,
+          "pre_injection_candidate": false,
+          "residual_rms": 0.001626961639935259,
+          "sector": 17,
+          "time_end_btjd": 1787.5452890802908,
+          "time_start_btjd": 1764.6923641717856,
+          "variability_mad_ppm": 1608.1210412328928
+        },
+        {
+          "baseline_days": 26.476549250952303,
+          "n_points": 17191,
+          "noise_ppm": 1747.0763534685339,
+          "pre_injection_candidate": false,
+          "residual_rms": 0.0017470810205974547,
+          "sector": 24,
+          "time_end_btjd": 1982.2722358377541,
+          "time_start_btjd": 1955.7956865868018,
+          "variability_mad_ppm": 1744.0909654042161
+        }
+      ],
+      "sectors": [
+        17,
+        24
+      ],
+      "selection_evidence": {
+        "no_labelled_toi_or_tfop_history_at_snapshot": true,
+        "no_pre_injection_pipeline_candidate": true,
+        "real_tess_spoc_120s": true
+      },
+      "stellar": {
+        "mass_msun": 0.625071,
+        "radius_rsun": 0.647263,
+        "source": "TIC",
+        "teff_k": 3967.0,
+        "tmag": 10.6736
+      },
+      "target_id": "TIC 406767163",
+      "tic_id": "406767163"
+    }
+  ],
+  "labelled_corpus": "benchmarks/corpora/tfop_disposition_corpus_v1.json",
+  "labelled_corpus_sha256": "c6490fa32c8fea72fcddf50a8af038d825de573b5da39cbb3063a4c0cecbb9b0",
+  "required_host_count": 10,
+  "schema_version": "1.0",
+  "selected_host_count": 10,
+  "selection_policy": "pool_order_after_label_exclusion_then_two_sector_production_prescreen_v1",
+  "source_pool": "benchmarks/discovery_targets_v4_small_cool_200_dedup.csv",
+  "source_pool_sha256": "d72d70b25fa5921f764778800d01f067bab13ded6ce2bb9cea64208adea7ba5e",
+  "status": "frozen"
+}
