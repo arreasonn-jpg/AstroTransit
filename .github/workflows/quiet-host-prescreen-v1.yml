@@ -6,7 +6,7 @@ on:
       candidate_limit:
         description: Maximum deterministic candidates to screen
         required: true
-        default: "30"
+        default: "60"
   pull_request:
     types: [opened, synchronize, reopened]
 
@@ -24,7 +24,7 @@ jobs:
     timeout-minutes: 180
     env:
       BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
-      CANDIDATE_LIMIT: ${{ inputs.candidate_limit || '30' }}
+      CANDIDATE_LIMIT: ${{ inputs.candidate_limit || '60' }}
     steps:
       - name: Checkout source branch
         uses: actions/checkout@v4
