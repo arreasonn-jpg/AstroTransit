@@ -1,0 +1,19 @@
+{
+  "schema_version": "1.0",
+  "program": "final_acceptance_v1",
+  "status": "in_progress",
+  "claim_policy": "Only immutable measured evidence can close a gate; pending work is never a score.",
+  "gates": [
+    {"id": "parameter_recovery", "status": "ready_to_measure", "required_output": "validation_runs/v1_injection_recovery/real_noise_v1/parameter_recovery_report.json"},
+    {"id": "labelled_fp_quiet_controls", "status": "pending_run", "required_output": "validation_runs/final_acceptance_v1/false_positive_controls/report.json"},
+    {"id": "adversarial_false_positives", "status": "pending_data", "required_output": "validation_runs/final_acceptance_v1/adversarial_fp/report.json"},
+    {"id": "fpp_quality_calibration", "status": "pending_run", "required_output": "validation_runs/final_acceptance_v1/fpp_calibration/report.json"},
+    {"id": "detrending_cadence_impact_robustness", "status": "pending_run", "required_output": "validation_runs/final_acceptance_v1/robustness/report.json"},
+    {"id": "tls_bls_baselines_ablations", "status": "pending_run", "required_output": "validation_runs/final_acceptance_v1/baselines/report.json"},
+    {"id": "blind_domain_holdout", "status": "pending_data", "required_output": "validation_runs/final_acceptance_v1/blind_holdout/report.json"},
+    {"id": "mcmc_coverage_ppc", "status": "pending_run", "required_output": "validation_runs/final_acceptance_v1/mcmc/report.json"},
+    {"id": "performance", "status": "pending_run", "required_output": "validation_runs/final_acceptance_v1/performance/report.json"},
+    {"id": "independent_reproduction_fmea", "status": "pending_run", "required_output": "validation_runs/final_acceptance_v1/reproduction/report.json"},
+    {"id": "final_report_release", "status": "blocked_by_gates", "required_output": "validation_runs/final_acceptance_v1/final_report.json"}
+  ]
+}

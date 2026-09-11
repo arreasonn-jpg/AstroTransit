@@ -1,0 +1,35 @@
+name: Final validation program v1
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deterministic-evidence:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+      - run: python -m pip install -e '.[dev]'
+      - name: Freeze parameter-recovery analysis artifact
+        run: |
+          mkdir -p final-validation-artifacts
+          python scripts/validation/analyze_real_noise_injection_parameters.py \
+            --trials validation_runs/v1_injection_recovery/real_noise_v1/trials.csv \
+            --output final-validation-artifacts/parameter_recovery_report.json
+      - name: Audit all eleven gates
+        run: |
+          python scripts/validation/final_acceptance_audit.py \
+            --program validation_runs/final_acceptance_v1/program.json \
+            --output final-validation-artifacts/program_audit.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: final-validation-v1-deterministic-evidence
+          path: final-validation-artifacts/
+          if-no-files-found: error
