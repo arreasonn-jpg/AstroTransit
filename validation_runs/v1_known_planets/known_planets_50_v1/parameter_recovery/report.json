@@ -1,0 +1,81 @@
+{
+  "all_evaluable": {
+    "n": 46,
+    "period": {
+      "bias": 0.307939885819,
+      "log_ratio_bias": 0.172858686087,
+      "log_ratio_rmse": 0.61843240206,
+      "log_ratio_scatter": 0.593783218491,
+      "mae": 1.301592301417,
+      "median_absolute_error": 0.004284967159,
+      "median_absolute_relative_error": 0.002052048073,
+      "median_error": 0.000132264844,
+      "median_relative_error": 3.3140441e-05,
+      "relative_bias": 0.600486488924,
+      "relative_mae": 0.677635573728,
+      "relative_rmse": 2.340679835108,
+      "relative_scatter": 2.262343490078,
+      "rmse": 2.785270673876,
+      "scatter": 2.768195396549
+    },
+    "radius": {
+      "bias": -0.976808413043,
+      "log_ratio_bias": -0.128391597462,
+      "log_ratio_rmse": 0.667132218302,
+      "log_ratio_scatter": 0.654660976687,
+      "mae": 2.169259108696,
+      "median_absolute_error": 0.661563,
+      "median_absolute_relative_error": 0.206084219889,
+      "median_error": -0.0800395,
+      "median_relative_error": -0.021628695146,
+      "relative_bias": 0.061562112293,
+      "relative_mae": 0.418418297203,
+      "relative_rmse": 0.661635276202,
+      "relative_scatter": 0.658765015043,
+      "rmse": 4.33126990354,
+      "scatter": 4.21968533205
+    }
+  },
+  "by_difficulty": {
+    "easy": {
+      "n": 18,
+      "period": {"bias": -0.59397794449, "log_ratio_bias": -0.068043003547, "log_ratio_rmse": 0.207181302653, "log_ratio_scatter": 0.195689145936, "mae": 0.59565987361, "median_absolute_error": 0.000169107559, "median_absolute_relative_error": 3.4179733e-05, "median_error": 1.0512067e-05, "median_relative_error": 3.846891e-06, "relative_bias": -0.050480281498, "relative_mae": 0.051578561402, "relative_rmse": 0.153550771726, "relative_scatter": 0.145015794579, "rmse": 2.392741531188, "scatter": 2.317844308087},
+      "period_within_tolerance": 16,
+      "radius": {"bias": -3.199458111111, "log_ratio_bias": -0.379067202371, "log_ratio_rmse": 0.785478972191, "log_ratio_scatter": 0.687957318328, "mae": 3.963994333333, "median_absolute_error": 0.8208185, "median_absolute_relative_error": 0.088179621657, "median_error": -0.5726225, "median_relative_error": -0.048608643889, "relative_bias": -0.189310084884, "relative_mae": 0.270876457659, "relative_rmse": 0.407734539374, "relative_scatter": 0.361122065733, "rmse": 6.473298682024, "scatter": 5.627349609002},
+      "radius_within_tolerance": 12
+    },
+    "hard": {
+      "n": 13,
+      "period": {"bias": 2.071414939726, "log_ratio_bias": 0.568680726551, "log_ratio_rmse": 0.953908133299, "log_ratio_scatter": 0.765860926033, "mae": 2.073256889616, "median_absolute_error": 0.812929295777, "median_absolute_relative_error": 0.204423946905, "median_error": 0.812929295777, "median_relative_error": 0.204423946905, "relative_bias": 1.704775619143, "relative_mae": 1.706136566809, "relative_rmse": 4.077391868194, "relative_scatter": 3.703898558977, "rmse": 3.091106401748, "scatter": 2.294379858351},
+      "period_within_tolerance": 6,
+      "radius": {"bias": 0.632020923077, "log_ratio_bias": 0.144504272059, "log_ratio_rmse": 0.650852021272, "log_ratio_scatter": 0.634607649616, "mae": 1.165880307692, "median_absolute_error": 0.7434, "median_absolute_relative_error": 0.539557572996, "median_error": 0.33239, "median_relative_error": 0.187641483338, "relative_bias": 0.39764091901, "relative_mae": 0.727326736652, "relative_rmse": 0.915017188591, "relative_scatter": 0.824098389118, "rmse": 1.954171509703, "scatter": 1.849144624449},
+      "radius_within_tolerance": 2
+    },
+    "medium": {
+      "n": 15,
+      "period": {"bias": -0.13810376453, "log_ratio_bias": 0.118894945247, "log_ratio_rmse": 0.576843950307, "log_ratio_scatter": 0.564458089676, "mae": 1.479935238345, "median_absolute_error": 0.01338927891, "median_absolute_relative_error": 0.004990779008, "median_error": 0.001329005768, "median_relative_error": 0.000245020066, "relative_bias": 0.424596033908, "relative_mae": 0.537536461181, "relative_rmse": 1.537811372102, "relative_scatter": 1.478033160709, "rmse": 2.939248028201, "scatter": 2.936001757749},
+      "period_within_tolerance": 10,
+      "radius": {"bias": 0.296052466667, "log_ratio_bias": -0.064090625156, "log_ratio_rmse": 0.5073138258, "log_ratio_scatter": 0.503249152622, "mae": 0.8851718, "median_absolute_error": 0.171507, "median_absolute_relative_error": 0.042317238919, "median_error": -0.0164, "median_relative_error": -0.010353015672, "relative_bias": 0.07134044975, "relative_mae": 0.327747857132, "relative_rmse": 0.646025225393, "relative_scatter": 0.642074086125, "rmse": 1.984043116372, "scatter": 1.961830783886},
+      "radius_within_tolerance": 9
+    }
+  },
+  "campaign": "known_planets_50_v1_parameter_recovery",
+  "canonical_output_hash": "6b6c12a34d3c9f3443c6b107593331c781dad8da3e327f48a7dd8d83c6de9ddd",
+  "conditional_recovery": {
+    "period": {"bias": 0.005192026065, "log_ratio_bias": 0.000816831673, "log_ratio_rmse": 0.003853523283, "log_ratio_scatter": 0.003765956414, "mae": 0.009981311285, "median_absolute_error": 0.001354260138, "median_absolute_relative_error": 0.000245147332, "median_error": 1.0512067e-05, "median_relative_error": 3.846891e-06, "n": 32, "relative_bias": 0.00082428132, "relative_mae": 0.001924079982, "relative_rmse": 0.003872899962, "relative_scatter": 0.003784166278, "rmse": 0.030830156151, "scatter": 0.03038982385},
+    "radius": {"bias": -0.122817956522, "log_ratio_bias": -0.01681682774, "log_ratio_rmse": 0.082854224875, "log_ratio_scatter": 0.081129630126, "mae": 0.386721869565, "median_absolute_error": 0.163519, "median_absolute_relative_error": 0.03075974026, "median_error": -0.01635, "median_relative_error": -0.005655172414, "n": 23, "relative_bias": -0.013478571055, "relative_mae": 0.053638022941, "relative_rmse": 0.079807377213, "relative_scatter": 0.078660953337, "rmse": 0.630190739307, "scatter": 0.61810688191}
+  },
+  "coverage": null,
+  "coverage_status": "not_evaluated_no_intervals",
+  "evaluated_targets": 46,
+  "limitations": [
+    "All-evaluable metrics include alias and catastrophic recovery failures.",
+    "Conditional metrics describe only rows within the frozen tolerance and are not completeness estimates.",
+    "Credible-interval coverage is unavailable because the frozen aggregate contains point estimates without intervals.",
+    "Radius reliability status is absent from this aggregate; reliability-stratified analysis requires a dedicated diagnostic artifact."
+  ],
+  "not_evaluated_targets": 4,
+  "schema_version": "1.0",
+  "selected_targets": 50,
+  "source": "validation_runs/v1_known_planets/known_planets_50_v1/aggregate/targets.csv"
+}
