@@ -1,0 +1,53 @@
+{
+  "analysis_kind": "post_hoc_exploratory_diagnostic",
+  "campaign": "tls_map_n10_v1",
+  "interpretation": "Measured associations only; no causal claim or scientific PASS/FAIL is implied.",
+  "source": {
+    "aggregate_canonical_output_hash": "469fc60c290ca33185ef62839314dd44cb408035210531c6ccd6b90666434c46",
+    "aggregate_json_sha256": "0bcb51530d3d3989f4f41963d34529838491de7d247f88a935ad048e49ee1eb9",
+    "input_sha256": "2e05fd8f726cf1d1079d1c04c73ce548b57676bae5ddcae7514e03e8da692b57",
+    "source_commit": "eb413be452fb727402292873e3bc8248aa90508d"
+  },
+  "overall": {
+    "n_rows": 153,
+    "n_evaluated": 133,
+    "n_not_evaluated": 20,
+    "median_fractional_delta_fit_minus_tls": 0.060955076522101706,
+    "median_absolute_fractional_delta": 0.070374826670434
+  },
+  "exploratory_strata": {
+    "impact_parameter": {
+      "b_lt_0_5": {
+        "n": 44,
+        "median_absolute_fractional_delta": 0.04363548278317733
+      },
+      "b_0_5_to_0_85": {
+        "n": 75,
+        "median_absolute_fractional_delta": 0.07952829132330722
+      },
+      "b_ge_0_85": {
+        "n": 14,
+        "median_absolute_fractional_delta": 0.7587640707021059
+      }
+    },
+    "quadratic_limb_darkening": {
+      "physical_region": {
+        "n": 97,
+        "median_absolute_fractional_delta": 0.060955076522101706
+      },
+      "outside_physical_region": {
+        "n": 36,
+        "median_absolute_fractional_delta": 0.10299513164872745
+      }
+    },
+    "rp_rs_bound_signatures": {
+      "fit_to_tls_ratio_near_0_5": 4,
+      "fit_to_tls_ratio_near_2_0": 6
+    },
+    "large_difference_inventory": {
+      "absolute_fractional_delta_gt_0_25": 20,
+      "absolute_fractional_delta_gt_0_5": 12
+    }
+  },
+  "next_engineering_action": "Enforce a physical quadratic limb-darkening parameterization and expose MAP boundary hits before rerunning this diagnostic."
+}
