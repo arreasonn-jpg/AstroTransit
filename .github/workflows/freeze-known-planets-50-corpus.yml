@@ -26,24 +26,26 @@ jobs:
           source_path = Path("benchmarks/verified_targets.json")
           source_bytes = source_path.read_bytes()
           registry = json.loads(source_bytes)
-          n10 = json.loads(Path("validation_runs/v1_known_planets/known_planets_10_v1/input/targets.json").read_text())
-          n10_ids = [str(row["tic_id"]) for row in n10]
+          n10_path = Path("validation_runs/v1_known_planets/known_planets_10_v1/input/targets.json")
+          n10 = json.loads(n10_path.read_text())
+          registry_by_tic = {str(row.get("tic_id")): row for row in registry}
 
           selected = []
           seen = set()
-          for row in registry:
+
+          def append_row(row, lineage):
               tic = str(row.get("tic_id") or "").strip()
               if not tic or tic in seen:
-                  continue
+                  return
               period = float(row.get("expected_period_days", row.get("period")))
               radius = float(row.get("expected_radius_rearth", row.get("rp_rearth")))
               if period <= 0 or radius <= 0:
-                  continue
+                  return
               seen.add(tic)
               reference = str(row.get("reference") or "").strip()
               reference_status = "catalog_snapshot" if reference else "inherited_curated"
               if not reference:
-                  reference = "AstroTransit curated verified-target registry; carried forward from the frozen N=10/N=5 evidence lineage"
+                  reference = "AstroTransit curated verified-target registry; carried forward from frozen N=10 evidence"
               selected.append({
                   "tic_id": tic,
                   "name": str(row.get("name") or f"TIC {tic}"),
@@ -56,14 +58,25 @@ jobs:
                   "available_sectors": list(row.get("available_sectors") or []),
                   "reference": reference,
                   "reference_status": reference_status,
+                  "selection_lineage": lineage,
                   "source_registry": str(source_path),
               })
+
+          # Preserve the exact frozen N=10 identities and order first.
+          for frozen in n10:
+              source = dict(registry_by_tic.get(str(frozen["tic_id"]), {}))
+              source.update(frozen)
+              append_row(source, "frozen_n10_prefix")
+
+          # Extend deterministically in repository-registry order, excluding duplicates.
+          for row in registry:
               if len(selected) == 50:
                   break
+              append_row(row, "verified_registry_order")
 
           if len(selected) != 50:
               raise SystemExit(f"Expected 50 eligible unique targets, found {len(selected)}")
-          if [row["tic_id"] for row in selected[:10]] != n10_ids:
+          if [row["tic_id"] for row in selected[:10]] != [str(row["tic_id"]) for row in n10]:
               raise SystemExit("Frozen N=10 prefix changed")
 
           root = Path("validation_runs/v1_known_planets/known_planets_50_v1")
@@ -72,16 +85,19 @@ jobs:
           output.write_text(json.dumps(selected, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
           manifest = {
               "corpus_version": "known_planets_50_v1",
-              "selection_policy": "first_50_unique_registry_order_v1",
+              "selection_policy": "frozen_n10_then_registry_order_to_50_v1",
               "selection_is_output_independent": True,
               "population_representative": False,
               "target_count": len(selected),
               "unique_tic_count": len({row["tic_id"] for row in selected}),
               "source_path": str(source_path),
               "source_sha256": hashlib.sha256(source_bytes).hexdigest(),
+              "n10_source_path": str(n10_path),
+              "n10_source_sha256": hashlib.sha256(n10_path.read_bytes()).hexdigest(),
               "selected_corpus_sha256": hashlib.sha256(output.read_bytes()).hexdigest(),
               "difficulty_counts": dict(sorted(Counter(row["difficulty"] for row in selected).items())),
               "reference_status_counts": dict(sorted(Counter(row["reference_status"] for row in selected).items())),
+              "selection_lineage_counts": dict(sorted(Counter(row["selection_lineage"] for row in selected).items())),
               "claim_boundary": "Not a population-representative sample; no recall, precision, or completeness claim is implied.",
           }
           (root / "corpus_manifest.json").write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
