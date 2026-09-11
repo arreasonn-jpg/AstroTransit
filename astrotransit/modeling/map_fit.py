@@ -30,6 +30,12 @@ from astrotransit.modeling.parameters import (
     compute_derived_parameters,
 )
 from astrotransit.modeling.transit_model import TransitModel, TransitModelParams
+from astrotransit.modeling.parameterization import (
+    LIMB_DARKENING_PARAMETERIZATION,
+    parameter_boundary_hits,
+    quadratic_ld_to_unit_square,
+    unit_square_to_quadratic_ld,
+)
 
 
 # ──────────────────────────────────────
@@ -102,6 +108,9 @@ class MAPFitResult:
     n_iterations: int = 0
     optimizer_message: str = ""
     fit_method: str = "map"
+    optimizer_boundary_hit: bool = False
+    optimizer_boundary_hits: tuple[str, ...] = field(default_factory=tuple)
+    limb_darkening_parameterization: str = LIMB_DARKENING_PARAMETERIZATION
 
     def to_dict(self) -> dict:
         """Serileştirilebilir sözlük."""
@@ -125,6 +134,9 @@ class MAPFitResult:
             "residual_rms_ppm": round(self.residual_rms * 1e6, 2),
             "n_iterations": self.n_iterations,
             "optimizer_message": self.optimizer_message,
+            "optimizer_boundary_hit": self.optimizer_boundary_hit,
+            "optimizer_boundary_hits": list(self.optimizer_boundary_hits),
+            "limb_darkening_parameterization": self.limb_darkening_parameterization,
         }
         base.update(self.derived.to_dict())
         return base
@@ -156,8 +168,8 @@ class ParameterVector:
         "t0",
         "log_rp_rs",
         "impact_parameter",
-        "u1",
-        "u2",
+        "ld_q1",
+        "ld_q2",
         "log_jitter",
         "baseline",
     ]
@@ -174,13 +186,14 @@ class ParameterVector:
         baseline: float,
     ) -> np.ndarray:
         """Fiziksel parametrelerden optimizer vektörü oluşturur."""
+        q1, q2 = quadratic_ld_to_unit_square(u1, u2)
         return np.array([
             period,
             t0,
             np.log(max(rp_rs, 1e-6)),
             impact_parameter,
-            u1,
-            u2,
+            q1,
+            q2,
             log_jitter,
             baseline,
         ])
@@ -188,13 +201,14 @@ class ParameterVector:
     @staticmethod
     def from_vector(x: np.ndarray) -> dict:
         """Optimizer vektöründen fiziksel parametreleri çıkarır."""
+        u1, u2 = unit_square_to_quadratic_ld(x[4], x[5])
         return {
             "period": x[0],
             "t0": x[1],
             "rp_rs": np.exp(x[2]),
             "impact_parameter": x[3],
-            "u1": x[4],
-            "u2": x[5],
+            "u1": u1,
+            "u2": u2,
             "log_jitter": x[6],
             "baseline": x[7],
         }
@@ -207,8 +221,8 @@ class ParameterVector:
             (priors.t0_bounds[0], priors.t0_bounds[1]),
             (np.log(priors.rp_rs_bounds[0]), np.log(priors.rp_rs_bounds[1])),
             (priors.impact_parameter_bounds[0], priors.impact_parameter_bounds[1]),
-            (0.0, 1.0),     # u1
-            (-1.0, 1.0),    # u2
+            (0.0, 1.0),     # Kipping q1
+            (0.0, 1.0),     # Kipping q2
             (-15.0, 0.0),   # log_jitter
             (0.9, 1.1),     # baseline
         ]
@@ -462,6 +476,9 @@ class MAPFitter:
             return self._failed_result(target_id, sector)
 
         best_phys = ParameterVector.from_vector(best_result.x)
+        boundary_hits = parameter_boundary_hits(
+            best_result.x, bounds, ParameterVector.PARAM_NAMES
+        )
 
         # Eğim hesapla
         inclination = TransitModel.impact_to_inclination(
@@ -525,6 +542,9 @@ class MAPFitter:
             n_iterations=int(best_result.nit),
             optimizer_message=str(best_result.message),
             fit_method="map",
+            optimizer_boundary_hit=bool(boundary_hits),
+            optimizer_boundary_hits=boundary_hits,
+            limb_darkening_parameterization=LIMB_DARKENING_PARAMETERIZATION,
         )
 
         logger.info(
