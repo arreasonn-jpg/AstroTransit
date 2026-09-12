@@ -1,0 +1,97 @@
+name: False-positive and quiet-control campaign v1
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/fp-quiet-controls-v1.yml
+      - scripts/validation/run_false_positive_controls.py
+      - scripts/validation/build_quiet_controls.py
+      - benchmarks/corpora/fp_run_subset_v1.json
+      - benchmarks/corpora/tfop_disposition_corpus_v1.json
+      - benchmarks/discovery_targets_v4_small_cool_1000_dedup.csv
+      - validation_runs/v1_injection_recovery/real_noise_v1/input/quiet_hosts.json
+      - validation_runs/final_acceptance_v1/false_positive_controls/corpus_manifest.json
+      - configs/benchmark_fp.toml
+
+jobs:
+  evaluate:
+    name: evaluate shard ${{ matrix.shard }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    strategy:
+      fail-fast: false
+      max-parallel: 20
+      matrix:
+        shard: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Install locked runtime
+        run: python -m pip install --upgrade pip && python -m pip install -r envs/requirements.lock
+      - name: Evaluate frozen shard
+        run: |
+          mkdir -p outputs/fp-quiet-v1
+          python scripts/validation/run_false_positive_controls.py run-shard \
+            --labelled-corpus benchmarks/corpora/tfop_disposition_corpus_v1.json \
+            --fp-subset benchmarks/corpora/fp_run_subset_v1.json \
+            --quiet-pool benchmarks/discovery_targets_v4_small_cool_1000_dedup.csv \
+            --prior-hosts validation_runs/v1_injection_recovery/real_noise_v1/input/quiet_hosts.json \
+            --config configs/benchmark_fp.toml \
+            --shard-index "${{ matrix.shard }}" \
+            --shard-count 20 \
+            --output "outputs/fp-quiet-v1/shard-$(printf '%02d' '${{ matrix.shard }}').json"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: fp-quiet-shard-${{ matrix.shard }}
+          path: outputs/fp-quiet-v1/shard-*.json
+          if-no-files-found: error
+
+  aggregate:
+    name: aggregate 100 false positives plus 100 quiet controls
+    needs: evaluate
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Install locked runtime
+        run: python -m pip install --upgrade pip && python -m pip install -r envs/requirements.lock
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: fp-quiet-shard-*
+          path: outputs/fp-quiet-v1/shards
+          merge-multiple: true
+      - name: Aggregate without converting missing data into passes
+        run: |
+          python scripts/validation/run_false_positive_controls.py aggregate \
+            --shards outputs/fp-quiet-v1/shards \
+            --shard-count 20 \
+            --output outputs/fp-quiet-v1/report.json \
+            --rows outputs/fp-quiet-v1/rows.jsonl
+          python - <<'PY'
+          import hashlib, json
+          from pathlib import Path
+          root = Path("outputs/fp-quiet-v1")
+          payload = {
+              "report_sha256": hashlib.sha256((root / "report.json").read_bytes()).hexdigest(),
+              "rows_sha256": hashlib.sha256((root / "rows.jsonl").read_bytes()).hexdigest(),
+          }
+          (root / "manifest.json").write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n")
+          print(json.dumps(payload, indent=2))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: fp-quiet-controls-v1-measured-evidence
+          path: |
+            outputs/fp-quiet-v1/report.json
+            outputs/fp-quiet-v1/rows.jsonl
+            outputs/fp-quiet-v1/manifest.json
+          if-no-files-found: error
