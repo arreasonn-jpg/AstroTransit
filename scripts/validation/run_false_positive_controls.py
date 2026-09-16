@@ -22,6 +22,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from astrotransit.validation.benchmark_report import normalize_target_id
 from astrotransit.validation.corpus import CorpusCase, load_corpus
+from astrotransit.validation.fpp_telemetry import FPP_TELEMETRY_VERSION, attach_row_fpp
 from scripts.validation.build_quiet_controls import build as build_quiet_controls
 
 QUIET_CORPUS_SHA256 = "a59e245487fc80e440fb9481734cf1f95e8778433de2b2ab9abe58f258974aea"
@@ -118,6 +119,20 @@ def _quality_value(sector_result: Any, name: str) -> Any:
 
 
 def _evaluate_case(
+    case: CorpusCase,
+    orchestrator: Any,
+    sector_client: Any,
+) -> dict[str, Any]:
+    """Hedefi koşar ve satırı hedef seviyesi FPP telemetrisiyle zenginleştirir.
+
+    FPP alanları yalnızca kayıt için eklenir; hiçbir FPP değeri üretilmediyse
+    ``None`` kalır ve nedeni ``target_fpp_availability_reason`` içinde taşınır.
+    """
+
+    return attach_row_fpp(_evaluate_case_raw(case, orchestrator, sector_client))
+
+
+def _evaluate_case_raw(
     case: CorpusCase,
     orchestrator: Any,
     sector_client: Any,
@@ -226,8 +241,9 @@ def run_shard(args: argparse.Namespace) -> int:
     ) as orchestrator:
         rows = [_evaluate_case(case, orchestrator, sector_client) for case in selected]
     payload = {
-        "schema_version": "1.0",
+        "schema_version": "1.1",
         "campaign": "labelled_fp_quiet_controls_v1",
+        "fpp_telemetry_version": FPP_TELEMETRY_VERSION,
         "shard_index": args.shard_index,
         "shard_count": args.shard_count,
         "case_count": len(rows),
@@ -245,6 +261,11 @@ def _group_metrics(rows: list[dict[str, Any]], label: str) -> dict[str, Any]:
     evaluated = [row for row in labelled if row["evaluated"]]
     accepted = sum(row["accepted_candidate"] is True for row in evaluated)
     rejected = sum(row["accepted_candidate"] is False for row in evaluated)
+    # FPP telemetrisi ayrı bir kanaldır: ölçülmeyen değer hiçbir zaman 0.0'a
+    # çevrilmez, eksiklik nedenleriyle birlikte raporlanır.
+    reasons: Counter[str] = Counter(
+        str(row.get("target_fpp_availability_reason", "telemetry_absent")) for row in labelled
+    )
     return {
         "labelled_count": len(labelled),
         "evaluated_count": len(evaluated),
@@ -253,6 +274,10 @@ def _group_metrics(rows: list[dict[str, Any]], label: str) -> dict[str, Any]:
         "rejected_count": rejected,
         "candidate_acceptance_rate": accepted / len(evaluated) if evaluated else None,
         "rejection_rate": rejected / len(evaluated) if evaluated else None,
+        "fpp_available_count": reasons["ok"],
+        "fpp_not_evaluated": {
+            key: value for key, value in sorted(reasons.items()) if key != "ok"
+        },
     }
 
 
@@ -320,6 +345,7 @@ def aggregate_shards(
             "quiet_controls": quiet,
             "total_errors": total_errors,
             "acceptance_ready": acceptance_ready,
+            "fpp_telemetry_version": FPP_TELEMETRY_VERSION,
         },
         "environment": {
             "python": sys.version,

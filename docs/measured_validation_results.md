@@ -90,10 +90,12 @@ The very low measured 50-day stitched recovery is a recorded pipeline limitation
 |---|---|
 | Parameter recovery | N=50 period/radius bias, scatter and RMSE measured; injection-trial parameter-error aggregation and interval coverage pending |
 | Injection recovery | 960/960 trial records frozen; 888 evaluable; strict and harmonic-aware recovery measured |
-| False positives and quiet controls | Labelled FP/planet input available; ten quiet hosts frozen; controlled run pending |
-| FPP calibration | Implemented; labelled holdout run pending |
+| False positives and quiet controls | Labelled FP/planet input available; 100-target quiet-control corpus frozen; controlled run pending (20-shard CI lane). Campaign rows now also carry per-target FPP telemetry (shard schema 1.1) |
+| FPP calibration | Producer implemented (`fpp_calibration.py` + `run_fpp_calibration_campaign.py`); 100 FP + 100 planet cohorts frozen (`cohort_manifest.json`, `9de7d31a…`); 13 acceptance checks pre-declared in `program.json`; MAST run pending |
 | Blind test | Implemented; held-out data/run pending |
 | TLS/BLS baselines | Implemented; same-corpus run pending |
 | Performance | Implemented; measured campaign pending |
 
 The next step is deterministic recovered-parameter analysis from the frozen injection trial table. It must preserve the measured detection results and report unavailable parameter values as `not_evaluated`, never as zero.
+
+Two pending gates are executable today without new code: the false-positive/quiet-control campaign and the FPP-calibration campaign both fan out to 20 shards in GitHub Actions (`.github/workflows/fp-quiet-controls-v1.yml`, `.github/workflows/fpp-calibration-v1.yml`) and aggregate offline. Their cohort identity is frozen by SHA-256, so a re-run cannot silently reselect targets.

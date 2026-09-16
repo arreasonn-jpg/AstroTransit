@@ -6,14 +6,25 @@ hâlinde tanımlar. Kural: yeni özellik, kapalı çevrim doğrulama kanıtında
 
 Durum sembolü: ✅ ölçüm yapıldı, sonuç donduruldu | 🟩 mevcut altyapı, çalıştırma bekleniyor | 🟧 iskelet var, veri/çalıştırma eksik | ⬜ yapılmalı
 
+**Otorite kaynağı:** makine tarafından doğrulanan kapı durumu
+[`validation_runs/final_acceptance_v1/program.json`](../validation_runs/final_acceptance_v1/program.json)
+içindedir ve 11 kapıyı içerir; aşağıdaki 8 satırlık tablo aynı programın
+yol haritası görünümüdür. Bir kapı yalnızca (i) `program.json`'da kayıtlı
+durumu `measured`/`pass` ise, (ii) kanıt dosyası mevcutsa ve dosyanın kendi
+`status` alanı `measured`/`pass` diyorsa, ve (iii) **ölçüm önceden ilan
+edilmiş** tüm `acceptance_checks` geçmişse kapanır. Kapanma mantığının testi:
+`tests/test_final_acceptance_program.py`. Bu belgede tablodaki semboller
+elle güncellenir; ölçülmüş sayısal sonuçlar için tek kaynak
+[`docs/measured_validation_results.md`](measured_validation_results.md).
+
 | # | Kapı | Tanım | Durum | Araç |
 |---|------|-------|-------|------|
-| 1 | Injection-recovery | Enjekte edilmiş transitlerin (P, Rp/R*, derinlik, gürültü gridi) kaçta kaçı geri kazanılıyor; `completeness(P, Rp/Rs, duration, noise)` haritası | 🟧 | `astrotransit/validation/injection_recovery.py` |
-| 2 | Bilinen gezegen geri kazanımı | TESS'ten bilinen onaylı gezegenler (örn. WASP-18b, WASP-19b) pipeline'dan geçirilir; beklenen/geri kazanılan periyot ve yarıçap hedef bazında raporlanır | 🟧 (ground truth hazır: 59 etiketli hedef, TFOP KP/CP; ölçüm PENDING RUN) | `astrotransit benchmark` + `benchmarks/verified_targets.json` + `benchmark_report.py` |
-| 3 | Bilinen false positive'ler | Bilinen EB/sistematiği olayların ne oranında elendiği | 🟧 (etiketli **girdi** corpus hazır: 1817 FP + 1191 planet, TFOP disposition; quiet controls PENDING DATA; ölçüm PENDING RUN) | `corpus.py`, `build_labelled_corpus.py` + `benchmarks/corpora/tfop_disposition_corpus_v1.json` |
-| 4 | Cross-sektör tutarlılığı | Tek sektör başarısı yetmez; aynı aday sektörler arası periyot/derinlik tutarlılığı | 🟧 | çok sektör stitching + `source_sectors` |
-| 5 | Parametre geri kazanımı | Enjekte edilen P, Rp/R*, T0, derinlik ile geri kazanılan değerlerin dağılımı (bias, scatter) | 🟧 | `RecoveryTrial.period_error_fraction` + modeling |
-| 6 | FPP kalibrasyonu | `fpp ≈ 0.01` denilen adayların gerçekten ~%1 false-positive çıkması; Brier skor + precision/recall e eğrisi | 🟧 | `astrotransit/validation/fpp_benchmark.py` |
+| 1 | Injection-recovery | Enjekte edilmiş transitlerin (P, Rp/R*, derinlik, gürültü gridi) kaçta kaçı geri kazanılıyor; `completeness(P, Rp/Rs, duration, noise)` haritası | ✅ (gerçek-gürültü v1: 960/960_trial kaydedildi, 888 değerlendirilebilir) | `astrotransit/validation/injection_recovery.py` + `scripts/validation/run_real_noise_injection_campaign.py` |
+| 2 | Bilinen gezegen geri kazanımı | TESS'ten bilinen onaylı gezegenler (örn. WASP-18b, WASP-19b) pipeline'dan geçirilir; beklenen/geri kazanılan periyot ve yarıçap hedef bazında raporlanır | ✅ (N=50 kampanyası ölçüldü: 46 hedef değerlendirilebilir, detection 46/46, birleşik dönem+yarıçap 21/46) | `astrotransit benchmark` + `benchmarks/verified_targets.json` + `benchmark_report.py` |
+| 3 | Bilinen false positive'ler | Bilinen EB/sistematiği olayların ne oranında elendiği | 🟩 (etiketli girdi hazır: 1817 FP + 1191 planet; 100 hedeflik quiet-control corpus **donduruldu**; 20-shard koşum CI'da bekliyor) | `corpus.py`, `build_labelled_corpus.py`, `scripts/validation/run_false_positive_controls.py` |
+| 4 | Cross-sektör tutarlılığı | Tek sektör başarısı yetmez; aynı aday sektörler arası periyot/derinlik tutarlılığı | 🟩 (known-target alt kümesinde ölçüldü: sektör tutarlılığı 20/38; ayrı kampanya bekliyor) | çok sektör stitching + `source_sectors` + `astrotransit/validation/cross_sector.py` |
+| 5 | Parametre geri kazanımı | Enjekte edilen P, Rp/R*, T0, derinlik ile geri kazanılan değerlerin dağılımı (bias, scatter) | ✅ (dondurulmuş `parameter_recovery_report.json`, 7 acceptance check; aralık coverage `not_evaluated`) | `RecoveryTrial.period_error_fraction` + `scripts/validation/analyze_real_noise_injection_parameters.py` |
+| 6 | FPP kalibrasyonu | `fpp ≈ 0.01` denilen adayların gerçekten ~%1 false-positive çıkması; Brier skor + precision/recall eğrisi | 🟩 (üretec + dondurulmuş kohort sözleşmesi hazır; MAST koşumu bekliyor) | `astrotransit/validation/fpp_benchmark.py` + `fpp_calibration.py` + `scripts/validation/run_fpp_calibration_campaign.py` |
 | 7 | Earth-similarity duyarlılık analizi | Ağırlıkların ±10–20% değişiminde sıralamanın ne kadar değiştiği (Kendall τ) | ✅ | `astrotransit/validation/sensitivity.py` |
 | 8 | Tam provenance | Her sonuç: veri kaynağı, sektör, pipeline versiyonu, config hash, bağımlılık ortamı, model versiyonu, zaman damgası, random seed | 🟩 | `astrotransit/validation/provenance.py`, `scripts/maintenance/make_environment_manifest.py` |
 
@@ -118,10 +129,49 @@ astrotransit evaluate-corpus \
 ### 6. FPP kalibrasyonu
 
 `FPPBenchmarkCase(target_id, is_false_positive, fpp)` etiketli setiyle
-`Brier score`, `false_positive_recall`, `planet_precision` ve kafa karıştırma
-matrisi üretilir. Proxy `heuristic_vetting_weighted_v1` çıktısı için
-kalibrasyon öncesi bu metrikler rastsal sıralama kadar iyi olmamalıdır;
-kalibrasyon sonrası Brier skorun azalması beklenir.
+`Brier score`, `false_positive_recall`, `planet_precision`, reliability curve
+(ECE), ROC-AUC ve PR-AUC üretilir. Proxy `heuristic_vetting_weighted_v1`
+çıktısı için kalibrasyon öncesi bu metrikler rastsal sıralama kadar iyi
+olmamalıdır; kalibrasyon sonrası Brier skorun azalması beklenir.
+
+Kabul kapısı (`fpp_quality_calibration`) üç alt komutla üretilir; kohort
+seçimi deterministiktir ve pipeline çıktısını **görmez**:
+
+```bash
+# 1) Kohortları dondurulmuş girdilerden yeniden üret (çevrimdışı, hash doğrular)
+python scripts/validation/run_fpp_calibration_campaign.py build-cohorts \
+  --output outputs/fpp-calibration-v1/cohorts.json \
+  --audit outputs/fpp-calibration-v1/selection_audit.json \
+  --manifest validation_runs/final_acceptance_v1/fpp_calibration/cohort_manifest.json
+
+# 2) Bir shard'ı koş (MAST erişimi gerekir; CI'da 20 shard paralel koşar)
+python scripts/validation/run_fpp_calibration_campaign.py run-shard \
+  --config configs/benchmark_fp.toml --shard-index 0 --shard-count 20 \
+  --output outputs/fpp-calibration-v1/shard-00.json
+
+# 3) Shard'lardan kapı raporunu üret (çevrimdışı; 200 etiketli hedef gerekir)
+python scripts/validation/run_fpp_calibration_campaign.py aggregate \
+  --shards outputs/fpp-calibration-v1/shards --shard-count 20 \
+  --cohort-manifest validation_runs/final_acceptance_v1/fpp_calibration/cohort_manifest.json \
+  --config configs/benchmark_fp.toml \
+  --output validation_runs/final_acceptance_v1/fpp_calibration/report.json
+```
+
+Sözleşme özeti (hepsi `program.json`'da ölçüm **önceden** ilan edildi):
+
+- 100 etiketli false-positive + 100 etiketli planet kohortu, `sha256` ile
+  dondurulmuş; seçim seed'i 20260917, metrik bölünme seed'i 20260912.
+- En az 60 hedef/kohort için okunabilir FPP, toplam ≥ 120 kalibrasyon vakası,
+  blind-test bölünmesinde ≥ 10 vaka.
+- Blind-test ROC-AUC **0.6'nın üstünde** olmalı; 0.5 ve altı (şans seviyesi)
+  raporda `blocking_reasons` üretir ve kapı kapanmaz.
+- `zero_filled_missing_fpp_count == 0`: FPP'siz hedef `0.0` yapılamaz.
+- Proxy **dönüştürülmez** (`calibration_transform_applied == false`); eşik
+  süpürmesi yalnızca `development` bölünmesinde raporlama amaçlıdır.
+
+Bu nedenlerle kapı ölçümü "proxy ne kadar ayrıştırıyor" sorusuna yanıt verir;
+`fpp ≈ 0.01` gibi mutlak olasılık okumalarını doğrulamaz. Ham öngörüler
+elle verilecekse `astrotransit evaluate-fpp predictions.json` kullanılabilir.
 
 ### 7. Benzerlik duyarlılığı
 
@@ -163,6 +213,12 @@ hiçbir skora ağırlık olarak girmez.
 | Sonuç dosyası | Kapı | Üreten komut |
 |---------------|------|--------------|
 | `benchmarks/results/similarity_sensitivity_v1.json` | 7 (benzerlik duyarlılığı) | `python scripts/validation/run_similarity_sensitivity.py` |
+| `validation_runs/v1_known_planets/known_planets_50_v1/` | 2 (bilinen gezegenler) | `python scripts/validation/aggregate_benchmark_shards.py` (20 shard, `astrotransit benchmark`) |
+| `validation_runs/v1_injection_recovery/real_noise_v1/` | 1 (injection-recovery) | `python scripts/validation/run_real_noise_injection_campaign.py` |
+| `validation_runs/v1_injection_recovery/real_noise_v1/parameter_recovery_report.json` | 5 (parametre geri kazanımı) | `python scripts/validation/analyze_real_noise_injection_parameters.py` |
+| `validation_runs/v1_environment/` | 8 (provenance) | `python scripts/maintenance/make_environment_manifest.py` |
+| `validation_runs/final_acceptance_v1/false_positive_controls/` | 3 (FP/quiet kontrolü) — kohort donduruldu, ölçüm bekliyor | `python scripts/validation/run_false_positive_controls.py aggregate` |
+| `validation_runs/final_acceptance_v1/fpp_calibration/` | 6 (FPP kalibrasyonu) — kohort donduruldu, ölçüm bekliyor | `python scripts/validation/run_fpp_calibration_campaign.py aggregate` |
 
 Bu listede yer almayan kapılar için sonuç iddiası yapılamaz; durumları tablodaki
 sembollerle aynı kalmaya devam eder. Yeni bir ölçüm eklendiğinde bu tabloya
@@ -189,6 +245,11 @@ satır eklenir ve dosya commit/tag ile immutable kabul edilir.
 - `metrics.parameter_recovery` bias, scatter, RMSE ve interval coverage üretir.
   `splits.partition_target_ids` deterministic development/validation/blind-test
   ayrımı sağlar; blind set pipeline skorlarıyla yeniden karıştırılmaz.
+- `fpp_calibration.build_fpp_calibration_report` kapı artifact'ını üretir ve
+  iç geçerlik sözleşmesini raporun kendisine (`status`, `blocking_reasons`)
+  gömer: eksik FPP `not_evaluated` kalır, `quiet_star` kalibrasyon etiketi
+  sayılmaz, proxy değerleri dönüştürülmez. Kampanya satırları hedef seviyesi
+  FPP telemetrisini taşır (`fpp_telemetry.attach_row_fpp`, shard şeması v1.1).
 
 ## Çıktı sözleşmesi
 

@@ -1,0 +1,115 @@
+name: FPP calibration campaign v1
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/fpp-calibration-v1.yml
+      - astrotransit/validation/fpp_calibration.py
+      - astrotransit/validation/fpp_telemetry.py
+      - astrotransit/validation/fpp_benchmark.py
+      - scripts/validation/run_fpp_calibration_campaign.py
+      - scripts/validation/run_false_positive_controls.py
+      - benchmarks/corpora/tfop_disposition_corpus_v1.json
+      - validation_runs/final_acceptance_v1/fpp_calibration/cohort_manifest.json
+      - validation_runs/final_acceptance_v1/program.json
+      - configs/benchmark_fp.toml
+
+permissions:
+  contents: read
+
+jobs:
+  evaluate:
+    name: evaluate shard ${{ matrix.shard }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    strategy:
+      fail-fast: false
+      max-parallel: 20
+      matrix:
+        shard: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Install locked runtime
+        run: python -m pip install --upgrade pip && python -m pip install -r envs/requirements.lock
+      - name: Evaluate frozen labelled cohorts
+        run: |
+          mkdir -p outputs/fpp-calibration-v1
+          python scripts/validation/run_fpp_calibration_campaign.py run-shard \
+            --labelled-corpus benchmarks/corpora/tfop_disposition_corpus_v1.json \
+            --prior-hosts validation_runs/v1_injection_recovery/real_noise_v1/input/quiet_hosts.json \
+            --cohort-manifest validation_runs/final_acceptance_v1/fpp_calibration/cohort_manifest.json \
+            --config configs/benchmark_fp.toml \
+            --shard-index "${{ matrix.shard }}" \
+            --shard-count 20 \
+            --output "outputs/fpp-calibration-v1/shard-$(printf '%02d' '${{ matrix.shard }}').json"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: fpp-calibration-shard-${{ matrix.shard }}
+          path: outputs/fpp-calibration-v1/shard-*.json
+          if-no-files-found: error
+
+  aggregate:
+    name: aggregate labelled FPP calibration evidence
+    needs: evaluate
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Install locked runtime
+        run: python -m pip install --upgrade pip && python -m pip install -r envs/requirements.lock
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: fpp-calibration-shard-*
+          path: outputs/fpp-calibration-v1/shards
+          merge-multiple: true
+      # The report is written at the canonical gate path so the audit below
+      # evaluates exactly the contract frozen in program.json.
+      - name: Aggregate without converting missing data into passes
+        run: |
+          mkdir -p validation_runs/final_acceptance_v1/fpp_calibration
+          python scripts/validation/run_fpp_calibration_campaign.py aggregate \
+            --shards outputs/fpp-calibration-v1/shards \
+            --shard-count 20 \
+            --min-per-label 60 \
+            --cohort-manifest validation_runs/final_acceptance_v1/fpp_calibration/cohort_manifest.json \
+            --config configs/benchmark_fp.toml \
+            --output validation_runs/final_acceptance_v1/fpp_calibration/report.json \
+            --rows-out outputs/fpp-calibration-v1/rows.jsonl \
+            --cases-output outputs/fpp-calibration-v1/fpp_cases.json \
+            --manifest outputs/fpp-calibration-v1/manifest.json
+      - name: Audit the gate against the frozen contract
+        run: |
+          python scripts/validation/final_acceptance_audit.py \
+            --program validation_runs/final_acceptance_v1/program.json \
+            --output outputs/fpp-calibration-v1/program_audit.json
+          python - <<'PY'
+          import json
+          report = json.loads(open("outputs/fpp-calibration-v1/program_audit.json").read())
+          gate = next(g for g in report["gates"] if g["id"] == "fpp_quality_calibration")
+          print(json.dumps({
+              "closed": gate["closed"],
+              "evidence_status": gate["evidence_status"],
+              "acceptance_status": gate["acceptance_status"],
+              "failed_checks": [c["path"] for c in gate["acceptance_results"] if not c["passed"]],
+          }, indent=2))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: fpp-calibration-v1-measured-evidence
+          path: |
+            validation_runs/final_acceptance_v1/fpp_calibration/report.json
+            outputs/fpp-calibration-v1/rows.jsonl
+            outputs/fpp-calibration-v1/fpp_cases.json
+            outputs/fpp-calibration-v1/manifest.json
+            outputs/fpp-calibration-v1/program_audit.json
+          if-no-files-found: error

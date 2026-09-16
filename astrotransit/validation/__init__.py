@@ -37,6 +37,21 @@ from astrotransit.validation.fpp_benchmark import (
     evaluate_fpp_holdout,
     split_fpp_cases,
 )
+from astrotransit.validation.fpp_telemetry import (
+    FPP_TELEMETRY_VERSION,
+    adopt_target_fpp,
+    attach_row_fpp,
+    read_row_fpp,
+    sector_fpp_telemetry,
+)
+from astrotransit.validation.fpp_calibration import (
+    FPP_CALIBRATION_CAMPAIGN,
+    FPP_CALIBRATION_SEED,
+    FPP_CALIBRATION_THRESHOLD,
+    MIN_BLIND_TEST_ROC_AUC,
+    MIN_FPP_CASES_PER_COHORT,
+    build_fpp_calibration_report,
+)
 from astrotransit.validation.benchmark_report import (
     BenchmarkPerformanceReport,
     BenchmarkTargetMeasurement,
@@ -108,6 +123,17 @@ __all__ = [
     "evaluate_fpp_benchmark",
     "evaluate_fpp_holdout",
     "split_fpp_cases",
+    "FPP_TELEMETRY_VERSION",
+    "adopt_target_fpp",
+    "attach_row_fpp",
+    "read_row_fpp",
+    "sector_fpp_telemetry",
+    "FPP_CALIBRATION_CAMPAIGN",
+    "FPP_CALIBRATION_SEED",
+    "FPP_CALIBRATION_THRESHOLD",
+    "MIN_BLIND_TEST_ROC_AUC",
+    "MIN_FPP_CASES_PER_COHORT",
+    "build_fpp_calibration_report",
     "BenchmarkPerformanceReport",
     "BenchmarkTargetMeasurement",
     "VerifiedTarget",

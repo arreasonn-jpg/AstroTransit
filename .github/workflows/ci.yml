@@ -36,9 +36,12 @@ jobs:
           astrotransit/outputs/migration.py astrotransit/outputs/schemas.py
           astrotransit/pipelines/jwst_pipeline.py astrotransit/science/earth_similarity.py
           astrotransit/validation/__init__.py astrotransit/validation/adapters.py
-          astrotransit/validation/fpp_benchmark.py astrotransit/validation/injection_recovery.py
+          astrotransit/validation/fpp_benchmark.py astrotransit/validation/fpp_calibration.py
+          astrotransit/validation/fpp_telemetry.py astrotransit/validation/injection_recovery.py
           astrotransit/utils/identifiers.py cli/main.py dashboard/app.py
+          scripts/validation/run_fpp_calibration_campaign.py
           tests/test_phase6_features.py tests/test_cli_contract.py
+          tests/test_fpp_calibration_campaign.py tests/test_fpp_telemetry.py
       - name: Compile
         run: python -m compileall -q astrotransit cli dashboard
       - name: Pytest with coverage
@@ -73,6 +76,32 @@ jobs:
           errors = sorted(Draft202012Validator(schema).iter_errors(instance), key=lambda error: error.path)
           assert not errors, "\\n".join(error.message for error in errors)
           print("candidate schema contract ok")
+          PY
+      - name: FPP calibration cohort contract check
+        # Kohort seçimi yalnızca dış katalog disposition'larından gelir ve
+        # dondurulmuş hash ile birebir yeniden üretilmelidir; kapı sözleşmesi
+        # ölçüm önceden ilan edilmiş check'lerden oluşur.
+        run: |
+          python - <<'PY'
+          import json
+          import sys
+          from pathlib import Path
+          sys.path.insert(0, ".")
+          from scripts.validation.run_fpp_calibration_campaign import (
+              COHORT_MANIFEST, LABELLED_CORPUS, PRIOR_INJECTION_HOSTS, ROOT, select_cohorts,
+          )
+          payload, audit = select_cohorts(ROOT / LABELLED_CORPUS, ROOT / PRIOR_INJECTION_HOSTS)
+          frozen = json.loads(Path(COHORT_MANIFEST).read_text(encoding="utf-8"))
+          assert payload["status"] == "frozen"
+          assert payload["selected_count"] == 200
+          assert payload["selection"]["detector_used_for_selection"] is False
+          assert audit["cohort_sha256"] == frozen["cohort_sha256"]
+          program = json.loads(Path("validation_runs/final_acceptance_v1/program.json").read_text(encoding="utf-8"))
+          gate = next(g for g in program["gates"] if g["id"] == "fpp_quality_calibration")
+          assert gate["status"] == "pending_run"
+          assert len(gate.get("acceptance_checks", [])) >= 13
+          assert gate["required_output"].endswith("fpp_calibration/report.json")
+          print("FPP calibration cohort contract ok:", audit["cohort_sha256"][:12])
           PY
       - name: Upload coverage
         if: matrix.python-version == '3.11'

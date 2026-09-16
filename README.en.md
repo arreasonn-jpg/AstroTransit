@@ -173,12 +173,19 @@ reported as a deliberate limit.
 - FPP proxy calibration: `astrotransit/validation/fpp_benchmark.py`
   (Brier score, false-positive recall, planet precision). Without labelled
   data the FPP value stays `null`/`not_available`; `0.0` is never used as a
-  stand-in for an unknown value.
+  stand-in for an unknown value. The acceptance-gate artifact is produced by
+  `astrotransit/validation/fpp_calibration.py` through
+  `scripts/validation/run_fpp_calibration_campaign.py`, on two frozen,
+  detector-blind cohorts (100 labelled false positives + 100 labelled planets).
 - Benchmark CLI: `astrotransit benchmark`
-- The 8 validation gates needed for the closed loop (injection-recovery,
-  known-planet recovery, known-FP rejection, cross-sector consistency,
-  parameter recovery, FPP calibration, similarity-weight sensitivity
-  analysis, full provenance): [`docs/validation.md`](docs/validation.md)
+- Validation gates: the consolidated acceptance program keeps 11 gates with
+  machine-verifiable contracts in
+  [`validation_runs/final_acceptance_v1/program.json`](validation_runs/final_acceptance_v1/program.json)
+  (one gate measured today). `docs/validation.md` is the 8-row roadmap view of
+  the same program: injection-recovery, known-planet recovery, known-FP
+  rejection, cross-sector consistency, parameter recovery, FPP calibration,
+  similarity-weight sensitivity analysis, full provenance:
+  [`docs/validation.md`](docs/validation.md)
 
 **Reference candidate (end-to-end example):** TIC 417860263 / HD 224792.
 The flagship non-TOI reference candidate with no match in the TOI/Archive

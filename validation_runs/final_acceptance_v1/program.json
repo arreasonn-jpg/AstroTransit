@@ -34,7 +34,28 @@
       ]
     },
     {"id": "adversarial_false_positives", "status": "pending_data", "required_output": "validation_runs/final_acceptance_v1/adversarial_fp/report.json"},
-    {"id": "fpp_quality_calibration", "status": "pending_run", "required_output": "validation_runs/final_acceptance_v1/fpp_calibration/report.json"},
+    {
+      "id": "fpp_quality_calibration",
+      "status": "pending_run",
+      "required_output": "validation_runs/final_acceptance_v1/fpp_calibration/report.json",
+      "input_contract": "validation_runs/final_acceptance_v1/fpp_calibration/cohort_manifest.json",
+      "runner": "scripts/validation/run_fpp_calibration_campaign.py",
+      "acceptance_checks": [
+        {"path": "status", "operator": "equals", "value": "measured"},
+        {"path": "campaign", "operator": "equals", "value": "fpp_quality_calibration_v1"},
+        {"path": "cohorts.frozen_selection.detector_used_for_selection", "operator": "equals", "value": false},
+        {"path": "cohorts.frozen_selection.cohort_sha256", "operator": "equals", "value": "9de7d31a0aaf45418f849c733de975e9b498a75b579390999674ca08ebe4ab2c"},
+        {"path": "recorded_rows", "operator": "gte", "value": 200},
+        {"path": "cohorts.false_positives.fpp_available_count", "operator": "gte", "value": 60},
+        {"path": "cohorts.planets.fpp_available_count", "operator": "gte", "value": 60},
+        {"path": "cases.n_cases", "operator": "gte", "value": 120},
+        {"path": "splits.blind_test.n_cases", "operator": "gte", "value": 10},
+        {"path": "splits.blind_test.roc_auc", "operator": "gte", "value": 0.6},
+        {"path": "data_integrity.zero_filled_missing_fpp_count", "operator": "equals", "value": 0},
+        {"path": "data_integrity.duplicate_target_ids", "operator": "equals", "value": 0},
+        {"path": "method.calibration_transform_applied", "operator": "equals", "value": false}
+      ]
+    },
     {"id": "detrending_cadence_impact_robustness", "status": "pending_run", "required_output": "validation_runs/final_acceptance_v1/robustness/report.json"},
     {"id": "tls_bls_baselines_ablations", "status": "pending_run", "required_output": "validation_runs/final_acceptance_v1/baselines/report.json"},
     {"id": "blind_domain_holdout", "status": "pending_data", "required_output": "validation_runs/final_acceptance_v1/blind_holdout/report.json"},
