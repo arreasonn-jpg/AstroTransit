@@ -37,6 +37,22 @@ from astrotransit.validation.fpp_benchmark import (
     evaluate_fpp_holdout,
     split_fpp_cases,
 )
+from astrotransit.validation.adversarial_fp import (
+    ADVERSARIAL_FAMILIES,
+    ADVERSARIAL_FPP_REJECT_THRESHOLD,
+    AdversarialScenario,
+    build_adversarial_report,
+    classify_outcome,
+    grid_sha256,
+    synthetic_lightcurve,
+)
+from astrotransit.validation.blind_holdout import (
+    SELECTION_METHOD as BLIND_HOLDOUT_SELECTION_METHOD,
+    allocate_quotas,
+    build_holdout_report,
+    holdout_sha256,
+    select_holdout,
+)
 from astrotransit.validation.fpp_telemetry import (
     FPP_TELEMETRY_VERSION,
     adopt_target_fpp,
@@ -140,6 +156,18 @@ __all__ = [
     "evaluate_benchmark_results",
     "load_verified_targets",
     "normalize_target_id",
+    "ADVERSARIAL_FAMILIES",
+    "ADVERSARIAL_FPP_REJECT_THRESHOLD",
+    "AdversarialScenario",
+    "build_adversarial_report",
+    "classify_outcome",
+    "grid_sha256",
+    "synthetic_lightcurve",
+    "BLIND_HOLDOUT_SELECTION_METHOD",
+    "allocate_quotas",
+    "build_holdout_report",
+    "holdout_sha256",
+    "select_holdout",
     "RVFollowupMeasurement",
     "TransitFollowupMeasurement",
     "rv_measurement_to_evidence",

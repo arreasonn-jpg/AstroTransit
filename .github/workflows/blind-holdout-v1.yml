@@ -1,0 +1,145 @@
+name: Blind domain holdout v1
+
+# Two separate responsibilities, on purpose:
+#   * contract job - fully offline; proves the frozen 144-target corpus can be
+#     rebuilt from committed label sources and that program.json pins the same
+#     hash and the same floors. Runs on every push touching those files.
+#   * evaluate/aggregate - needs light curves (MAST), so it only runs on
+#     workflow_dispatch. Missing targets are blockers, never dropped rows.
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/blind-holdout-v1.yml
+      - astrotransit/validation/blind_holdout.py
+      - astrotransit/validation/__init__.py
+      - scripts/validation/run_blind_holdout.py
+      - validation_runs/final_acceptance_v1/blind_holdout/holdout_manifest.json
+      - validation_runs/final_acceptance_v1/program.json
+      - benchmarks/corpora/tfop_disposition_corpus_v1.json
+      - benchmarks/corpora/fp_run_subset_v1.json
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    name: frozen corpus and disjointness check
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Install locked runtime
+        run: python -m pip install --upgrade pip && python -m pip install -r envs/requirements.lock
+      - name: Rebuild the corpus and prove program.json pins it
+        run: python scripts/validation/run_blind_holdout.py check
+      - name: Refuse to report a measured gate without measurements (offline shard)
+        run: |
+          python scripts/validation/run_blind_holdout.py run-shard \
+            --shard-index 0 --shard-count 1 --offline \
+            --output outputs/blind-holdout-contract/shard-00.json || true
+          set +e
+          python scripts/validation/run_blind_holdout.py aggregate \
+            --rows outputs/blind-holdout-contract \
+            --output outputs/blind-holdout-contract/report.json
+          status=$?
+          set -e
+          test "$status" -eq 3
+          python - <<'PY'
+          import json
+          report = json.loads(open("outputs/blind-holdout-contract/report.json").read())
+          assert report["status"] == "pending_run", report["status"]
+          assert any(r.startswith("error_rows:") for r in report["blocking_reasons"])
+          print("offline shard correctly refuses to claim a measurement")
+          PY
+      - name: Unit tests
+        run: python -m pytest tests/test_blind_holdout.py -q
+
+  evaluate:
+    if: github.event_name == 'workflow_dispatch'
+    name: evaluate shard ${{ matrix.shard }}
+    needs: contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    strategy:
+      fail-fast: false
+      max-parallel: 12
+      matrix:
+        shard: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Install locked runtime
+        run: python -m pip install --upgrade pip && python -m pip install -r envs/requirements.lock
+      - name: Run the frozen pipeline on blind-holdout targets
+        run: |
+          mkdir -p outputs/blind-holdout-v1
+          python scripts/validation/run_blind_holdout.py run-shard \
+            --shard-index "${{ matrix.shard }}" \
+            --shard-count 12 \
+            --config configs/benchmark_fp.toml \
+            --output "outputs/blind-holdout-v1/shard-$(printf '%02d' '${{ matrix.shard }}').json"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: blind-holdout-shard-${{ matrix.shard }}
+          path: outputs/blind-holdout-v1/shard-*.json
+          if-no-files-found: error
+
+  aggregate:
+    if: github.event_name == 'workflow_dispatch'
+    name: aggregate blind domain holdout evidence
+    needs: [contract, evaluate]
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Install locked runtime
+        run: python -m pip install --upgrade pip && python -m pip install -r envs/requirements.lock
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: blind-holdout-shard-*
+          path: outputs/blind-holdout-v1/shards
+          merge-multiple: true
+      - name: Aggregate (errors and missing targets stay blockers)
+        run: |
+          mkdir -p validation_runs/final_acceptance_v1/blind_holdout
+          python scripts/validation/run_blind_holdout.py aggregate \
+            --rows outputs/blind-holdout-v1/shards \
+            --config configs/benchmark_fp.toml \
+            --output validation_runs/final_acceptance_v1/blind_holdout/report.json
+      - name: Audit the gate against the frozen contract
+        run: |
+          python scripts/validation/final_acceptance_audit.py \
+            --program validation_runs/final_acceptance_v1/program.json \
+            --output outputs/blind-holdout-v1/program_audit.json
+          python - <<'PY'
+          import json
+          audit = json.loads(open("outputs/blind-holdout-v1/program_audit.json").read())
+          gate = next(g for g in audit["gates"] if g["id"] == "blind_domain_holdout")
+          print(json.dumps({
+              "closed": gate["closed"],
+              "evidence_status": gate["evidence_status"],
+              "acceptance_status": gate["acceptance_status"],
+              "failed_checks": [c["path"] for c in gate["acceptance_results"] if not c["passed"]],
+          }, indent=2))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: blind-holdout-v1-measured-evidence
+          path: |
+            validation_runs/final_acceptance_v1/blind_holdout/report.json
+            outputs/blind-holdout-v1/program_audit.json
+          if-no-files-found: error

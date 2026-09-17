@@ -106,6 +106,14 @@ jobs:
           assert gate["required_output"].endswith("fpp_calibration/report.json")
           print("FPP calibration cohort contract ok:", audit["cohort_sha256"][:12])
           PY
+      - name: Adversarial false-positive corpus contract check
+        # Sentetik korpus yeniden üretilebilir olmalı ve program.json aynı grid
+        # hash'ini + aynı tabanları ilan etmeli; ölçüm yapılmadan kapı kapatılamaz.
+        run: python scripts/validation/run_adversarial_fp_controls.py check
+      - name: Blind domain holdout corpus contract check
+        # Holdout üyeliği yalnızca blind bölmeden ve önceki kapıların dışındaki
+        # hedeflerden gelmeli; korpus ile kapı sözleşmesi birebir anlaşmalı.
+        run: python scripts/validation/run_blind_holdout.py check
       - name: Upload coverage
         if: matrix.python-version == '3.11'
         uses: actions/upload-artifact@v4

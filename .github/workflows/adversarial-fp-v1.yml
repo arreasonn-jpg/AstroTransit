@@ -1,0 +1,123 @@
+name: Adversarial false-positive controls v1
+
+# The corpus is synthetic, so CI needs no archive access: it can freeze the
+# corpus and measure the gate. The corpus manifest and the program.json
+# thresholds are committed *before* this workflow runs, and the workflow only
+# ever reads them, so no floor can be re-tuned after the numbers exist.
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/adversarial-fp-v1.yml
+      - astrotransit/validation/adversarial_fp.py
+      - astrotransit/validation/__init__.py
+      - scripts/validation/run_adversarial_fp_controls.py
+      - validation_runs/final_acceptance_v1/adversarial_fp/corpus_manifest.json
+      - validation_runs/final_acceptance_v1/program.json
+      - configs/benchmark_fp.toml
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    name: frozen corpus contract check
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Install locked runtime
+        run: python -m pip install --upgrade pip && python -m pip install -r envs/requirements.lock
+      - name: Rebuild the grid and prove the manifest and thresholds agree
+        run: python scripts/validation/run_adversarial_fp_controls.py check
+      - name: Unit tests for the measurement instrument
+        run: python -m pytest tests/test_adversarial_fp.py tests/test_blind_holdout.py -q
+
+  evaluate:
+    name: evaluate shard ${{ matrix.shard }}
+    needs: contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+    strategy:
+      fail-fast: false
+      max-parallel: 8
+      matrix:
+        shard: [0, 1, 2, 3, 4, 5, 6, 7]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Install locked runtime
+        run: python -m pip install --upgrade pip && python -m pip install -r envs/requirements.lock
+      - name: Run cascade, MAP fit, vetting and anomaly stages
+        run: |
+          mkdir -p outputs/adversarial-fp-v1
+          python scripts/validation/run_adversarial_fp_controls.py run-shard \
+            --corpus-manifest validation_runs/final_acceptance_v1/adversarial_fp/corpus_manifest.json \
+            --config configs/benchmark_fp.toml \
+            --shard-index "${{ matrix.shard }}" \
+            --shard-count 8 \
+            --output "outputs/adversarial-fp-v1/shard-$(printf '%02d' '${{ matrix.shard }}').json"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: adversarial-fp-shard-${{ matrix.shard }}
+          path: outputs/adversarial-fp-v1/shard-*.json
+          if-no-files-found: error
+
+  aggregate:
+    name: aggregate adversarial false-positive evidence
+    needs: [contract, evaluate]
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Install locked runtime
+        run: python -m pip install --upgrade pip && python -m pip install -r envs/requirements.lock
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: adversarial-fp-shard-*
+          path: outputs/adversarial-fp-v1/shards
+          merge-multiple: true
+      # A missing scenario is a blocker, never a silently dropped row.
+      - name: Aggregate the shard rows
+        run: |
+          mkdir -p validation_runs/final_acceptance_v1/adversarial_fp
+          python scripts/validation/run_adversarial_fp_controls.py aggregate \
+            --corpus-manifest validation_runs/final_acceptance_v1/adversarial_fp/corpus_manifest.json \
+            --shard outputs/adversarial-fp-v1/shards \
+            --output validation_runs/final_acceptance_v1/adversarial_fp/report.json
+      - name: Audit the gate against the frozen contract
+        run: |
+          python scripts/validation/final_acceptance_audit.py \
+            --program validation_runs/final_acceptance_v1/program.json \
+            --output outputs/adversarial-fp-v1/program_audit.json
+          python - <<'PY'
+          import json
+          audit = json.loads(open("outputs/adversarial-fp-v1/program_audit.json").read())
+          gate = next(g for g in audit["gates"] if g["id"] == "adversarial_false_positives")
+          print(json.dumps({
+              "closed": gate["closed"],
+              "evidence_status": gate["evidence_status"],
+              "acceptance_status": gate["acceptance_status"],
+              "failed_checks": [c["path"] for c in gate["acceptance_results"] if not c["passed"]],
+          }, indent=2))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: adversarial-fp-v1-measured-evidence
+          path: |
+            validation_runs/final_acceptance_v1/adversarial_fp/report.json
+            outputs/adversarial-fp-v1/program_audit.json
+          if-no-files-found: error
