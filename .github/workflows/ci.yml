@@ -40,8 +40,11 @@ jobs:
           astrotransit/validation/fpp_telemetry.py astrotransit/validation/injection_recovery.py
           astrotransit/utils/identifiers.py cli/main.py dashboard/app.py
           scripts/validation/run_fpp_calibration_campaign.py
+          scripts/validation/run_false_positive_controls.py
+          scripts/validation/freeze_fpp_calibration_evidence.py
           tests/test_phase6_features.py tests/test_cli_contract.py
           tests/test_fpp_calibration_campaign.py tests/test_fpp_telemetry.py
+          tests/test_fpp_calibration_freeze.py
       - name: Compile
         run: python -m compileall -q astrotransit cli dashboard
       - name: Pytest with coverage

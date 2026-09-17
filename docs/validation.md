@@ -157,6 +157,26 @@ python scripts/validation/run_fpp_calibration_campaign.py aggregate \
   --output validation_runs/final_acceptance_v1/fpp_calibration/report.json
 ```
 
+Kapıyı kapatmadan önce iki adım zorunlu sıra ile çalışır:
+
+```bash
+# 0) Canary: tek hedefte uçtan uca tesisat kontrolü (kapı artifact'ı YAZMAZ)
+python scripts/validation/run_fpp_calibration_campaign.py smoke \
+  --target-id "TIC 17361" --label false_positive --config configs/benchmark_fp.toml --strict
+
+# 4) CI artifact'ı indirildikten sonra kapıyı DONDUR (kontrol sırası: hash +
+#    kohort bağı + program.json'daki tüm önceden-ilan check'ler)
+python scripts/validation/freeze_fpp_calibration_evidence.py \
+  --report outputs/fpp-calibration-v1/report.json \
+  --rows outputs/fpp-calibration-v1/rows.jsonl \
+  --cases outputs/fpp-calibration-v1/fpp_cases.json \
+  --ci-manifest outputs/fpp-calibration-v1/manifest.json --dry-run
+# --dry-run temiz görünüyorsa aynı komuttan bayrağı çıkar; betik kanıtı
+# kapının required_output dizinine yazar ve program.json'daki status'u
+# "measured"a çevirir. Koşullardan biri bile geçmezse exit 2 + program.json
+# byte byte değişmemiş kalır.
+```
+
 Sözleşme özeti (hepsi `program.json`'da ölçüm **önceden** ilan edildi):
 
 - 100 etiketli false-positive + 100 etiketli planet kohortu, `sha256` ile

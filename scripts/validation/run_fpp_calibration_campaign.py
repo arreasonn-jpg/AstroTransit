@@ -430,9 +430,55 @@ def _pipeline_version() -> str:
     return __version__
 
 
+def smoke(args: argparse.Namespace) -> int:
+    """Tek bir hedefte uçtan uca tesisat kontrolü; hiçbir kapı artifact'ı yazmaz.
+
+    MAST erişimi olan bir makinede 20-shard kampanyasına girmeden önce
+    telemetri zincirinin (kayıt -> hedef seviyesi FPP -> okunabilir vaka)
+    gerçekten çalıştığını doğrulamak içindir.
+    """
+
+    from astrotransit.data.tess_client import TESSClient
+    from astrotransit.pipelines.orchestrator import AstroTransitOrchestrator
+    from scripts.validation.run_false_positive_controls import _evaluate_case
+
+    case = CorpusCase(
+        target_id=normalize_target_id(args.target_id),
+        label=args.label,
+        reference=args.reference or "ad_hoc_smoke_run_not_gate_evidence",
+        sectors=tuple(int(value) for value in args.sectors or ()),
+    )
+    sector_client = TESSClient()
+    with AstroTransitOrchestrator(
+        config_path=str(args.config),
+        force_map=True,
+        skip_visualization=True,
+        log_level="INFO",
+    ) as orchestrator:
+        row = _evaluate_case(case, orchestrator, sector_client)
+    print(canonical_json(row).decode())
+    if args.output:
+        args.output.parent.mkdir(parents=True, exist_ok=True)
+        args.output.write_bytes(canonical_json(row))
+    if args.strict and not row.get("evaluated"):
+        print(f"smoke run did not evaluate: {row.get('error')}", file=sys.stderr)
+        return 1
+    return 0
+
+
 def parser() -> argparse.ArgumentParser:
     root = argparse.ArgumentParser(description=__doc__)
     sub = root.add_subparsers(dest="command", required=True)
+
+    run_smoke = sub.add_parser("smoke")
+    run_smoke.add_argument("--target-id", required=True)
+    run_smoke.add_argument("--label", default="false_positive", choices=["false_positive", "planet", "quiet_star"])
+    run_smoke.add_argument("--reference", default="")
+    run_smoke.add_argument("--sector", type=int, action="append", dest="sectors")
+    run_smoke.add_argument("--config", type=Path, required=True)
+    run_smoke.add_argument("--output", type=Path)
+    run_smoke.add_argument("--strict", action="store_true", help="hedef değerlendirilemezse sıfır olmayan çıkış kodu")
+    run_smoke.set_defaults(handler=smoke)
 
     build = sub.add_parser("build-cohorts")
     build.add_argument("--labelled-corpus", type=Path, default=ROOT / LABELLED_CORPUS)
