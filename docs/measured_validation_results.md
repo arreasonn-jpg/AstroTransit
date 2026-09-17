@@ -76,13 +76,16 @@ Report SHA-256: `86eb94c77b15c60d7e91de0ca2797e3f87cc64adf3b8ac897ed8b6a7220493d
 
 Canonical combined output SHA-256: `c142612b64fb888f76725b45df5e494b3ac8186804c3238b1a8df56a868ba810`
 
-## Frozen but not measured: adversarial and blind-holdout corpora
+## Adversarial and blind-holdout corpora
 
-Both gates now have a frozen corpus and a pre-declared contract, and **no**
-measured statistic. Neither file is written at the canonical gate path until the
-run exists, so `final_acceptance_audit` cannot read a number out of them.
+Both gates have a frozen corpus and a pre-declared contract. The adversarial grid
+has now been measured on this machine (it needs no external data); the blind
+holdout still has **no** measured statistic because it needs real light curves
+that this machine cannot fetch. In neither case does a number exist that the
+contract was written around: `final_acceptance_audit` reads the report at the
+canonical gate path and keeps both gates open.
 
-### `adversarial_false_positives` (synthetic — needs a run, not data)
+### `adversarial_false_positives` (synthetic) — measured, gate left open
 
 `validation_runs/final_acceptance_v1/adversarial_fp/corpus_manifest.json` freezes
 56 scenarios: six morphologies chosen to confront one vetting test each
@@ -94,27 +97,59 @@ everything" cannot score as success. Shapes are analytic trapezoid/V
 seeded Gaussian noise; no limb darkening, no gaps, no `batman` dependency.
 Grid identity: `2e2b434d5d609883c3f3803dd24950f595a1482e523e8bf71d04d214bd4ace20`.
 
-Rejection is attributed to a stage (`rejected_at_detection`, `_cascade`,
-`_vetting`, `_anomaly`) so a failure is diagnosable rather than a single number.
-The harness deliberately runs the production wiring — MAP fit, then
+The harness runs the production wiring — MAP fit, then
 `evaluate(detrended, candidate, fit_result)` exactly as
-`astrotransit/pipelines/tess_pipeline.py` does — because without the fit the
-anomaly stages are silent and the gate would measure less than the pipeline.
+`astrotransit/pipelines/tess_pipeline.py` does — and the report pins the code it
+ran from (`provenance.git_commit = 79e06e16…`). All 56 scenarios produced a row;
+zero errors. Report SHA-256: `8536412586cf2bdbc0bb651c4ed7e11520d1fb394b3798f4b10d97dd3a39af6e`.
 
-Floors declared before any measurement (in `program.json`, 20 checks): overall
-rejection ≥ 0.80, ≥ 0.50 per family, control acceptance ≥ 0.50, zero error rows,
-and the report must restate its own floors so they cannot be moved later.
+| Family (8 scenarios each) | Rejection rate | 95% CI | Rejected at |
+|---|---|---|---|
+| `blended_diluted_eb` | 0.875 | 0.529–0.978 | detection 7 |
+| `spot_modulated_dip` | 0.500 | 0.215–0.785 | cascade 3, vetting 1 |
+| `grazing_eclipsing_binary` | 0.250 | 0.071–0.591 | cascade 2 |
+| `eclipsing_binary_v` | 0.000 | 0.000–0.324 | — |
+| `eb_with_secondary_eclipse` | 0.000 | 0.000–0.324 | — |
+| `odd_even_alternating_eb` | 0.000 | 0.000–0.324 | — |
+| `planetary_control` (acceptance) | 1.000 | 0.676–1.000 | — |
 
-A development smoke on 7 of these scenarios (not a gate result, not the frozen
-grid) is on record here because it explains what the gate is likely to find: all
-six adversarial cases were confirmed *and* passed vetting with `fpp = 0.0`. The
-cause is visible in the test definitions rather than in the shapes —
-`depth_limit` compares against `max_depth_ratio = 0.5` (50%), so realistic 1–5%
-eclipse depths pass; `odd_even_mismatch` is compared with a threshold of 3.0 that
-the metric's own scale rarely reaches; `stellar_variability` only fires when
-`is_variable_star` is already set. If the frozen-grid run confirms this, the
-finding is about the **vetting layer's morphology coverage**, not about this
-corpus, and the gate stays open with the numbers published.
+**Overall adversarial rejection 13/48 = 0.271 (95% CI 0.166–0.410)** against the
+pre-declared floor of 0.80; by stage: detection 7, cascade 5, **vetting 1**,
+anomaly 0. The gate therefore reports `status: pending_run`, lists five blocking
+reasons, `aggregate`/`run` exit 3, and `final_acceptance_audit` marks 6 of the 20
+checks failed. No floor was adjusted after seeing these numbers.
+
+What the measurement does and does not say:
+
+- The pipeline's rejection of these morphologies is overwhelmingly a
+  **sensitivity** effect, not adjudication: the only family that clears its floor
+  (`blended_diluted_eb`) is rejected because BLS finds no peak at 750–1800 ppm
+  under 600 ppm noise, not because vetting recognised an EB. Reading 0.875 as
+  vetting quality would be wrong, which is why the report attributes every
+  rejection to a stage.
+- Vetting essentially never fires here: 53 of 56 rows have zero failing vetting
+  tests, and `false_positive_probability > 0` in 11 rows. Median injected-secondary
+  measurement is 8.7 ppm (max 1792 ppm) against a test threshold of
+  `0.5 × primary depth`, so the secondary-eclipse test cannot trigger on these
+  shapes; `odd_even_mismatch` does respond directionally (alternating family
+  median 0.84, max 2.65, vs control median 0.17) but stays below the 3σ
+  threshold; `depth_limit` compares against `max_depth_ratio = 0.5`, i.e. 50%,
+  so realistic 1–5% eclipses pass by construction.
+- **Limitation of this wiring, recorded in the report:** the anomaly stage emitted
+  no report for any scenario, so `rejected_at_anomaly` was structurally
+  unreachable. The measured number covers detection + cascade + vetting; the
+  repo's `quality/eb_coorbital_discriminator.py` and anomaly scorer are not part
+  of the per-target quality path and are therefore not credited or blamed.
+- 32 of 56 scenarios recovered the injected period within 2%; the rest are
+  detector-side outcomes that the rejection attribution already accounts for.
+
+Candidate follow-ups (owner decision, none applied here): add a morphology test
+that measures ingress steepness / V-shape directly, compute the secondary-eclipse
+and odd/even statistics from our own per-transit estimator instead of TLS's
+standard-error ratio, or wire the existing EB/anomaly discriminator into
+`QualityEvaluationPipeline`. Any of these changes the pipeline, so this gate must
+be re-measured afterwards — the recorded `provenance.git_commit` makes a stale
+number visible.
 
 ### `blind_domain_holdout` (real targets — corpus frozen offline, run pending)
 
@@ -144,6 +179,13 @@ The injection-recovery values measure the detection stage after detrending on th
 
 The very low measured 50-day stitched recovery is a recorded pipeline limitation, not an availability-adjusted success. No acceptance threshold was frozen before this run, so the campaign is `MEASURED`, not retroactively declared `PASS`.
 
+The adversarial 0.271 is a rejection rate **of six declared morphologies under one
+specific wiring** (synthetic trapezoid/V shapes, uniform cadence, single-sector
+27 d baseline, no anomaly stage), not "the pipeline rejects 27% of false positives".
+Its Wilson interval (0.166-0.410) is wide because each family holds 8 scenarios; the
+control family's 8/8 acceptance is what stops the low number from being explained by
+a uniformly rejecting pipeline.
+
 ## Remaining gates
 
 | Validation area | Status |
@@ -152,7 +194,7 @@ The very low measured 50-day stitched recovery is a recorded pipeline limitation
 | Injection recovery | 960/960 trial records frozen; 888 evaluable; strict and harmonic-aware recovery measured |
 | False positives and quiet controls | Labelled FP/planet input available; 100-target quiet-control corpus frozen; controlled run pending (20-shard CI lane). Campaign rows now also carry per-target FPP telemetry (shard schema 1.1) |
 | FPP calibration | Producer implemented (`fpp_calibration.py` + `run_fpp_calibration_campaign.py`); 100 FP + 100 planet cohorts frozen (`cohort_manifest.json`, `9de7d31a…`); 13 acceptance checks pre-declared in `program.json`; MAST run pending |
-| Adversarial false positives | Corpus frozen offline: 56 synthetic scenarios in 6 adversarial families + 1 positive control family (`corpus_manifest.json`, `2e2b434d…`); runner and CI lane implemented (`run_adversarial_fp_controls.py`, `adversarial-fp-v1.yml`); 20 acceptance checks pre-declared; **no rejection rate measured yet** |
+| Adversarial false positives | **Measured** on the frozen 56-scenario grid (0 errors): overall rejection 13/48 = 0.271 (CI 0.166–0.410) vs declared floor 0.80 — vetting rejected 1, cascade 5, detection 7; positive control accepted 8/8. **Gate left open** (6 of 20 checks failed, no floor re-tuned); report `85364125…` |
 | Blind domain holdout | 144 real targets (72 planet / 72 false-positive) frozen from the blind partition, disjoint from every prior-gate id (`holdout_manifest.json`, `3fd1e65a…`); 22 acceptance checks pre-declared; light-curve run pending (`blind-holdout-v1.yml`, dispatch-only) |
 | Blind test | Implemented; held-out data/run pending |
 | TLS/BLS baselines | Implemented; same-corpus run pending |

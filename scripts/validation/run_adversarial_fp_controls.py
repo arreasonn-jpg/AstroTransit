@@ -373,6 +373,7 @@ def _write_report(
     frozen_manifest: dict[str, Any],
     missing: list[str],
     sources: list[str],
+    rows_dump_sha256: str | None = None,
 ) -> int:
     from astrotransit.validation.provenance import build_manifest
 
@@ -421,7 +422,11 @@ def _write_report(
     if missing:
         report["blocking_reasons"].append(f"grid_rows_missing:{len(missing)}")
         report["status"] = "pending_run"
+    # rows_sha256: satir listesinin canonical JSON'u; rows_dump_sha256: --rows-out
+    # ile yazilan satir-ayrik dosyanin hash'i (ikisi farkli serileme, ikisi de kayitli).
     report["rows_sha256"] = hashlib.sha256(canonical_json(rows)).hexdigest()
+    if rows_dump_sha256:
+        report["rows_dump_sha256"] = rows_dump_sha256
 
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_bytes(canonical_json(report))
@@ -539,23 +544,30 @@ def run(args: argparse.Namespace) -> int:
     scenarios = build_grid(per_family=args.per_family)
     frozen_manifest = _verify_frozen_grid(scenarios, args.corpus_manifest)
     cascade, quality, modelling = _pipeline_pair(args)
-    rows = [
-        _evaluate_scenario(
-            scenario,
-            cascade,
-            quality,
-            modelling,
-            period_tolerance=args.period_tolerance,
-            reject_threshold=args.reject_threshold,
+    rows: list[dict[str, Any]] = []
+    for position, scenario in enumerate(scenarios, start=1):
+        rows.append(
+            _evaluate_scenario(
+                scenario,
+                cascade,
+                quality,
+                modelling,
+                period_tolerance=args.period_tolerance,
+                reject_threshold=args.reject_threshold,
+            )
         )
-        for scenario in scenarios
-    ]
+        if args.verbose:
+            print(
+                f"[{position}/{len(scenarios)}] {rows[-1]['scenario_id']} -> {rows[-1]['outcome']}",
+                file=sys.stderr,
+                flush=True,
+            )
+    dump_sha256 = None
     if args.rows_out:
         args.rows_out.parent.mkdir(parents=True, exist_ok=True)
-        args.rows_out.write_text(
-            "".join(json.dumps(row, sort_keys=True, ensure_ascii=False) + "\n" for row in rows),
-            encoding="utf-8",
-        )
+        payload = "".join(json.dumps(row, sort_keys=True, ensure_ascii=False) + "\n" for row in rows)
+        args.rows_out.write_text(payload, encoding="utf-8")
+        dump_sha256 = hashlib.sha256(payload.encode()).hexdigest()
     return _write_report(
         args,
         rows=rows,
@@ -563,6 +575,7 @@ def run(args: argparse.Namespace) -> int:
         frozen_manifest=frozen_manifest,
         missing=[],
         sources=[],
+        rows_dump_sha256=dump_sha256,
     )
 
 
@@ -618,6 +631,7 @@ def parser() -> argparse.ArgumentParser:
     execute.add_argument("--per-family", type=int, default=PER_FAMILY)
     execute.add_argument("--rows-out", type=Path, dest="rows_out")
     execute.add_argument("--period-tolerance", type=float, default=0.02)
+    execute.add_argument("--verbose", action="store_true")
     _add_pipeline_arguments(execute)
     _add_report_arguments(execute)
     execute.set_defaults(handler=run)
