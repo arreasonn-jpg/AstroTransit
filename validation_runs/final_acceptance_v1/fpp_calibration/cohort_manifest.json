@@ -1,0 +1,33 @@
+{
+  "claim_boundary": "Cohort membership comes only from external catalogue dispositions. AstroTransit output was never used to select targets, so this selection cannot inflate the measured separation of the FPP proxy.",
+  "cohort_sha256": "9de7d31a0aaf45418f849c733de975e9b498a75b579390999674ca08ebe4ab2c",
+  "corpus": "fpp_quality_calibration_v1",
+  "counts": {
+    "false_positive": 100,
+    "planet": 100
+  },
+  "materialization": "deterministic_rebuild_from_frozen_sources",
+  "rejection_counts": {},
+  "required_count": 100,
+  "schema_version": "1.0",
+  "selected_count": 200,
+  "selection": {
+    "detector_used_for_selection": false,
+    "method": "sha256_seeded_rank_after_label_and_host_exclusions_v1",
+    "metric_seed": 20260912,
+    "prior_injection_hosts_excluded": true,
+    "seed": 20260917
+  },
+  "selection_audit_sha256": "2301feb65f6d37f93a750b12f72325ed42d85739e557bdb1f281f6308f9ae6f5",
+  "sources": {
+    "labelled_corpus": {
+      "path": "benchmarks/corpora/tfop_disposition_corpus_v1.json",
+      "sha256": "c6490fa32c8fea72fcddf50a8af038d825de573b5da39cbb3063a4c0cecbb9b0"
+    },
+    "prior_injection_hosts": {
+      "path": "validation_runs/v1_injection_recovery/real_noise_v1/input/quiet_hosts.json",
+      "sha256": "8175058b8b519bffbff8a37a8c7978bb67ad8f1e03b777a9568ed35f21ffbe42"
+    }
+  },
+  "status": "frozen"
+}

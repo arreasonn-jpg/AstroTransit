@@ -172,11 +172,18 @@ bilinçli bir sınır olarak raporlanır.
 - FPP proxy kalibrasyonu: `astrotransit/validation/fpp_benchmark.py`
   (Brier skor, false-positive recall, planet precision). Etiketli veri yoksa
   FPP değeri `null`/`not_available` kalır; `0.0` bilinmeyen değer yerine kullanılmaz.
+  Kabül kapısının artifact'ı `astrotransit/validation/fpp_calibration.py` ile
+  `scripts/validation/run_fpp_calibration_campaign.py` üzerinden üretilir; kohortlar
+  dedektör çıktısını görmeden dondurulur (100 etiketli false-positive + 100 etiketli planet).
 - Benchmark CLI'ı: `astrotransit benchmark`
-- Kapalı çevrim için gereken 8 doğrulama kapısı (injection-recovery,
-  bilinen gezegen geri kazanımı, bilinen FP'lerin elenmesi, cross-sektör
-  tutarlılığı, parametre geri kazanımı, FPP kalibrasyonu, benzerlik ağırlığı
-  duyarlılık analizi, tam provenance): [`docs/validation.md`](docs/validation.md)
+- Doğrulama kapıları: birleşik kabul programı 11 kapıyı
+  [`validation_runs/final_acceptance_v1/program.json`](validation_runs/final_acceptance_v1/program.json)
+  içinde makineyle doğrulanabilir sözleşmelerle tutar (bugün 1 kapı ölçülmüş durumda).
+  `docs/validation.md` aynı programın 8 satırlık yol haritası görünümüdür:
+  injection-recovery, bilinen gezegen geri kazanımı, bilinen FP'lerin elenmesi,
+  cross-sektör tutarlılığı, parametre geri kazanımı, FPP kalibrasyonu,
+  benzerlik ağırlığı duyarlılık analizi ve tam provenance:
+  [`docs/validation.md`](docs/validation.md)
 
 **Referans aday (uçtan uca örnekleme):** TIC 417860263 / HD 224792.
 TOI/Arşiv kataloglarında eşleşmesi bulunmayan, pipeline'dan uçtan uca geçmiş

@@ -132,6 +132,11 @@ def test_long_period_screening_is_persistable_and_not_cascade_confirmed():
     assert record.long_period_screening is True
     assert record.search_channel == "long_period"
     assert record.long_period_identifiability == "single_transit_ambiguous"
+    # Belirsizlik kaynağı sözleşmesi: non-zero bir period_err taşıyan kayıt
+    # "unavailable" diyemez; tek-transit genişliği heuristiktir.
+    assert record.period_err > 0.0
+    assert record.period_err_source == "long_period_heuristic"
+    assert record.period_sampled is False
     assert record.cascade_confirmed is False
     assert record.candidate_class == "LONG_PERIOD_SINGLE_TRANSIT"
     assert record.coverage_baseline_days > 20.0
@@ -159,3 +164,45 @@ def test_duration_grid_scales_with_stellar_properties():
     assert compact_star._duration_grid()[-1] < solar._duration_grid()[-1]
     assert compact_star._search_params()["stellar_radius_rsun"] == 0.5
     assert compact_star._search_params()["stellar_mass_msun"] == 0.5
+
+
+def _screening_record(period_err, identifiability):
+    from types import SimpleNamespace
+
+    peak = SimpleNamespace(
+        period=210.0,
+        period_err=period_err,
+        t0=100.2,
+        duration=0.4,
+        depth=0.0012,
+        identifiability=identifiability,
+        n_observed_transits=1,
+        transit_times=[100.2],
+    )
+    result = SimpleNamespace(
+        target_id="TIC 900000002",
+        best=peak,
+        coverage_baseline_days=27.0,
+        observed_days=27.0,
+        source_sectors=[57, 58],
+        notes=[],
+    )
+    return build_long_period_record(
+        result,
+        stellar_props=StellarProperties(tic_id=900000002, teff=5200.0, radius=0.7, mass=0.66),
+    )
+
+
+def test_period_err_source_reports_the_heuristic_provenance():
+    heuristic = _screening_record(105.0, "single_transit_ambiguous")
+    assert heuristic.period_err == 105.0
+    assert heuristic.period_err_source == "long_period_heuristic"
+    assert heuristic.candidate_class == "LONG_PERIOD_SINGLE_TRANSIT"
+
+    gapped = _screening_record(105.0, "multi_transit_gapped_ambiguous")
+    assert gapped.period_err_source == "long_period_heuristic"
+    assert gapped.candidate_class == "LONG_PERIOD_CANDIDATE"
+
+    # Ölçülmüş belirsizlik yoksa "unavailable" kalır; uydurulmuş hata yazılmaz.
+    absent = _screening_record(0.0, "single_transit_ambiguous")
+    assert absent.period_err_source == "unavailable"

@@ -894,6 +894,15 @@ def build_long_period_record(
     )
     record.fit_method = "long_period_bls"
     record.fit_status = "screening_only"
+    # Uzun periyot kanalında period_err bir fit türevi değildir; identifiability
+    # kuralından gelen heuristik bir genişliktir (bkz. docs/pipeline_design.md).
+    # "unavailable" yalnızca gerçek belirsizlik yokken kullanılır; aksi halde
+    # kayıt, non-zero bir period_err ile çelişen "belirsizlik yok" sinyali
+    # üretmiş olur.
+    record.period_sampled = False
+    record.period_err_source = (
+        "long_period_heuristic" if _positive_finite(_get(peak, "period_err", 0.0)) else "unavailable"
+    )
     result_notes = _as_list(_get(long_period_result, "notes", []))
     if result_notes:
         existing_notes = _json_load_list_or_empty(record.earth_similarity_notes)
