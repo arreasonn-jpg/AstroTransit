@@ -228,6 +228,103 @@ taşımadığından `strict_earth_twin` yalnızca mevcut boyutlarla değerlendir
 (sınıflandırma `INCOMPLETE_EARTH_TWIN` kalır). `tfopwg_disp` etiketleri
 hiçbir skora ağırlık olarak girmez.
 
+### 8. Adversarial false-positive kontrolleri
+
+Vetting katmanının **bilinen gezegen-olmayan morfolojileri** ne oranda
+redrettiğini ölçen, tamamen sentetik ve çevrimdışı üretilebilen kapı. Korpus
+altı adversarial aile + bir pozitif kontrol ailesinden oluşur
+(`planetary_control`); kontrol ailesi, "her şeyi reddet" ayarının metriği
+geçememesi için zorunludur. Şekiller analitiktir (trapez/V; `steepness=1`
+üçgen, `steepness→0` kutu), `batman` gerektirmez, düzgün 600 s örneklenme ve
+tohumlu Gaussian gürültü kullanır — gap/limb darkening simülasyonu **yoktur**
+ve bu, korpusun ilan edilmiş sınırıdır.
+
+```bash
+# 1) Izgarayi dondur ve kimligini yaz (cevrimdisi, deterministik)
+python scripts/validation/run_adversarial_fp_controls.py build-corpus
+
+# 2) Kosmadan sozlesmeyi dogrula: manifest + program.json ayni grid hash'ini
+#    ve ayni tabanlari ilan ediyor mu? (CI'da her push'ta kosar)
+python scripts/validation/run_adversarial_fp_controls.py check
+
+# 3) Tam izgarayi tek proseste kos (yerel; ~2 CPU ile saatten uzun surer)
+python scripts/validation/run_adversarial_fp_controls.py run \
+  --config configs/benchmark_fp.toml \
+  --rows-out outputs/adversarial-fp-v1/rows.jsonl
+
+# 3b) CI paralelligi: dilimlerle, sonra cevrimdisi topla
+python scripts/validation/run_adversarial_fp_controls.py run-shard \
+  --config configs/benchmark_fp.toml --shard-index 0 --shard-count 8 \
+  --output outputs/adversarial-fp-v1/shard-00.json
+python scripts/validation/run_adversarial_fp_controls.py aggregate \
+  --shard outputs/adversarial-fp-v1/shards \
+  --output validation_runs/final_acceptance_v1/adversarial_fp/report.json
+```
+
+Red **kademeye göre** atanır (`rejected_at_detection`, `_cascade`, `_vetting`,
+`_anomaly`); boylece basarisizlik tek bir sayi yerine teshis edilebilir olur.
+Harness kasitli olarak uretim baglantisini kullaniyor: MAP fit, ardindan
+`evaluate(detrended, candidate, fit_result)` (`pipelines/tess_pipeline.py` ile
+ayni). Fit olmadan anomali kademeleri kor kalir ve kapinin olctugu sey pipeline'in
+gercek red gucu olmazdi.
+
+Sozlesme ozeti (20 kontrol, olcumden **once** `program.json`'da ilan edildi):
+
+- Genel red orani >= 0.80; her adversarial aile >= 0.50; kontrol kabul orani
+  >= 0.50; `total_errors == 0`; korpus 56 senaryo ve 7 aile.
+- Rapor kendi tabanlarini `method.declared_floor_*` alanlarinda tekrar tasir;
+  boylece esikler sonradan kaydirilamaz.
+- `grid_sha256` donmus manifeste esit olmali; eksik senaryo satiri `error` degil
+  `grid_rows_missing` blokeri uretir (denominator sessizce kucultulemez).
+- FPP proxy'si `None` ise red sayilmaz: `missing_fpp_treatment == "None is never
+  read as zero risk"`.
+
+Bu kapida olcum `pending_run` durumundadir; sentetik korpus icin MAST gerekmez,
+yalnizca kosu gerekir (CI kovani: `.github/workflows/adversarial-fp-v1.yml`).
+
+### 9. Blind domain holdout
+
+Onceki hicbir kapida kullanilmamis, harici katalog etiketine sahip **gercek**
+hedefler uzerinde olcum. Korpus cevrimdisi dondurulur; olcum ise isik egrisi
+indirme erisimi ister.
+
+```bash
+# 1) Uyelik listesini dondurulmus etiket kaynaklarindan yeniden uret
+python scripts/validation/run_blind_holdout.py build-corpus
+
+# 2) Sozlesme kontrolu (cevrimdisi): rebuild + disjointness + program.json pin'i
+python scripts/validation/run_blind_holdout.py check
+python scripts/validation/run_blind_holdout.py summary
+
+# 3) Shard'lari kos (MAST gerekir) ve cevrimdisi topla
+python scripts/validation/run_blind_holdout.py run-shard \
+  --config configs/benchmark_fp.toml --shard-index 0 --shard-count 12 \
+  --output outputs/blind-holdout-v1/shard-00.json
+python scripts/validation/run_blind_holdout.py aggregate \
+  --rows outputs/blind-holdout-v1/shards \
+  --output validation_runs/final_acceptance_v1/blind_holdout/report.json
+```
+
+Uyelik kurali: havuz yalnizca `assign_split(seed=13)` **blind_test** bolmesi;
+onceki kapilarin kimlikleri (FP-run subseti, quiet-sky hostlari, FPP kalibrasyon
+koortu, depolanmis satir dosyalari) siralamadan **once** cikarilir (170 ID);
+siralama anahtari `sha256(seed:target_id)` olup dedektor ciktilarini hic görmez
+(`detector_used_for_selection == false`). Katmanlar TFoP WG disposition
+kodlarindan turetilir; kota havuzla orantili dagitilir ve katman basina taban 8 vaka
+garanti altindadir (dondurulmus korpusda en kucuk katman 10 vaka).
+
+Sozlesme ozeti (22 kontrol, olcumden once ilan edildi): `recall >= 0.5`,
+`false_positive_rate <= 0.6`, `data.errors == 0`, `non_blind_rows == 0`,
+`excluded_id_count >= 100`, `method.retrained == false`, bes katmanin her birinde
+>= 8 degerlendirilen hedef. Korpusun hash'i ya da uyeligi sonradan
+degistirilmisse rapor `holdout_manifest_self_inconsistent` /
+`rows_not_in_frozen_corpus` / `corpus_rows_missing` ile kapanmayi reddeder.
+
+**Onemli:** korpusu dondurmak olcum demek degildir. Bu kapida kanonik yolda
+`report.json` yokken `status` `pending_run` olarak kalir; `--offline` modunda
+uretilen satirlar hata sayilir ve `aggregate` cikis kodu 3 dondurur (CI sozlesme
+kovani bunu dogruluyor).
+
 ## Ölçülen ve dondurulan sonuçlar
 
 | Sonuç dosyası | Kapı | Üreten komut |

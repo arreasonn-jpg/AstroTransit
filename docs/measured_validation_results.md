@@ -76,6 +76,66 @@ Report SHA-256: `86eb94c77b15c60d7e91de0ca2797e3f87cc64adf3b8ac897ed8b6a7220493d
 
 Canonical combined output SHA-256: `c142612b64fb888f76725b45df5e494b3ac8186804c3238b1a8df56a868ba810`
 
+## Frozen but not measured: adversarial and blind-holdout corpora
+
+Both gates now have a frozen corpus and a pre-declared contract, and **no**
+measured statistic. Neither file is written at the canonical gate path until the
+run exists, so `final_acceptance_audit` cannot read a number out of them.
+
+### `adversarial_false_positives` (synthetic — needs a run, not data)
+
+`validation_runs/final_acceptance_v1/adversarial_fp/corpus_manifest.json` freezes
+56 scenarios: six morphologies chosen to confront one vetting test each
+(`eclipsing_binary_v`, `grazing_eclipsing_binary`, `blended_diluted_eb`,
+`eb_with_secondary_eclipse`, `odd_even_alternating_eb`, `spot_modulated_dip`) plus
+a `planetary_control` family that must mostly be *accepted*, so "reject
+everything" cannot score as success. Shapes are analytic trapezoid/V
+(`steepness=1` triangle, `steepness→0` box) on a uniform 600 s cadence with
+seeded Gaussian noise; no limb darkening, no gaps, no `batman` dependency.
+Grid identity: `2e2b434d5d609883c3f3803dd24950f595a1482e523e8bf71d04d214bd4ace20`.
+
+Rejection is attributed to a stage (`rejected_at_detection`, `_cascade`,
+`_vetting`, `_anomaly`) so a failure is diagnosable rather than a single number.
+The harness deliberately runs the production wiring — MAP fit, then
+`evaluate(detrended, candidate, fit_result)` exactly as
+`astrotransit/pipelines/tess_pipeline.py` does — because without the fit the
+anomaly stages are silent and the gate would measure less than the pipeline.
+
+Floors declared before any measurement (in `program.json`, 20 checks): overall
+rejection ≥ 0.80, ≥ 0.50 per family, control acceptance ≥ 0.50, zero error rows,
+and the report must restate its own floors so they cannot be moved later.
+
+A development smoke on 7 of these scenarios (not a gate result, not the frozen
+grid) is on record here because it explains what the gate is likely to find: all
+six adversarial cases were confirmed *and* passed vetting with `fpp = 0.0`. The
+cause is visible in the test definitions rather than in the shapes —
+`depth_limit` compares against `max_depth_ratio = 0.5` (50%), so realistic 1–5%
+eclipse depths pass; `odd_even_mismatch` is compared with a threshold of 3.0 that
+the metric's own scale rarely reaches; `stellar_variability` only fires when
+`is_variable_star` is already set. If the frozen-grid run confirms this, the
+finding is about the **vetting layer's morphology coverage**, not about this
+corpus, and the gate stays open with the numbers published.
+
+### `blind_domain_holdout` (real targets — corpus frozen offline, run pending)
+
+`validation_runs/final_acceptance_v1/blind_holdout/holdout_manifest.json` freezes
+144 targets (72 planet / 72 false-positive) over five FOP-disposition strata
+(`planet:CP` 37, `planet:KP` 35, `false_positive:FP` 42, `false_positive:APC` 20,
+`false_positive:FA` 10). Membership is derived only from the `blind_test` partition
+of `assign_split(seed=13)`, ranked by a seeded SHA-256 key, and **never** from a
+detector output; 170 ids already touched by prior gates (FP run subset, quiet-sky
+hosts, the FPP cohort, any committed row file) are removed before ranking.
+Corpus identity: `3fd1e65a2ddc15d37c624571a5f39d7bdeae724609d427d7dfbc2e1320a0b1d2`.
+
+22 pre-declared checks include `recall ≥ 0.5`, `false_positive_rate ≤ 0.6`,
+`errors == 0`, `non_blind_rows == 0`, `detector_used_for_selection == false`,
+`retrained == false` and per-stratum coverage. Unevaluated targets are blockers,
+never dropped from a denominator, and a manifest whose hash or membership was
+edited after the fact is refused (`holdout_manifest_self_inconsistent`,
+`rows_not_in_frozen_corpus`, `corpus_rows_missing`).
+
+
+
 ## Interpretation boundaries
 
 The known-target 46/46 value is conditional detection on the selected, evaluable known-target subset. It is not population recall, survey completeness or calibrated precision.
@@ -92,10 +152,12 @@ The very low measured 50-day stitched recovery is a recorded pipeline limitation
 | Injection recovery | 960/960 trial records frozen; 888 evaluable; strict and harmonic-aware recovery measured |
 | False positives and quiet controls | Labelled FP/planet input available; 100-target quiet-control corpus frozen; controlled run pending (20-shard CI lane). Campaign rows now also carry per-target FPP telemetry (shard schema 1.1) |
 | FPP calibration | Producer implemented (`fpp_calibration.py` + `run_fpp_calibration_campaign.py`); 100 FP + 100 planet cohorts frozen (`cohort_manifest.json`, `9de7d31a…`); 13 acceptance checks pre-declared in `program.json`; MAST run pending |
+| Adversarial false positives | Corpus frozen offline: 56 synthetic scenarios in 6 adversarial families + 1 positive control family (`corpus_manifest.json`, `2e2b434d…`); runner and CI lane implemented (`run_adversarial_fp_controls.py`, `adversarial-fp-v1.yml`); 20 acceptance checks pre-declared; **no rejection rate measured yet** |
+| Blind domain holdout | 144 real targets (72 planet / 72 false-positive) frozen from the blind partition, disjoint from every prior-gate id (`holdout_manifest.json`, `3fd1e65a…`); 22 acceptance checks pre-declared; light-curve run pending (`blind-holdout-v1.yml`, dispatch-only) |
 | Blind test | Implemented; held-out data/run pending |
 | TLS/BLS baselines | Implemented; same-corpus run pending |
 | Performance | Implemented; measured campaign pending |
 
 The next step is deterministic recovered-parameter analysis from the frozen injection trial table. It must preserve the measured detection results and report unavailable parameter values as `not_evaluated`, never as zero.
 
-Two pending gates are executable today without new code: the false-positive/quiet-control campaign and the FPP-calibration campaign both fan out to 20 shards in GitHub Actions (`.github/workflows/fp-quiet-controls-v1.yml`, `.github/workflows/fpp-calibration-v1.yml`) and aggregate offline. Their cohort identity is frozen by SHA-256, so a re-run cannot silently reselect targets.
+Four pending gates are executable today without new code: the false-positive/quiet-control and FPP-calibration campaigns fan out to 20 shards in GitHub Actions (`.github/workflows/fp-quiet-controls-v1.yml`, `.github/workflows/fpp-calibration-v1.yml`), the adversarial FP gate runs its synthetic grid in 8 shards (`.github/workflows/adversarial-fp-v1.yml`), and the blind-domain holdout fans out to 12 shards on dispatch (`.github/workflows/blind-holdout-v1.yml`). All of them aggregate offline, and every corpus identity is frozen by SHA-256, so a re-run cannot silently reselect targets.

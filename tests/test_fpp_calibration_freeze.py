@@ -164,8 +164,16 @@ def test_freeze_writes_evidence_and_flips_only_the_fpp_gate(tmp_path: Path):
     assert gates["fpp_quality_calibration"]["status"] == "measured"
     assert len(gates) == 11
     assert gates["labelled_fp_quiet_controls"]["status"] == "pending_run"
-    assert gates["blind_domain_holdout"]["status"] == "pending_data"
     assert gates["final_report_release"]["status"] == "blocked_by_gates"
+    # Dondurma adimi baska hicbir kapinin durumunu "measured"a cevirmemeli;
+    # status'lari yalnizca o kapinin kendi kaniti degistirir (korpus dondurme
+    # gibi durus degisiklikleri de buradan gecerli olmali, sabit literal degil).
+    assert gates["blind_domain_holdout"]["status"] != "measured"
+    assert gates["adversarial_false_positives"]["status"] != "measured"
+    committed = json.loads(PROGRAM.read_text(encoding="utf-8"))
+    before = {g["id"]: g["status"] for g in committed["gates"] if g["id"] != "fpp_quality_calibration"}
+    after = {g["id"]: g["status"] for g in program["gates"] if g["id"] != "fpp_quality_calibration"}
+    assert after == before
 
     assert (dest / "report.json").is_file()
     assert (dest / "rows.jsonl").is_file()
