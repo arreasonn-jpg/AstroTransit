@@ -412,6 +412,7 @@ class TESSPipeline:
                         for sector_result in result.sector_results
                     )
                     if result.long_period.has_candidate and not has_confirmed_sector_candidate:
+                        assert result.long_period.best is not None  # narrowing for mypy
                         result.long_period_record = self._output.write_long_period(
                             result.long_period,
                             stellar_props=stellar_props,

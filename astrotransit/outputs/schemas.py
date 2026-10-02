@@ -81,7 +81,8 @@ def _dict_from_dataclass(value: Any) -> dict[str, Any]:
         return {}
     if hasattr(value, "to_dict"):
         try:
-            return value.to_dict()
+            result = value.to_dict()
+            return dict(result) if isinstance(result, dict) else {}
         except Exception:
             pass
     if hasattr(value, "__dataclass_fields__"):

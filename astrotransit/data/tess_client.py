@@ -200,8 +200,9 @@ class TESSClient:
         Light curve üreticisi. Varsayılan "SPOC".
     exptime : int
         Kadans (saniye). 20, 120 veya 600.
-    quality_bitmask : str
-        Kalite maskesi. "default", "hard", "hardest".
+    quality_bitmask : str veya int
+        Kalite maskesi. Hazır string ("default", "hard", "hardest")
+        veya bit maskesi olarak pozitif bir tamsayı.
     cache_dir : str veya Path
         Geçici cache dizini.
     cache_ttl_hours : int
@@ -220,14 +221,14 @@ class TESSClient:
         self,
         author: str = "SPOC",
         exptime: int = 120,
-        quality_bitmask: str = "default",
+        quality_bitmask: str | int = "default",
         cache_dir: str | Path = ".cache/astrotransit/tess",
         cache_ttl_hours: int = 24,
         use_cache: bool = True,
     ):
         self.author = author
         self.exptime = exptime
-        self.quality_bitmask = quality_bitmask
+        self.quality_bitmask: str | int = quality_bitmask
         self.use_cache = use_cache
 
         # Cache yöneticisi

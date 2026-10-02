@@ -389,7 +389,7 @@ class NEBScenarioEvaluator:
     @staticmethod
     def _compute_flag(
         indicators: list[NEBIndicator],
-        p_neb: float,
+        p_neb: float | None,
     ) -> str:
         n_fail = sum(1 for ind in indicators if ind.verdict == VettingVerdict.FAIL)
         n_warn = sum(1 for ind in indicators if ind.verdict == VettingVerdict.WARN)
