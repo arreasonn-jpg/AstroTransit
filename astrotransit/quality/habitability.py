@@ -261,12 +261,13 @@ class HabitabilityScorer:
             a = float(semi_major_axis_au)
             if hz_inner_au <= a <= hz_outer_au:
                 return "conservative_hz"
-            if opt_inner_au is not None and opt_outer_au is not None and opt_inner_au <= a <= opt_outer_au:
-                return "optimistic_hz"
-            if a < opt_inner_au:
-                return "too_hot"
-            if a > opt_outer_au:
-                return "too_cold"
+            if opt_inner_au is not None and opt_outer_au is not None:
+                if opt_inner_au <= a <= opt_outer_au:
+                    return "optimistic_hz"
+                if a < opt_inner_au:
+                    return "too_hot"
+                if a > opt_outer_au:
+                    return "too_cold"
 
         if insolation_s_earth is not None and insolation_s_earth > 0:
             if _CONSERVATIVE_HZ_OUTER_S <= insolation_s_earth <= _CONSERVATIVE_HZ_INNER_S:

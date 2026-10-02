@@ -48,11 +48,11 @@ def jd_to_iso(jd: float) -> str:
     """Julian Date'i ISO 8601 formatına çevirir."""
 
     t = Time(jd, format="jd", scale="tdb")
-    return t.iso
+    return str(t.iso)
 
 
 def iso_to_jd(iso_str: str) -> float:
     """ISO 8601 tarihini Julian Date'e çevirir."""
 
     t = Time(iso_str, format="iso", scale="utc")
-    return t.jd
+    return float(t.jd)

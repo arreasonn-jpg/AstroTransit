@@ -16,7 +16,7 @@ Desteklenen modlar:
 from __future__ import annotations
 
 from enum import Enum
-from typing import Any, Optional
+from typing import cast, Any, Optional
 
 from loguru import logger
 
@@ -125,7 +125,7 @@ class AstroTransitOrchestrator:
             result = pipeline.run_target(target, sectors=sectors)
 
         self._finalize()
-        return result
+        return cast(TESSTargetResult, result)
 
     def run_batch(
         self,
@@ -153,7 +153,7 @@ class AstroTransitOrchestrator:
             results = pipeline.run_batch(targets, sectors=sectors)
 
         self._finalize()
-        return results
+        return cast(list[TESSTargetResult], results)
 
     def run_earth_search(
         self,

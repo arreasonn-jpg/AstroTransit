@@ -21,7 +21,7 @@ Epistemik sınırlar (raporda ``claim_boundary`` olarak da taşınır):
 from __future__ import annotations
 
 from collections import Counter
-from typing import Any, Iterable, Mapping, Optional
+from typing import Sequence, Any, Iterable, Mapping, Optional
 
 from astrotransit.validation.fpp_benchmark import (
     FPPBenchmarkCase,
@@ -67,7 +67,7 @@ def _row_fpp_present(row: Mapping[str, Any]) -> bool:
     return False
 
 
-def _cohort_block(rows: list[Mapping[str, Any]]) -> dict[str, Any]:
+def _cohort_block(rows: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
     evaluated = [row for row in rows if bool(row.get("evaluated"))]
     reasons: Counter[str] = Counter()
     for row in rows:
@@ -82,7 +82,7 @@ def _cohort_block(rows: list[Mapping[str, Any]]) -> dict[str, Any]:
     }
 
 
-def _quiet_block(rows: list[Mapping[str, Any]]) -> dict[str, Any]:
+def _quiet_block(rows: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
     evaluated = [row for row in rows if bool(row.get("evaluated"))]
     spurious = sum(bool(row.get("accepted_candidate")) for row in evaluated)
     return {

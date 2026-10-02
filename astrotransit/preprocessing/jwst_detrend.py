@@ -249,7 +249,7 @@ class JWSTGPDetrending:
 
         try:
             gp = self._build_gp(time, flux_err, log_sigma, log_rho, log_Q)
-            return -gp.log_likelihood(flux)
+            return float(-gp.log_likelihood(flux))
         except Exception:
             return np.inf
 

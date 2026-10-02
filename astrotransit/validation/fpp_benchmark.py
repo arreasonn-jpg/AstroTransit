@@ -135,7 +135,7 @@ def _pr_auc(scores: np.ndarray, labels: np.ndarray) -> Optional[float]:
 
 def split_fpp_cases(cases: Iterable[FPPBenchmarkCase], *, seed: int = 0) -> dict[str, list[FPPBenchmarkCase]]:
     """Partition labelled FPP cases without allowing target leakage."""
-    result = {"development": [], "validation": [], "blind_test": []}
+    result: dict[str, list[FPPBenchmarkCase]] = {"development": [], "validation": [], "blind_test": []}
     for case in cases:
         result[assign_split(case.target_id, seed=seed)].append(case)
     return result

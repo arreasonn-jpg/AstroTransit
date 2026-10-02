@@ -23,7 +23,7 @@ def assign_split(target_id: str, *, seed: int = 0, fractions: tuple[float, float
 
 
 def partition_target_ids(target_ids: Iterable[str], *, seed: int = 0) -> dict[str, list[str]]:
-    result = {"development": [], "validation": [], "blind_test": []}
+    result: dict[str, list[str]] = {"development": [], "validation": [], "blind_test": []}
     for target_id in target_ids:
         result[assign_split(str(target_id), seed=seed)].append(str(target_id))
     return result

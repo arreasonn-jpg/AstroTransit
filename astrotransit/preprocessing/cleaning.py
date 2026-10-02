@@ -274,7 +274,7 @@ class LightCurveCleaner:
         if std == 0:
             return np.ones(len(flux), dtype=bool)
 
-        mask = np.abs(flux - median) < self.sigma_clip_flux * std
+        mask: np.ndarray = np.abs(flux - median) < self.sigma_clip_flux * std
         return mask
 
     def clean(self, normalized: NormalizedLightCurve) -> CleanedLightCurve:

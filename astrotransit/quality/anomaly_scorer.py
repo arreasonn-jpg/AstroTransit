@@ -308,7 +308,10 @@ class AnomalyScorer:
         if total_weight <= 0:
             return 0.0
 
-        weighted_sum = sum(c.weight * float(c.score) for c in active)
+        weighted_sum = 0.0
+        for component in active:
+            if component.score is not None:
+                weighted_sum += component.weight * float(component.score)
         return float(np.clip(weighted_sum / total_weight, 0.0, 1.0))
 
     @staticmethod

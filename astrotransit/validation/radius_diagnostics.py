@@ -231,7 +231,9 @@ def build_radius_diagnostic_row(
         ),
         cascade_status=cascade_status,
         tls_period_days=_finite(period),
-        tls_duration_hours=(None if _finite(duration) is None else _finite(duration) * 24.0),
+        tls_duration_hours=(
+            (lambda d: None if d is None else d * 24.0)(_finite(duration))
+        ),
         tls_depth_ppm=(None if tls_depth is None else tls_depth * 1e6),
         tls_rp_rs=tls_rp_rs,
         fit_rp_rs=fit_rp_rs,
@@ -253,9 +255,7 @@ def build_radius_diagnostic_row(
         baseline=_finite(_get(fit, "baseline")),
         log_jitter=_finite(_get(fit, "log_jitter")),
         residual_rms_ppm=(
-            None
-            if _finite(_get(fit, "residual_rms")) is None
-            else _finite(_get(fit, "residual_rms")) * 1e6
+            (lambda rms: None if rms is None else rms * 1e6)(_finite(_get(fit, "residual_rms")))
         ),
         configured_cadence_seconds=_finite(configured_cadence_seconds),
         observed_median_cadence_seconds=_observed_cadence_seconds(detrended),

@@ -673,8 +673,11 @@ def evaluate_fpp_command(
     """Evaluate FPP proxy metrics separately on deterministic holdout splits."""
     from astrotransit.validation.fpp_benchmark import FPPBenchmarkCase, evaluate_fpp_holdout
 
-    rows = json.loads(Path(predictions).read_text(encoding="utf-8"))
-    rows = rows.get("cases", rows.get("predictions", [])) if isinstance(rows, dict) else rows
+    rows_raw = json.loads(Path(predictions).read_text(encoding="utf-8"))
+    if isinstance(rows_raw, dict):
+        rows = rows_raw.get("cases") or rows_raw.get("predictions") or []
+    else:
+        rows = rows_raw or []
     cases = [FPPBenchmarkCase(str(row["target_id"]), bool(row["is_false_positive"]), float(row["fpp"])) for row in rows]
     reports = {name: report.to_dict() for name, report in evaluate_fpp_holdout(cases, threshold=threshold, seed=seed).items()}
     rendered = json.dumps(reports, indent=2, ensure_ascii=False)

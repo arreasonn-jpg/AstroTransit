@@ -551,22 +551,25 @@ class TimingAnalyzer:
                 "t0_used": t0,
             }
 
+        ep_obs: np.ndarray
+        ep_arr: np.ndarray | None
         if transit_numbers is not None:
-            ep = np.asarray(transit_numbers, dtype=float)
-            if len(ep) == len(valid):
-                ep = ep[valid]
-            elif len(ep) == len(obs):
-                ep = ep.astype(float)
+            ep_arr = np.asarray(transit_numbers, dtype=float)
+            if len(ep_arr) == len(valid):
+                ep_arr = ep_arr[valid]
+            elif len(ep_arr) == len(obs):
+                ep_arr = ep_arr.astype(float)
             else:
                 logger.warning("transit_numbers uzunluğu observed_midtimes ile eşleşmiyor; otomatik türetilecek.")
-                ep = None
+                ep_arr = None
+            if ep_arr is None:
+                base_t0 = float(t0) if t0 is not None else float(obs[0])
+                ep_obs = np.rint((obs - base_t0) / period).astype(float)
+            else:
+                ep_obs = ep_arr
         else:
-            ep = None
-
-        # epoch yoksa otomatik türet
-        if ep is None:
             base_t0 = float(t0) if t0 is not None else float(obs[0])
-            ep = np.rint((obs - base_t0) / period).astype(float)
+            ep_obs = np.rint((obs - base_t0) / period).astype(float)
 
         # t0 yoksa robust tahmin
         if t0 is None:
@@ -578,7 +581,7 @@ class TimingAnalyzer:
         oc_days = obs - expected
 
         sorter = np.argsort(ep)
-        ep = ep[sorter]
+        ep_obs = ep_obs[sorter]
         obs = obs[sorter]
         expected = expected[sorter]
         oc_days = oc_days[sorter]
@@ -612,9 +615,9 @@ class TimingAnalyzer:
             "period_days": float(period),
             "t0_used": None if t0_used is None else float(t0_used),
             "n_transits": int(len(oc_days)),
-            "epochs": [float(x) for x in epochs.tolist()],
+            "epochs": [float(x) for x in np.atleast_1d(epochs).tolist()],
             "oc_days": [float(x) for x in oc_days.tolist()],
-            "oc_minutes": [float(x) for x in _days_to_minutes(oc_days).tolist()],
+            "oc_minutes": [float(x) for x in np.atleast_1d(_days_to_minutes(oc_days)).tolist()],
         }
 
         if len(observed_midtimes) > 0:
