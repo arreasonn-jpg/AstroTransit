@@ -20,7 +20,6 @@ from astrotransit.validation.fpp_calibration import (
 )
 
 
-
 def _corpus(path: Path, fp: int, planets: int, quiet: int = 0) -> Path:
     cases = []
     for index in range(fp):

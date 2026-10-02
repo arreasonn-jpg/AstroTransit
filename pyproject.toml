@@ -110,8 +110,6 @@ ignore = [
 ]
 
 [tool.ruff.lint.per-file-ignores]
-# Testlerde assertion'i kisaltmak icin E402 (import not at top) serbest
-"tests/**/*.py" = ["E402"]
 # Typer CLI'da "typer.Option(...)" fonksiyon cagrisi default arg olarak
 # kullanilir - bu Typer'in resmi tasarimidir, B008 false positive.
 "cli/main.py" = ["B008"]

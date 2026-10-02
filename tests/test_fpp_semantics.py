@@ -24,7 +24,7 @@ def test_empty_scenario_reports_are_not_zero_risk() -> None:
     ]
     assert all(report.n_available == 0 for report in reports)
     assert all(report.to_dict()[key] is None for report, key in zip(
-        reports, ("p_eb", "p_beb", "p_neb")
+        reports, ("p_eb", "p_beb", "p_neb"), strict=False
     ))
 
 

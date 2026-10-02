@@ -1,15 +1,16 @@
 """Konfigürasyon sistemi testleri."""
 
-import pytest
 from pathlib import Path
 
+import pytest
+
 from astrotransit.settings import (
-    Settings,
-    GeneralConfig,
-    TESSConfig,
     DetectionConfig,
+    GeneralConfig,
     LongPeriodConfig,
     QualityConfig,
+    Settings,
+    TESSConfig,
     load_settings,
 )
 

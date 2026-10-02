@@ -23,7 +23,7 @@ def _result(target_id: str, periods: list[float], radii: list[float]):
             ),
             record=SimpleNamespace(period=period, planet_radius_rearth=radius),
         )
-        for index, (period, radius) in enumerate(zip(periods, radii))
+        for index, (period, radius) in enumerate(zip(periods, radii, strict=False))
     ]
     return SimpleNamespace(
         target_id=target_id,

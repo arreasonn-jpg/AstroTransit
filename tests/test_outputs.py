@@ -6,12 +6,12 @@ import numpy as np
 import pandas as pd
 
 from astrotransit.data.catalog_client import StellarProperties
-from astrotransit.outputs.schemas import TransitCandidateRecord, build_record
-from astrotransit.validation.followup import FollowupEvidence
-from astrotransit.outputs.parquet_writer import ParquetWriter
-from astrotransit.outputs.json_writer import JSONWriter, NumpyEncoder
 from astrotransit.outputs.csv_export import CSVExporter
+from astrotransit.outputs.json_writer import JSONWriter, NumpyEncoder
+from astrotransit.outputs.parquet_writer import ParquetWriter
+from astrotransit.outputs.schemas import TransitCandidateRecord, build_record
 from astrotransit.outputs.writers import OutputManager
+from astrotransit.validation.followup import FollowupEvidence
 
 
 class TestTransitCandidateRecord:

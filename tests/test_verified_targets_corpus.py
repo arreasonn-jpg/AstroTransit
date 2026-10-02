@@ -42,7 +42,7 @@ def test_legacy_entries_are_preserved():
     payload = json.loads(GROUND_TRUTH.read_text(encoding="utf-8"))
     rows = payload["targets"] if isinstance(payload, dict) else payload
     by_tic = {str(row["tic_id"]): row for row in rows}
-    assert LEGACY_TICS <= set(by_tic), "legacy hand-curated targets must stay in the corpus"
+    assert set(by_tic) >= LEGACY_TICS, "legacy hand-curated targets must stay in the corpus"
     assert by_tic["100100827"]["name"] == "WASP-18b"
 
 

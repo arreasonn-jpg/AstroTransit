@@ -11,13 +11,13 @@ import pytest
 from astrotransit.discovery.target_pool import EarthTargetPoolBuilder, TargetPoolConfig
 from astrotransit.outputs.migration import migrate_json, migrate_parquet
 from astrotransit.outputs.schemas import SCHEMA_VERSION
-from astrotransit.science.earth_similarity import score_earth_similarity
 from astrotransit.pipelines.jwst_pipeline import (
     JWSTFollowUpResult,
     JWSTObservationResult,
     JWSTProductContract,
     load_jwst_product,
 )
+from astrotransit.science.earth_similarity import score_earth_similarity
 from astrotransit.validation.adapters import (
     RVFollowupMeasurement,
     TransitFollowupMeasurement,

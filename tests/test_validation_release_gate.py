@@ -4,9 +4,18 @@ from types import SimpleNamespace
 import numpy as np
 import pytest
 
-from astrotransit.validation.claims import ClaimEvidenceError, ClaimStatus, infer_claim_status, validate_claim
+from astrotransit.validation.claims import (
+    ClaimEvidenceError,
+    ClaimStatus,
+    infer_claim_status,
+    validate_claim,
+)
 from astrotransit.validation.fpp_benchmark import FPPBenchmarkCase, evaluate_fpp_benchmark
-from astrotransit.validation.injection_recovery import InjectionScenario, make_injection_grid, run_injection_recovery
+from astrotransit.validation.injection_recovery import (
+    InjectionScenario,
+    make_injection_grid,
+    run_injection_recovery,
+)
 
 
 def test_claim_firewall_does_not_promote_a_detection() -> None:

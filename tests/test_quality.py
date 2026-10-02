@@ -14,11 +14,11 @@ class TestSNR:
             "transitleastsquares",
             reason="transitleastsquares bu ortamda import edilemiyor",
         )
-        from astrotransit.quality.snr import SNRCalculator
         from astrotransit.detection.cascade import CascadeDetector
+        from astrotransit.quality.snr import SNRCalculator
         from astrotransit.settings import Settings
 
-        detrended, truth = detrended_lc
+        detrended, _truth = detrended_lc
 
         cascade = CascadeDetector(settings=Settings())
         candidate = cascade.detect(detrended)
@@ -57,9 +57,9 @@ class TestVetting:
     """Vetting test testleri."""
 
     def test_odd_even_pass(self):
-        from astrotransit.quality.vetting import FalsePositiveVetter, VettingVerdict
-        from astrotransit.quality.metrics import QualityMetrics, TransitMetrics
         from astrotransit.detection.cascade import CascadeCandidate, CascadeStatus
+        from astrotransit.quality.metrics import QualityMetrics, TransitMetrics
+        from astrotransit.quality.vetting import FalsePositiveVetter, VettingVerdict
 
         vetter = FalsePositiveVetter(odd_even_threshold=3.0)
 
@@ -94,12 +94,12 @@ class TestVetting:
 
     def test_fpp_method_label_present(self):
         """FPP proxy'si metod kimliğiyle birlikte raporlanmalıdır."""
+        from astrotransit.detection.cascade import CascadeCandidate, CascadeStatus
+        from astrotransit.quality.metrics import QualityMetrics, TransitMetrics
         from astrotransit.quality.vetting import (
             FPP_METHOD,
             FalsePositiveVetter,
         )
-        from astrotransit.quality.metrics import QualityMetrics, TransitMetrics
-        from astrotransit.detection.cascade import CascadeCandidate, CascadeStatus
 
         vetter = FalsePositiveVetter()
         metrics = QualityMetrics(target_id="TEST", sector=1)

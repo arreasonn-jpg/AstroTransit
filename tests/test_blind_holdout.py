@@ -135,9 +135,9 @@ def test_selection_never_uses_detector_output() -> None:
 def test_duplicate_and_unusable_labels_are_rejected() -> None:
     blind = _blind_subset(_cases())
     assert blind, "test havuzu boş bırakılmamalı"
-    duplicated = blind + [dict(blind[0])]
+    duplicated = [*blind, dict(blind[0])]
     payload = select_holdout(
-        duplicated + [{"target_id": "x", "label": "maybe_planet", "reference": "r", "sectors": [], "notes": ""}],
+        [*duplicated, {"target_id": "x", "label": "maybe_planet", "reference": "r", "sectors": [], "notes": ""}],
         per_label=4,
     )
     ids = [row["target_id"] for row in payload["cases"]]
@@ -290,7 +290,7 @@ def test_membership_drift_against_the_frozen_manifest_is_blocked() -> None:
     # Korpusun bir hedefi hiç değerlendirilmediyse kapı kapalı kalır.
     partial = dict(
         selected,
-        cases=list(selected["cases"]) + [{"target_id": "899999999", "label": "planet", "stratum": "planet:CP"}],
+        cases=[*list(selected["cases"]), {"target_id": "899999999", "label": "planet", "stratum": "planet:CP"}],
     )
     assert "corpus_rows_missing:1" in build_holdout_report(rows, manifest=partial, **kwargs)["blocking_reasons"]
 
