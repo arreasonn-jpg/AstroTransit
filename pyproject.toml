@@ -137,9 +137,9 @@ omit = [
 ]
 
 [tool.coverage.report]
-# Faz 1 tabanı: 2026-10 baseline %49.25 (branch=true).
-# Kademeli artış planı: her kapsam PR'ı sonrası +2 puan.
-fail_under = 48
+# Kademeli artış: 48 -> 52 (mevcut %53.62 uzerinde tampon).
+# PR #36 sonrasi validation testleriyle ciddi artis oldu.
+fail_under = 52
 precision = 2
 show_missing = true
 skip_covered = false

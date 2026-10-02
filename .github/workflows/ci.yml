@@ -48,7 +48,7 @@ jobs:
       - name: Compile
         run: python -m compileall -q astrotransit cli dashboard
       - name: Pytest with coverage
-        run: python -m pytest -q --cov=astrotransit --cov-report=term --cov-report=xml --cov-fail-under=48
+        run: python -m pytest -q --cov=astrotransit --cov-report=term --cov-report=xml --cov-fail-under=52
       - name: CLI contract smoke tests
         run: |
           python -m cli.main --help
