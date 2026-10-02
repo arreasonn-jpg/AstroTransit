@@ -81,7 +81,7 @@ class FoldedPlotter:
             len(tls_result.folded_flux) > 0
         )
 
-        if has_data:
+        if has_data and tls_result is not None:
             # ── Ham faz noktalı görünüm ──
             ax1.scatter(
                 tls_result.folded_phase,

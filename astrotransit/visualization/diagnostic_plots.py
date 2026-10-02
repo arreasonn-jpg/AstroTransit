@@ -121,7 +121,7 @@ class DiagnosticPlotter:
 
             # Normal fit
             mu, sigma = scipy_stats.norm.fit(clean)
-            x_fit = np.linspace(clean.min(), clean.max(), 200)
+            x_fit = np.linspace(float(np.min(clean)), float(np.max(clean)), 200)
             pdf_fit = scipy_stats.norm.pdf(x_fit, mu, sigma)
 
             ax2.plot(

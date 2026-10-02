@@ -410,7 +410,7 @@ class SummaryPanelPlotter:
 
             from scipy import stats as sp
             mu, sigma = sp.norm.fit(clean)
-            x = np.linspace(clean.min(), clean.max(), 150)
+            x = np.linspace(float(np.min(clean)), float(np.max(clean)), 150)
             ax.plot(x, sp.norm.pdf(x, mu, sigma),
                     color=Colors.MODEL, linewidth=1.2)
 
@@ -561,7 +561,10 @@ class SummaryPanelPlotter:
                 ("TIC ID", detrended.target_id),
                 ("Sektör", str(detrended.sector)),
                 ("N nokta", str(detrended.n_points)),
-                ("Süre", f"{detrended.duration_days:.2f} gün"),
+                (
+                    "Süre",
+                    f"{float(np.max(detrended.time) - np.min(detrended.time)):.2f} gün",
+                ),
                 ("Gürültü", f"{detrended.noise_ppm:.0f} ppm"),
                 ("Kadans", f"{detrended.meta.get('CADENCE', '?')}"),
             ]
