@@ -6,7 +6,6 @@ from pathlib import Path
 
 import numpy as np
 
-
 ROOT = Path("validation_runs/radius_diagnostics/tls_map_n10_v1")
 
 

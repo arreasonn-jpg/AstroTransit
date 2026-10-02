@@ -3,14 +3,14 @@
 import pytest
 
 from astrotransit.utils.identifiers import (
-    normalize_tic_id,
     extract_tic_number,
+    normalize_tic_id,
     normalize_toi_id,
 )
 from astrotransit.utils.time import (
-    tess_bjd_to_jd,
-    jd_to_tess_bjd,
     jd_to_iso,
+    jd_to_tess_bjd,
+    tess_bjd_to_jd,
 )
 
 

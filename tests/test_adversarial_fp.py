@@ -27,9 +27,11 @@ from astrotransit.validation.adversarial_fp import (
 )
 from scripts.validation.run_adversarial_fp_controls import (
     CORPUS_MANIFEST,
-    ROOT as PROJECT_ROOT,
     build_grid,
     corpus_payload,
+)
+from scripts.validation.run_adversarial_fp_controls import (
+    ROOT as PROJECT_ROOT,
 )
 
 ROOT = Path(CORPUS_MANIFEST)
@@ -144,8 +146,8 @@ def test_steepness_changes_shape_not_center_depth() -> None:
     areas = {}
     for steepness in (1.0, 0.05):
         scenario = _scenario(steepness=steepness, noise_ppm=1e-3)
-        time, flux, _ = synthetic_lightcurve(scenario)
-        centre_index = int(round(scenario.t0_days / CADENCE_DAYS))
+        _time, flux, _ = synthetic_lightcurve(scenario)
+        centre_index = round(scenario.t0_days / CADENCE_DAYS)
         assert 1.0 - float(flux[centre_index]) == pytest.approx(scenario.depth, rel=0.05)
         areas[steepness] = float(np.sum(1.0 - flux))
     # Üçgen (V) altındaki alan, kutununkinin yaklaşık yarısı kadardır.
