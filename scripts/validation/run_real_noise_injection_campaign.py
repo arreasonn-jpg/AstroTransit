@@ -161,7 +161,9 @@ def unavailable_rows(host, host_index, grids, lane, seed, noise_bin, detail):
 def write_shard(output, rows, host, lane, available):
     output.mkdir(parents=True, exist_ok=True)
     with (output / "trials.csv").open("w", newline="", encoding="utf-8") as handle:
-        writer = csv.DictWriter(handle, fieldnames=FIELDS); writer.writeheader(); writer.writerows(rows)
+        writer = csv.DictWriter(handle, fieldnames=FIELDS)
+        writer.writeheader()
+        writer.writerows(rows)
     (output / "availability.json").write_text(json.dumps({"host_id": host["target_id"], "lane": lane, "available": available, "trial_rows": len(rows)}, indent=2, sort_keys=True) + "\n")
     return 0
 
@@ -198,7 +200,9 @@ def run_shard(args):
         events, cadences = observed_injection(np.asarray(source.time), scenario)
         row["n_observed_injected_events"], row["n_injected_cadences"] = events, cadences
         if cadences == 0:
-            row["outcome"] = "not_evaluated_no_observed_injection"; rows.append(row); continue
+            row["outcome"] = "not_evaluated_no_observed_injection"
+            rows.append(row)
+            continue
         row["evaluable"] = True
         try:
             result = detector.detect(injected_curve(source, scenario)) if lane == "cascade_single_sector" else detector.search(injected_curve(source, scenario))
@@ -207,7 +211,8 @@ def run_shard(args):
                 row["detector_confirmed"], row["detector_status"] = bool(result.confirmed), result.status.value
                 if result.status.value == "error":
                     row["outcome"], row["failure_detail"] = "detector_error", " | ".join(result.decision_log)
-                    rows.append(row); continue
+                    rows.append(row)
+                    continue
                 recovered = {"period": result.period or None, "depth_ppm": result.depth * 1e6 if result.depth else None, "duration_days": result.duration or None, "t0": result.t0 or None, "rp_rs": result.rp_rs or None}
             else:
                 best = result.best
@@ -244,9 +249,12 @@ def aggregate(args):
     expected, ids = int(contract["grid"]["planned_total_trials"]), [row["injection_id"] for row in rows]
     if len(rows) != expected or len(set(ids)) != expected:
         raise SystemExit(f"Expected {expected} unique trials, got rows={len(rows)} unique={len(set(ids))}")
-    rows.sort(key=lambda row: row["injection_id"]); args.output.mkdir(parents=True, exist_ok=True)
+    rows.sort(key=lambda row: row["injection_id"])
+    args.output.mkdir(parents=True, exist_ok=True)
     with (args.output / "trials.csv").open("w", newline="", encoding="utf-8") as handle:
-        writer = csv.DictWriter(handle, fieldnames=FIELDS); writer.writeheader(); writer.writerows(rows)
+        writer = csv.DictWriter(handle, fieldnames=FIELDS)
+        writer.writeheader()
+        writer.writerows(rows)
     evaluable = [row for row in rows if as_bool(row["evaluable"])]
     strict = sum(as_bool(row["strict_recovery"]) for row in evaluable)
     harmonic = sum(as_bool(row["harmonic_aware_recovery"]) for row in evaluable)
@@ -254,7 +262,8 @@ def aggregate(args):
         result = {}
         for value in sorted({row[field] for row in rows}):
             subset = [row for row in evaluable if row[field] == value]
-            s = sum(as_bool(row["strict_recovery"]) for row in subset); h = sum(as_bool(row["harmonic_aware_recovery"]) for row in subset)
+            s = sum(as_bool(row["strict_recovery"]) for row in subset)
+            h = sum(as_bool(row["harmonic_aware_recovery"]) for row in subset)
             result[value] = {"planned": sum(row[field] == value for row in rows), "evaluable": len(subset), "strict_recovered": s, "strict_completeness": s / len(subset) if subset else None, "harmonic_recovered": h, "harmonic_aware_completeness": h / len(subset) if subset else None}
         return result
     outcomes = {value: sum(row["outcome"] == value for row in rows) for value in sorted({row["outcome"] for row in rows})}
@@ -274,9 +283,23 @@ def aggregate(args):
 
 
 def parser():
-    root = argparse.ArgumentParser(description=__doc__); sub = root.add_subparsers(dest="command", required=True)
-    shard = sub.add_parser("run-shard"); shard.add_argument("--contract", type=Path, required=True); shard.add_argument("--hosts", type=Path, required=True); shard.add_argument("--host-index", type=int, choices=range(10), required=True); shard.add_argument("--lane", choices=("cascade_single_sector", "long_period_stitched"), required=True); shard.add_argument("--cache-dir", type=Path, required=True); shard.add_argument("--output", type=Path, required=True)
-    agg = sub.add_parser("aggregate"); agg.add_argument("--contract", type=Path, required=True); agg.add_argument("--hosts", type=Path, required=True); agg.add_argument("--shards", type=Path, required=True); agg.add_argument("--output", type=Path, required=True); agg.add_argument("--config", type=Path, required=True); agg.add_argument("--lock", type=Path, required=True); agg.add_argument("--environment", type=Path, required=True)
+    root = argparse.ArgumentParser(description=__doc__)
+    sub = root.add_subparsers(dest="command", required=True)
+    shard = sub.add_parser("run-shard")
+    shard.add_argument("--contract", type=Path, required=True)
+    shard.add_argument("--hosts", type=Path, required=True)
+    shard.add_argument("--host-index", type=int, choices=range(10), required=True)
+    shard.add_argument("--lane", choices=("cascade_single_sector", "long_period_stitched"), required=True)
+    shard.add_argument("--cache-dir", type=Path, required=True)
+    shard.add_argument("--output", type=Path, required=True)
+    agg = sub.add_parser("aggregate")
+    agg.add_argument("--contract", type=Path, required=True)
+    agg.add_argument("--hosts", type=Path, required=True)
+    agg.add_argument("--shards", type=Path, required=True)
+    agg.add_argument("--output", type=Path, required=True)
+    agg.add_argument("--config", type=Path, required=True)
+    agg.add_argument("--lock", type=Path, required=True)
+    agg.add_argument("--environment", type=Path, required=True)
     return root
 
 
