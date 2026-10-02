@@ -21,6 +21,15 @@ from __future__ import annotations
 import math
 from typing import Any, Iterable, Mapping, Optional
 
+def _sort_key(row: Mapping[str, Any]) -> tuple[float, int]:
+    """Toplam skora göre azalan, sektöre göre artan sıralama anahtarı."""
+    score = row.get("total_score")
+    sector = row.get("sector")
+    score_f = float(score) if isinstance(score, (int, float)) else float("-inf")
+    sector_i = int(sector) if isinstance(sector, (int, float, str)) else -1
+    return (-score_f, sector_i)
+
+
 #: FPP proxy'sinin tanımlı olduğu tek kaynak çıktı sözleşmesi sürümü.
 FPP_TELEMETRY_VERSION = "1.0"
 
@@ -185,13 +194,7 @@ def adopt_target_fpp(sector_rows: Iterable[Mapping[str, Any]]) -> dict[str, Any]
             "fpp_sector_count": len(rows),
             "fpp_observations": observed,
         }
-    best = sorted(
-        available,
-        key=lambda row: (
-            -(row.get("total_score") if row.get("total_score") is not None else float("-inf")),
-            int(row.get("sector") if row.get("sector") is not None else -1),
-        ),
-    )[0]
+    best = sorted(available, key=_sort_key)[0]
     return {
         "fpp": float(best["fpp"]),
         "fpp_method": str(best.get("fpp_method", "") or ""),

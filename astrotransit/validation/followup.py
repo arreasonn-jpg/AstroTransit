@@ -136,6 +136,7 @@ def validate_followup_evidence(
     kendiliğinden follow-up doğrulaması sayılmaz.
     """
 
+    items: tuple[FollowupEvidence, ...]
     if isinstance(evidence, FollowupEvidence):
         items = (evidence,)
     else:

@@ -434,7 +434,7 @@ class DetrendComparator:
         )
 
         results = {}
-        best_method = None
+        best_method: str | None = None
         best_rms = np.inf
 
         for method_name in self.methods:
@@ -465,6 +465,7 @@ class DetrendComparator:
                 f"{cleaned.target_id}: hiçbir detrending yöntemi başarılı olmadı."
             )
 
+        assert best_method is not None  # narrowing for mypy
         comparison = DetrendComparison(
             target_id=cleaned.target_id,
             sector=cleaned.sector,

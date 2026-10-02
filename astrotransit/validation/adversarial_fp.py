@@ -359,7 +359,7 @@ def _median(values: Iterable[Optional[float]]) -> Optional[float]:
     return round((clean[middle - 1] + clean[middle]) / 2.0, 6)
 
 
-def _family_block(rows: list[Mapping[str, Any]], family: str) -> dict[str, Any]:
+def _family_block(rows: Sequence[Mapping[str, Any]], family: str) -> dict[str, Any]:
     member_rows = [row for row in rows if row.get("family") == family]
     expected = ADVERSARIAL_FAMILIES[family]["expected"]
     evaluated = [row for row in member_rows if str(row.get("outcome")) != "error"]

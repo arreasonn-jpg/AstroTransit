@@ -16,7 +16,7 @@ Karar akışı:
 
 from __future__ import annotations
 
-from typing import Optional, Union
+from typing import cast, TYPE_CHECKING, Optional, Union
 
 from loguru import logger
 
@@ -26,20 +26,20 @@ from astrotransit.modeling.parameters import TransitPriors
 from astrotransit.modeling.map_fit import MAPFitter, MAPFitResult
 from astrotransit.settings import Settings, get_settings
 
-# PyMC opsiyonel — kurulu değilse sadece MAP kullanılır
-try:
-    from astrotransit.modeling.pymc_fit import PyMCFitter, MCMCFitResult
-    _PYMC_AVAILABLE = True
-except ImportError:
-    _PYMC_AVAILABLE = False
-    PyMCFitter = None
-    MCMCFitResult = None
-
-# Birleşik sonuç tipi
-if _PYMC_AVAILABLE:
+# PyMC opsiyonel — tip stub'ı TYPE_CHECKING ile, runtime'da try/except
+if TYPE_CHECKING:
+    from astrotransit.modeling.pymc_fit import MCMCFitResult
     FitResult = Union[MAPFitResult, MCMCFitResult]
 else:
     FitResult = MAPFitResult
+
+try:
+    from astrotransit.modeling.pymc_fit import PyMCFitter, MCMCFitResult  # noqa: F811
+    _PYMC_AVAILABLE = True
+except ImportError:
+    _PYMC_AVAILABLE = False
+    PyMCFitter = None  # type: ignore[assignment,misc]
+    MCMCFitResult = None  # type: ignore[assignment,misc]
 
 
 class ModelingOrchestrator:
@@ -345,7 +345,7 @@ class ModelingOrchestrator:
                         f"MCMC sonucu kullanılıyor — "
                         f"{target_id} sektör {sector}"
                     )
-                    return mcmc_result
+                    return cast(FitResult, mcmc_result)
                 else:
                     logger.warning(
                         f"MCMC başarısız, MAP sonucu kullanılıyor — "

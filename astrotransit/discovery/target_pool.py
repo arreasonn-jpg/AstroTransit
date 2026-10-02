@@ -146,7 +146,7 @@ class EarthTargetPoolBuilder:
                 ),
                 "",
             )
-            target_id = normalize_tic_id(raw_id)
+            target_id = normalize_tic_id(str(raw_id) if not isinstance(raw_id, (str, int)) else raw_id)
             tic_id = int(target_id.split()[1])
             properties = self._properties_from_row(row, tic_id)
             if query_coverage:

@@ -424,6 +424,8 @@ def _samples_from_errors(
     samples: dict[str, np.ndarray] = {}
     for dimension_key, sigma in normalised_errors.items():
         value = values.get(dimension_key)
+        if value is None:
+            continue
         try:
             center = float(value)
         except (TypeError, ValueError):
@@ -511,10 +513,10 @@ def _aggregate_sample_scores(
     weighted_sum = np.zeros(n_samples, dtype=float)
     weight_sum = np.zeros(n_samples, dtype=float)
     for dimension in profile.dimensions:
-        array = arrays.get(dimension.key)
-        if array is None:
+        dim_array = arrays.get(dimension.key)
+        if dim_array is None:
             continue
-        scores = dimension.score(array)
+        scores = dimension.score(dim_array)
         valid = np.isfinite(scores)
         weighted_sum[valid] += scores[valid] * dimension.weight
         weight_sum[valid] += dimension.weight

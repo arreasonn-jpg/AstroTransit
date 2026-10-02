@@ -153,13 +153,13 @@ def run_injection_recovery(
     completeness_by_label = {
         label: float(np.mean(values)) for label, values in by_label.items() if values
     }
-    recovered = sum(trial.detected for trial in trials)
+    recovered_int: int = sum(int(trial.detected) for trial in trials)
     return InjectionRecoveryReport(
         trials=tuple(trials),
         completeness=float(recovered / len(trials)) if trials else 0.0,
         completeness_by_label=completeness_by_label,
         n_trials=len(trials),
-        n_recovered=recovered,
+        n_recovered=recovered_int,
         seed=seed,
         provenance=provenance or build_manifest(seed=seed),
     )
@@ -194,8 +194,9 @@ def _extract_period(result: Any) -> Optional[float]:
     if getattr(result, "detected", True) is False:
         return None
     for attr in ("period_days", "period"):
-        value = getattr(result, attr, None)
-        if value is not None:
+        raw_value = getattr(result, attr, None)
+        if raw_value is not None:
+            value = raw_value
             if hasattr(value, "value"):
                 value = value.value
             return _extract_period(value)

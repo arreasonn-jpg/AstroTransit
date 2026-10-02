@@ -45,10 +45,16 @@ def earth_similarity_sensitivity(
         base_top = set(sorted(range(len(rows)), key=lambda i: baseline[i], reverse=True)[:k])
         new_top = set(sorted(range(len(rows)), key=lambda i: values[i], reverse=True)[:k])
         overlaps.append(len(base_top & new_top) / k)
-    taus = [value for value in taus if value is not None]
-    return SimilaritySensitivityReport(selected.name, len(rows), 2, min(taus) if taus else None,
-                                       sum(taus) / len(taus) if taus else None,
-                                       min(overlaps) if overlaps else None, perturbation_fraction)
+    taus_clean = [value for value in taus if value is not None]
+    return SimilaritySensitivityReport(
+        selected.name,
+        len(rows),
+        2,
+        min(taus_clean) if taus_clean else None,
+        sum(taus_clean) / len(taus_clean) if taus_clean else None,
+        min(overlaps) if overlaps else None,
+        perturbation_fraction,
+    )
 
 
 def _perturb(profile: EarthSimilarityProfile, delta: float) -> EarthSimilarityProfile:
