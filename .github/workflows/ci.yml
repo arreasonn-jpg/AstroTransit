@@ -197,16 +197,20 @@ jobs:
         run: docker run --rm astrotransit:ci version
 
   type-check:
-    name: mypy (Python 3.11)
+    name: mypy (Python ${{ matrix.python-version }})
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12"]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: ${{ matrix.python-version }}
           cache: pip
       - name: Install package and dev tools
         run: python -m pip install --upgrade pip && python -m pip install -e ".[dev]"

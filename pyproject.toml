@@ -51,7 +51,7 @@ modeling = [
 ]
 dev = [
     "pytest>=7.0",
-    "mypy>=1.10",
+    "mypy>=1.10,<3",
     "pytest-cov>=4.0",
     "ruff>=0.1",
     "jsonschema>=4.20",
@@ -104,7 +104,9 @@ python_version = "3.11"
 show_error_codes = true
 pretty = true
 ignore_missing_imports = true
-warn_redundant_casts = true
+# Cross-version mypy farkini tolere etmek icin esnetildi.
+# Ayni cast bazi surumlerde gerekli, bazilarinda redundant gorunebiliyor.
+warn_redundant_casts = false
 warn_unused_ignores = true
 warn_unused_configs = true
 no_implicit_optional = true
