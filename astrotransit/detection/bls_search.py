@@ -322,7 +322,7 @@ class BLSSearch:
         best_peak = passed_peaks[0] if passed_peaks else None
         has_candidate = best_peak is not None
 
-        if has_candidate:
+        if best_peak is not None:
             logger.info(
                 f"BLS aday tespit edildi — "
                 f"{target_id} sektör {sector}: "

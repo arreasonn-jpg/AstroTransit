@@ -276,6 +276,7 @@ class CascadeDetector:
                 decision_log=log,
             )
 
+        assert bls_result.best is not None  # narrowing for mypy
         bls_peak: BLSPeak = bls_result.best
 
         log.append(
@@ -292,6 +293,7 @@ class CascadeDetector:
         passed_peaks = [p for p in bls_result.all_peaks if p.passed_threshold]
 
         if not passed_peaks:
+            assert bls_result.best is not None  # narrowing for mypy
             passed_peaks = [bls_result.best]
 
         # Çoklu aday listesi: En iyi 2 BLS adayı
@@ -322,7 +324,7 @@ class CascadeDetector:
             f"BLS: {len(candidates_to_try)} aday/harmonik TLS ile denenecek (de-aliasing modu)"
         )
 
-        best_tls_result = None
+        best_tls_result: TLSResult | None = None
         best_bls_peak = None
         best_score = -1.0  # SDE * SNR ile skor
 
@@ -402,8 +404,10 @@ class CascadeDetector:
                     )
 
         # Bundan sonra bls_peak ve tls_result değişkenlerini kullan
+        assert best_bls_peak is not None  # narrowing for mypy
+        assert best_tls_result is not None  # narrowing for mypy
         bls_peak = best_bls_peak
-        tls_result = best_tls_result
+        tls_result: TLSResult = best_tls_result
 
         log.append(
             f"TLS: SDE={tls_result.sde:.2f}, "

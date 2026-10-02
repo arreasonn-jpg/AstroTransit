@@ -11,6 +11,7 @@ Alternatif: exoplanet (PyMC entegrasyonu için ayrı modülde)
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Any, Optional, cast
 
 import numpy as np
 from loguru import logger
@@ -103,9 +104,9 @@ class TransitModel:
         if not _BATMAN_AVAILABLE:
             raise ImportError("batman-package gereklidir: pip install batman-package")
 
-        self.time = time
-        self._model = None
-        self._last_params = None
+        self.time: np.ndarray = time
+        self._model: Any = None  # batman.TransitModel — tip stub'ı yok
+        self._last_params: Optional[TransitModelParams] = None
 
         logger.debug(f"TransitModel oluşturuldu — {len(time)} zaman noktası")
 
@@ -138,7 +139,8 @@ class TransitModel:
             self._model = batman.TransitModel(batman_params, self.time)
 
         # batman.TransitModel.light_curve() her çağrıda yeni parametrelerle çalışır
-        model_flux = self._model.light_curve(batman_params)
+        # batman tip stub'ı yok — np.asarray ile ndarray'a zorla
+        model_flux = np.asarray(self._model.light_curve(batman_params))
         return model_flux * params.baseline
 
     def residuals(
@@ -162,8 +164,9 @@ class TransitModel:
             Residual dizisi (gözlenen - model).
         """
 
-        model = self.flux(params)
-        return observed_flux - model
+        model = np.asarray(self.flux(params))
+        # numpy stub'ı ndarray çıkarmasını Any döndürüyor; explicit cast
+        return cast(np.ndarray, np.asarray(observed_flux) - model)
 
     def log_likelihood(
         self,
