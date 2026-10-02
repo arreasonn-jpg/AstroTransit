@@ -109,7 +109,7 @@ def load_jwst_product(contract: JWSTProductContract) -> tuple[JWSTObservationDat
 
         with fits.open(path, memmap=False) as hdul:
             required = (contract.time_column, contract.flux_column, contract.flux_err_column)
-            selected = None
+            selected: tuple[Any, Any, tuple[str, ...], dict[str, str]] | None = None
             table_columns: list[tuple[str, ...]] = []
             for hdu in hdul:
                 data = getattr(hdu, "data", None)

@@ -324,7 +324,7 @@ class TLSSearch:
         )
 
         # ── TLS modelini oluştur ──
-        tls_kwargs = {
+        tls_kwargs: dict[str, float | int] = {
             "use_threads": 4,
         }
 
