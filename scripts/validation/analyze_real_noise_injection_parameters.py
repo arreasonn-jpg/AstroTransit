@@ -78,7 +78,8 @@ def summarize(rows, seed_offset=0):
         by_host = grouped[metric]
         values = [value for host in sorted(by_host) for value in by_host[host]]
         absolute = [abs(value) for value in values]
-        rmse = lambda sample: math.sqrt(statistics.fmean(v * v for v in sample))
+        def rmse(sample):
+            return math.sqrt(statistics.fmean(v * v for v in sample))
         parameters[metric] = {
             "n_available": len(values),
             "bias": statistics.fmean(values),
