@@ -9,7 +9,7 @@ ve kaydetme işlemleri burada tanımlanır.
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Optional, Tuple
+from typing import Any, Optional, Tuple
 
 import matplotlib
 matplotlib.use('Agg', force=True)
@@ -176,7 +176,7 @@ class FigureManager:
         n_rows: int = 1,
         n_cols: int = 1,
         height_ratios: Optional[list] = None,
-    ) -> Tuple[Figure, any]:
+    ) -> Tuple[Figure, Any]:
         """
         Standart figür ve eksen(ler) oluşturur.
 
