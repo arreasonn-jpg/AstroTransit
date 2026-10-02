@@ -24,7 +24,7 @@ TransitConsistencyReport
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Optional
+from typing import cast, Optional
 
 import numpy as np
 from loguru import logger
@@ -647,7 +647,7 @@ class TransitConsistencyAnalyzer:
         if per_transit_depths is not None:
             arr = np.asarray(per_transit_depths, dtype=float)
             arr = arr[np.isfinite(arr) & (arr > 0)]
-            return arr.astype(float, copy=False)
+            return cast(np.ndarray, arr.astype(float, copy=False))
 
         if transit_event_ids is None or len(transit_event_ids) != len(flux):
             return np.array([], dtype=float)
