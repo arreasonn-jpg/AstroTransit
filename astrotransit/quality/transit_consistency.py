@@ -647,7 +647,7 @@ class TransitConsistencyAnalyzer:
         if per_transit_depths is not None:
             arr = np.asarray(per_transit_depths, dtype=float)
             arr = arr[np.isfinite(arr) & (arr > 0)]
-            return arr
+            return arr.astype(float, copy=False)
 
         if transit_event_ids is None or len(transit_event_ids) != len(flux):
             return np.array([], dtype=float)
