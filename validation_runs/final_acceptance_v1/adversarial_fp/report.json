@@ -1,0 +1,257 @@
+{
+  "blocking_reasons": [
+    "family_rejection_below_floor:eb_with_secondary_eclipse:0.0<0.5",
+    "family_rejection_below_floor:eclipsing_binary_v:0.0<0.5",
+    "family_rejection_below_floor:grazing_eclipsing_binary:0.25<0.5",
+    "family_rejection_below_floor:odd_even_alternating_eb:0.0<0.5",
+    "overall_rejection_below_declared_floor:0.2708<0.8"
+  ],
+  "campaign": "adversarial_false_positives_v1",
+  "claim_boundary": "Synthetic adversarial morphologies on a uniform 600 s cadence with Gaussian noise. The measured rejection rate qualifies the pipeline's response to the specific shapes declared here; it is not a survey false-positive rate, not a completeness estimate for real TESS systematics, and not evidence about any individual target. The positive control family is included so that rejecting everything cannot score as success.",
+  "claim_policy": "A gate closes only when its declared status and immutable evidence are measured/pass and every predeclared acceptance check passes; pending work is never a score.",
+  "corpus": {
+    "families_missing_from_run": [],
+    "grid_sha256": "2e2b434d5d609883c3f3803dd24950f595a1482e523e8bf71d04d214bd4ace20",
+    "manifest_status": "frozen",
+    "missing_scenario_ids": [],
+    "n_families": 7,
+    "n_missing_rows": 0,
+    "n_rows": 56,
+    "n_scenarios": 56
+  },
+  "environment": {
+    "generated_at_utc": "2026-09-17T22:54:50.056034+00:00",
+    "github_run_id": null,
+    "github_sha": null,
+    "platform": "Linux-6.1.158+-x86_64-with-glibc2.36",
+    "python": "3.11.2 (main, Apr  8 2026, 01:58:00) [GCC 12.2.0]"
+  },
+  "families": {
+    "blended_diluted_eb": {
+      "accepted_count": null,
+      "control_acceptance_rate": null,
+      "expected": "false_positive",
+      "fpp_median_of_leaks": 0.0,
+      "leak_count": 1,
+      "n_error": 0,
+      "n_evaluated": 8,
+      "n_scenarios": 8,
+      "rate_statistic": "rejection_rate",
+      "rejected_by_stage": {
+        "leaked_as_candidate": 1,
+        "rejected_at_detection": 7
+      },
+      "rejected_count": 7,
+      "rejection_rate": 0.875,
+      "targeted_test": "shape/variance only (hardest family)",
+      "wilson_interval_95": [
+        0.529112,
+        0.977583
+      ]
+    },
+    "eb_with_secondary_eclipse": {
+      "accepted_count": null,
+      "control_acceptance_rate": null,
+      "expected": "false_positive",
+      "fpp_median_of_leaks": 0.0,
+      "leak_count": 8,
+      "n_error": 0,
+      "n_evaluated": 8,
+      "n_scenarios": 8,
+      "rate_statistic": "rejection_rate",
+      "rejected_by_stage": {
+        "leaked_as_candidate": 8
+      },
+      "rejected_count": 0,
+      "rejection_rate": 0.0,
+      "targeted_test": "secondary_eclipse",
+      "wilson_interval_95": [
+        0.0,
+        0.324408
+      ]
+    },
+    "eclipsing_binary_v": {
+      "accepted_count": null,
+      "control_acceptance_rate": null,
+      "expected": "false_positive",
+      "fpp_median_of_leaks": 0.0,
+      "leak_count": 8,
+      "n_error": 0,
+      "n_evaluated": 8,
+      "n_scenarios": 8,
+      "rate_statistic": "rejection_rate",
+      "rejected_by_stage": {
+        "leaked_as_candidate": 8
+      },
+      "rejected_count": 0,
+      "rejection_rate": 0.0,
+      "targeted_test": "depth_limit, secondary_eclipse",
+      "wilson_interval_95": [
+        0.0,
+        0.324408
+      ]
+    },
+    "grazing_eclipsing_binary": {
+      "accepted_count": null,
+      "control_acceptance_rate": null,
+      "expected": "false_positive",
+      "fpp_median_of_leaks": 0.0,
+      "leak_count": 6,
+      "n_error": 0,
+      "n_evaluated": 8,
+      "n_scenarios": 8,
+      "rate_statistic": "rejection_rate",
+      "rejected_by_stage": {
+        "leaked_as_candidate": 6,
+        "rejected_at_cascade": 2
+      },
+      "rejected_count": 2,
+      "rejection_rate": 0.25,
+      "targeted_test": "depth_variance, odd_even",
+      "wilson_interval_95": [
+        0.071479,
+        0.590725
+      ]
+    },
+    "odd_even_alternating_eb": {
+      "accepted_count": null,
+      "control_acceptance_rate": null,
+      "expected": "false_positive",
+      "fpp_median_of_leaks": 0.0,
+      "leak_count": 8,
+      "n_error": 0,
+      "n_evaluated": 8,
+      "n_scenarios": 8,
+      "rate_statistic": "rejection_rate",
+      "rejected_by_stage": {
+        "leaked_as_candidate": 8
+      },
+      "rejected_count": 0,
+      "rejection_rate": 0.0,
+      "targeted_test": "odd_even",
+      "wilson_interval_95": [
+        0.0,
+        0.324408
+      ]
+    },
+    "planetary_control": {
+      "accepted_count": 8,
+      "control_acceptance_rate": 1.0,
+      "expected": "planet",
+      "fpp_median_of_leaks": 0.0,
+      "leak_count": null,
+      "n_error": 0,
+      "n_evaluated": 8,
+      "n_scenarios": 8,
+      "rate_statistic": "control_acceptance_rate",
+      "rejected_by_stage": {},
+      "rejected_count": null,
+      "rejection_rate": null,
+      "targeted_test": "positive control (must mostly be ACCEPTED)",
+      "wilson_interval_95": [
+        0.675592,
+        1.0
+      ]
+    },
+    "spot_modulated_dip": {
+      "accepted_count": null,
+      "control_acceptance_rate": null,
+      "expected": "false_positive",
+      "fpp_median_of_leaks": 0.07619,
+      "leak_count": 4,
+      "n_error": 0,
+      "n_evaluated": 8,
+      "n_scenarios": 8,
+      "rate_statistic": "rejection_rate",
+      "rejected_by_stage": {
+        "leaked_as_candidate": 4,
+        "rejected_at_cascade": 3,
+        "rejected_at_vetting": 1
+      },
+      "rejected_count": 4,
+      "rejection_rate": 0.5,
+      "targeted_test": "stellar_variability, depth_variance",
+      "wilson_interval_95": [
+        0.215216,
+        0.784784
+      ]
+    }
+  },
+  "method": {
+    "anomaly_rejection_definition": "any anomaly report with anomaly_flag == \"REJECT\"",
+    "baseline_days": 27.0,
+    "cadence_days": 0.006944444,
+    "cadence_seconds": 600.0,
+    "data": "synthetic",
+    "declared_floor_control_acceptance": 0.5,
+    "declared_floor_per_family_rejection_rate": 0.5,
+    "declared_floor_rejection_rate": 0.8,
+    "detection_stage": "CascadeDetector (BLS->TLS) + QualityEvaluationPipeline vetting",
+    "fpp_reject_threshold": 0.5,
+    "generator": "astrotransit/validation/adversarial_fp.py",
+    "missing_fpp_treatment": "None is never read as zero risk",
+    "modelling_stage": "MAP fit before vetting/anomaly",
+    "n_points": 3888,
+    "noise_ppm": 600.0,
+    "rejection_definition": "no BLS peak, cascade non-confirmation, or vetting is_false_positive / fpp >= threshold",
+    "shape_model": "analytic trapezoid/V (steepness=1 triangle); no limb darkening, no batman",
+    "wiring": "matches astrotransit/pipelines/tess_pipeline.py (evaluate(detrended, candidate, fit_result))"
+  },
+  "outcome_counts": {
+    "leaked_as_candidate": 43,
+    "rejected_at_cascade": 5,
+    "rejected_at_detection": 7,
+    "rejected_at_vetting": 1
+  },
+  "overall": {
+    "adversarial_rejected": 13,
+    "adversarial_rejected_by_stage": {
+      "rejected_at_cascade": 5,
+      "rejected_at_detection": 7,
+      "rejected_at_vetting": 1
+    },
+    "adversarial_rejection_rate": 0.270833,
+    "adversarial_rejection_wilson_95": [
+      0.16566,
+      0.40997
+    ],
+    "adversarial_scenarios": 48,
+    "control_acceptance_rate": 1.0,
+    "control_accepted": 8,
+    "control_scenarios": 8,
+    "total_errors": 0
+  },
+  "provenance": {
+    "cadence": null,
+    "config_hash": "8f1fa0c84903822f31becac8e212fae1cc9b2a1c99c11854fc9d44314a827885",
+    "corpus_manifest_sha256": "d3218e1ed344551f12dc5c101aad4178ae15ff560b44ed153a2c226c73d06190",
+    "data_product": null,
+    "environment_manifest_hash": null,
+    "git_commit": "79e06e1619176c951d5a23be56ce183d6510d638",
+    "host_platform": "Linux-6.1.158+-x86_64-with-glibc2.36",
+    "input_hash": "d3218e1ed344551f12dc5c101aad4178ae15ff560b44ed153a2c226c73d06190",
+    "model_version": null,
+    "output_hash": null,
+    "package_versions": {
+      "astropy": "8.0.1",
+      "astrotransit": "0.3.0",
+      "lightkurve": "2.4.2",
+      "numpy": "2.4.6",
+      "pandas": "3.0.5",
+      "pydantic": "2.13.5",
+      "scipy": "1.17.1",
+      "transitleastsquares": "1.32",
+      "wotan": "1.10"
+    },
+    "pipeline_version": "",
+    "python_version": "3.11.2",
+    "random_seed": 20260917,
+    "run_timestamp_utc": "2026-09-17T22:54:50.043198Z",
+    "schema_version": null,
+    "sector": null,
+    "target_id": null
+  },
+  "rows_sha256": "5f89f954a46e5cdd5d6b5ab3ec6991d10abcf805f51d6c2d3d154d958cda48b3",
+  "schema_version": "1.0",
+  "status": "pending_run"
+}

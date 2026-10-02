@@ -17,7 +17,10 @@ belirtir. Çıktı tüketen her araç ve rapor bu ayrımı korumak zorundadır.
   alanında tutulur (`heuristic_vetting_weighted_v1`, `followup_evidence_reported`).
   Ölçüm yoksa alan `null` kalır; `0.0` bilinmeyen/hesaplanmamış FPP yerine
   kullanılamaz. Kalibre FPP üretimi için etiketli veri üzerinde
-  `astrotransit.validation.fpp_benchmark` kullanılmalıdır.
+  `astrotransit.validation.fpp_benchmark` kullanılmalıdır; kabul kapısının
+  artifact'ını `astrotransit.validation.fpp_calibration`
+  (`scripts/validation/run_fpp_calibration_campaign.py`) üretir ve orada da
+  eksik FPP `not_evaluated` olarak kalır.
 - **`confirmed` tek başına yetmez.** `CONFIRMED_EARTH_TWIN` / follow-up
   doğrulaması yalnızca `followup_evidence` (kaynak + gözlem kimliği) ve
   strict similarity birlikte bulunduğunda üretilir. Çıplak
@@ -26,7 +29,12 @@ belirtir. Çıktı tüketen her araç ve rapor bu ayrımı korumak zorundadır.
 - **Uzun periyot / single-transit** kayıtlarında periyot genellikle
   `PERIOD_ESTIMATED` düzeyinde belirlidir (bkz.
   `long_period_identifiability`); `DETECTED` ile periyot tahmini
-  karıştırılmamalıdır.
+  karıştırılmamalıdır. Bu kanalda `period_err` non-zero olabilir ama
+  `period_err_source = "long_period_heuristic"` olarak işaretlenir ve
+  `period_sampled = False` kalır; yani değer bir posterior yayılımı değil,
+  `identifiability` kuralından gelen tanımlı bir genişliktir. Gerçek bir
+  belirsizlik olmadığında alan `unavailable` kalır — non-zero bir `period_err`
+  ile `unavailable` aynı kayıtta bulunamaz.
 
 ## Parquet Katalog Şeması
 
@@ -35,7 +43,8 @@ belirtir. Çıktı tüketen her araç ve rapor bu ayrımı korumak zorundadır.
 | source_id | string | Hedef TIC ID |
 | sector | int32 | TESS sektör numarası |
 | period | float64 | Orbital periyot (gün) |
-| period_err | float64 | Periyot belirsizliği |
+| period_err | float64 | Periyot belirsizliği (gün). Uzun-periyot kanalında bu değer **fit türevi değil, tanımlı bir heuristik genişliktir**: `multi_transit` için `0.02 × P`, `multi_transit_gapped_ambiguous` ve `single_transit_ambiguous` için `0.5 × P` (bkz. [`pipeline_design.md`](pipeline_design.md)). MAP/MCMC kanalında ise posterior/`map_approx` kaynaklıdır (`period_err_source` alanına bakınız). |
+| period_err_source | string | `period_err` alanının geldiği kaynak: `posterior`, `fixed_in_mcmc`, `map_approx`, `long_period_heuristic` veya `unavailable` |
 | t0 | float64 | İlk transit zamanı (BTJD) |
 | depth_ppm | float64 | Transit derinliği (ppm) |
 | rp_rs | float64 | Yarıçap oranı |
