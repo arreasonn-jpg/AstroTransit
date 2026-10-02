@@ -160,9 +160,6 @@ jobs:
     name: mypy (Python 3.11)
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    # Faz 1: bilgilendirici. Mevcut 130 tip hatası kademeli kapatılacak;
-    # hatalar sıfıra indiğinde bu satır kaldırılacak.
-    continue-on-error: true
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -173,5 +170,9 @@ jobs:
           cache: pip
       - name: Install package and dev tools
         run: python -m pip install --upgrade pip && python -m pip install -e ".[dev]"
-      - name: Run mypy
+      - name: Run mypy (informational, non-blocking)
+        # Faz 1: bilgilendirici. Mevcut 130 tip hatası kademeli
+        # kapatılacak; hatalar sıfıra indiğinde continue-on-error
+        # kaldırılacak ve bu adım zorunlu hale gelecek.
+        continue-on-error: true
         run: mypy astrotransit cli dashboard
