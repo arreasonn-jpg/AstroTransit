@@ -187,7 +187,7 @@ class LightCurveCleaner:
         dt = np.diff(time)
         gap_indices = np.where(dt > self.gap_threshold_days)[0] + 1
 
-        return gap_indices.tolist()
+        return [int(x) for x in gap_indices.tolist()]
 
     def _split_segments(
         self,
