@@ -12,8 +12,8 @@ from dataclasses import dataclass, field
 from typing import Optional
 
 import astropy.units as u
-from astropy.timeseries import BoxLeastSquares
 import numpy as np
+from astropy.timeseries import BoxLeastSquares
 from loguru import logger
 
 from astrotransit.preprocessing.tess_detrend import DetrendedLightCurve

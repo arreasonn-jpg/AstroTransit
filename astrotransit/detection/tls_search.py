@@ -35,9 +35,9 @@ except ImportError as _tls_import_error:
         f"devre dışı (pip install transitleastsquares). Sebep: {_tls_import_error}"
     )
 
-from astrotransit.preprocessing.tess_detrend import DetrendedLightCurve
-from astrotransit.detection.thresholds import TLSThresholds
 from astrotransit.detection.bls_search import BLSPeak
+from astrotransit.detection.thresholds import TLSThresholds
+from astrotransit.preprocessing.tess_detrend import DetrendedLightCurve
 
 
 # ──────────────────────────────────────

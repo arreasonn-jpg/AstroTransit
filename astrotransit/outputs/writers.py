@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
+import json
 from dataclasses import fields
 from pathlib import Path
-import json
 from typing import Any, Optional
 
 from loguru import logger
@@ -18,9 +18,9 @@ from astrotransit.outputs.schemas import (
     build_record,
 )
 from astrotransit.science.earth_similarity import score_earth_similarity
-from astrotransit.validation.followup import coerce_followup_result
 from astrotransit.settings import Settings, get_settings
 from astrotransit.utils.paths import ProjectPaths
+from astrotransit.validation.followup import coerce_followup_result
 
 
 class OutputManager:

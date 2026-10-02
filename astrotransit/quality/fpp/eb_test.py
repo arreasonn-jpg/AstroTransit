@@ -30,7 +30,6 @@ from loguru import logger
 from astrotransit.quality.transit_consistency import TransitConsistencyReport
 from astrotransit.quality.vetting import VettingReport, VettingVerdict
 
-
 _EVEN_ODD_WARN = 0.15
 _EVEN_ODD_FAIL = 0.30
 

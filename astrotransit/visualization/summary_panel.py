@@ -14,19 +14,19 @@ from __future__ import annotations
 
 from typing import Optional
 
-import numpy as np
-import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
+import matplotlib.pyplot as plt
+import numpy as np
 from loguru import logger
 
-from astrotransit.visualization.base import FigureManager, Colors
-from astrotransit.preprocessing.tess_detrend import DetrendedLightCurve
-from astrotransit.detection.cascade import CascadeCandidate
 from astrotransit.detection.bls_search import BLSResult
+from astrotransit.detection.cascade import CascadeCandidate
 from astrotransit.detection.tls_search import TLSResult
+from astrotransit.modeling.map_fit import MAPFitResult
+from astrotransit.preprocessing.tess_detrend import DetrendedLightCurve
 from astrotransit.quality.scorer import QualityScore
 from astrotransit.quality.vetting import VettingReport
-from astrotransit.modeling.map_fit import MAPFitResult
+from astrotransit.visualization.base import Colors, FigureManager
 
 
 class SummaryPanelPlotter:

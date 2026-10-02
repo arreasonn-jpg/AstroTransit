@@ -21,6 +21,7 @@ from __future__ import annotations
 import math
 from typing import Any, Iterable, Mapping, Optional
 
+
 def _sort_key(row: Mapping[str, Any]) -> tuple[float, int]:
     """Toplam skora göre azalan, sektöre göre artan sıralama anahtarı."""
     score = row.get("total_score")

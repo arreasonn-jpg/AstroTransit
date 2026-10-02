@@ -23,10 +23,10 @@ from typing import Optional
 import numpy as np
 from loguru import logger
 
-from astrotransit.preprocessing.tess_detrend import DetrendedLightCurve
+from astrotransit.detection.bls_search import BLSPeak, BLSResult, BLSSearch
 from astrotransit.detection.thresholds import CascadeThresholds
-from astrotransit.detection.bls_search import BLSSearch, BLSResult, BLSPeak
-from astrotransit.detection.tls_search import TLSSearch, TLSResult
+from astrotransit.detection.tls_search import TLSResult, TLSSearch
+from astrotransit.preprocessing.tess_detrend import DetrendedLightCurve
 from astrotransit.settings import Settings, get_settings
 
 
@@ -307,7 +307,7 @@ class CascadeDetector:
         existing_periods = [c.period for c in candidates_to_try]
         for hf in harmonic_factors:
             h_p = top_p * hf
-            if 0.2 <= h_p <= (obs_span / 2.0):
+            if 0.2 <= h_p <= (obs_span / 2.0):  # noqa: SIM102
                 # Eğer bu periyot zaten listede varsa tekrar arama yapma
                 if not any(abs(h_p - ep) / ep < 0.05 for ep in existing_periods):
                     from dataclasses import replace

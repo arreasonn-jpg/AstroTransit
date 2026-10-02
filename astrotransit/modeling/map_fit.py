@@ -17,26 +17,26 @@ Optimizasyon yöntemi:
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Optional
+from typing import ClassVar, Optional
 
 import numpy as np
-from scipy.optimize import minimize, OptimizeResult
 from loguru import logger
+from scipy.optimize import OptimizeResult, minimize
 
-from astrotransit.preprocessing.tess_detrend import DetrendedLightCurve
-from astrotransit.modeling.parameters import (
-    TransitPriors,
-    DerivedParameters,
-    compute_derived_parameters,
-)
-from astrotransit.modeling.transit_model import TransitModel, TransitModelParams
 from astrotransit.modeling.parameterization import (
     LIMB_DARKENING_PARAMETERIZATION,
     parameter_boundary_hits,
     quadratic_ld_to_unit_square,
     unit_square_to_quadratic_ld,
 )
+from astrotransit.modeling.parameters import (
+    DerivedParameters,
+    TransitPriors,
+    compute_derived_parameters,
+)
 from astrotransit.modeling.reliability import assess_radius_reliability
+from astrotransit.modeling.transit_model import TransitModel, TransitModelParams
+from astrotransit.preprocessing.tess_detrend import DetrendedLightCurve
 
 
 # ──────────────────────────────────────
@@ -172,7 +172,7 @@ class ParameterVector:
         log_jitter → değişmez      (zaten log)
     """
 
-    PARAM_NAMES = [
+    PARAM_NAMES: ClassVar[list[str]] = [
         "period",
         "t0",
         "log_rp_rs",

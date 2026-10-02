@@ -7,15 +7,14 @@ derinlik varyansı ve kalite özeti grafikleri.
 
 from __future__ import annotations
 
-
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 from scipy import stats as scipy_stats
 
-from astrotransit.visualization.base import FigureManager, Colors
 from astrotransit.detection.cascade import CascadeCandidate
-from astrotransit.quality.vetting import VettingReport
 from astrotransit.quality.scorer import QualityScore
+from astrotransit.quality.vetting import VettingReport
+from astrotransit.visualization.base import Colors, FigureManager
 
 
 class DiagnosticPlotter:
@@ -133,7 +132,7 @@ class DiagnosticPlotter:
 
             # Shapiro-Wilk normallik testi
             if len(clean) < 5000:
-                stat, p_val = scipy_stats.shapiro(clean)
+                _stat, p_val = scipy_stats.shapiro(clean)
                 normality_text = f"Shapiro-Wilk p={p_val:.3f}"
                 color = Colors.CLASS_A if p_val > 0.05 else Colors.CLASS_C
                 ax2.text(
@@ -313,7 +312,7 @@ class DiagnosticPlotter:
             )
 
             # Katkı etiketleri
-            for bar, contrib in zip(bars, contributions):
+            for bar, contrib in zip(bars, contributions, strict=False):
                 ax1.text(
                     bar.get_width() + 1,
                     bar.get_y() + bar.get_height() / 2,

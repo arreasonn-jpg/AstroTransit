@@ -7,9 +7,9 @@ It does not classify a fit as correct and does not define a scientific gate.
 from __future__ import annotations
 
 import csv
-from dataclasses import asdict, dataclass, field
 import json
 import math
+from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Any, Iterable, Optional
 

@@ -9,25 +9,24 @@ sonucun kaydedilmesini engellemez.
 
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass, fields
-from datetime import datetime, timezone
 import json
 import math
+from dataclasses import asdict, dataclass, fields
+from datetime import datetime, timezone
 from typing import Any, Optional
 
 import numpy as np
 
 from astrotransit.quality.vetting import FPP_METHOD
-from astrotransit.version import __version__
 from astrotransit.science.earth_similarity import (
     EARTH_SIMILARITY_DEFINITION_VERSION,
     score_earth_similarity,
 )
-from astrotransit.validation.followup import coerce_followup_result
+from astrotransit.utils.identifiers import extract_tic_number
 from astrotransit.validation.claims import ClaimStatus, infer_claim_status
 from astrotransit.validation.failures import failure_codes_as_json
-from astrotransit.utils.identifiers import extract_tic_number
-
+from astrotransit.validation.followup import coerce_followup_result
+from astrotransit.version import __version__
 
 # 1.7: `fpp_method` alanı eklendi. `fpp`/`false_positive_probability` alanları
 # heuristik vetting ağırlıklı oy ile üretilen risk proxy'leridir; kalibre

@@ -8,6 +8,12 @@ tasarlanmıştır.
 
 from astrotransit.outputs.csv_export import CSVExporter
 from astrotransit.outputs.json_writer import JSONWriter, NumpyEncoder
+from astrotransit.outputs.migration import (
+    flatten_nested_record,
+    migrate_json,
+    migrate_parquet,
+    upgrade_flat_record,
+)
 from astrotransit.outputs.parquet_writer import ParquetWriter
 from astrotransit.outputs.schemas import (
     TransitCandidateRecord,
@@ -15,12 +21,6 @@ from astrotransit.outputs.schemas import (
     build_record,
 )
 from astrotransit.outputs.writers import OutputManager
-from astrotransit.outputs.migration import (
-    flatten_nested_record,
-    migrate_json,
-    migrate_parquet,
-    upgrade_flat_record,
-)
 
 __all__ = [
     "CSVExporter",

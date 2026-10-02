@@ -176,11 +176,11 @@ class LightCurveNormalizer:
         if isinstance(method, str):
             try:
                 method = NormalizationMethod(method.lower())
-            except ValueError:
+            except ValueError as exc:
                 raise ValueError(
                     f"Geçersiz normalizasyon yöntemi: '{method}'. "
                     f"Desteklenenler: {[m.value for m in NormalizationMethod]}"
-                )
+                ) from exc
 
         self.method = method
         self.percentile = percentile

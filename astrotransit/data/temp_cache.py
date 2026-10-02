@@ -7,6 +7,7 @@ Süresi dolan dosyaları otomatik temizler.
 
 from __future__ import annotations
 
+import contextlib
 import hashlib
 import json
 import time
@@ -82,10 +83,8 @@ class TempCache:
             temp_path.replace(self._index_file)
         except (OSError, TypeError, ValueError) as e:
             logger.error(f"Cache indeksi yazılamadı: {e}")
-            try:
+            with contextlib.suppress(OSError):
                 temp_path.unlink(missing_ok=True)
-            except OSError:
-                pass
 
     @staticmethod
     def _make_key(identifier: str) -> str:

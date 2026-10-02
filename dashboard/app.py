@@ -1,6 +1,7 @@
 """AstroTransit Web Dashboard."""
 
 from __future__ import annotations
+
 import sys
 from pathlib import Path
 
@@ -188,9 +189,13 @@ def page_single_target():
                             st.metric("FPP", f"{sr.quality.vetting.false_positive_probability:.3f}")
                         with c3:
                             st.metric("SNR", f"{sr.quality.snr.snr_adopted:.2f}")
-                    if sr.viz is not None and not skip_viz:
-                        if sr.viz.summary_panel and Path(str(sr.viz.summary_panel)).exists():
-                            st.image(str(sr.viz.summary_panel), use_container_width=True)
+                    if (
+                        sr.viz is not None
+                        and not skip_viz
+                        and sr.viz.summary_panel
+                        and Path(str(sr.viz.summary_panel)).exists()
+                    ):
+                        st.image(str(sr.viz.summary_panel), use_container_width=True)
 
         except Exception as e:
             progress_bar.empty()
@@ -481,8 +486,8 @@ def page_settings():
 
 
 def _create_demo_parquet(path: Path) -> None:
-    import pandas as pd
     import numpy as np
+    import pandas as pd
     path.parent.mkdir(parents=True, exist_ok=True)
     rng = np.random.default_rng(42)
     n = 25

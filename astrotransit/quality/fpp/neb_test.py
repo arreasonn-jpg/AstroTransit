@@ -36,7 +36,6 @@ from loguru import logger
 
 from astrotransit.quality.vetting import VettingVerdict
 
-
 _NEIGHBOR_COUNT_WARN = 5
 _NEIGHBOR_COUNT_FAIL = 10
 

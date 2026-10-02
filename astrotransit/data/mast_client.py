@@ -10,7 +10,7 @@ from __future__ import annotations
 from typing import Optional
 
 try:  # Keep offline/data-model imports usable without the MAST stack.
-    from astroquery.mast import Observations, Catalogs
+    from astroquery.mast import Catalogs, Observations
 except ImportError:  # pragma: no cover - depends on the local installation
     Observations = None
     Catalogs = None

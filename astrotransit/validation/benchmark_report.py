@@ -17,7 +17,6 @@ from pathlib import Path
 from statistics import mean, median
 from typing import Any, Iterable, Mapping, Optional
 
-
 DEFAULT_PERIOD_TOLERANCE = 0.02
 DEFAULT_RADIUS_TOLERANCE = 0.20
 
@@ -482,10 +481,10 @@ def _median(values: Iterable[Optional[float]]) -> Optional[float]:
 
 
 __all__ = [
-    "BenchmarkPerformanceReport",
-    "BenchmarkTargetMeasurement",
     "DEFAULT_PERIOD_TOLERANCE",
     "DEFAULT_RADIUS_TOLERANCE",
+    "BenchmarkPerformanceReport",
+    "BenchmarkTargetMeasurement",
     "VerifiedTarget",
     "evaluate_benchmark_results",
     "load_verified_targets",

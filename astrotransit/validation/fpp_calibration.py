@@ -21,7 +21,7 @@ Epistemik sınırlar (raporda ``claim_boundary`` olarak da taşınır):
 from __future__ import annotations
 
 from collections import Counter
-from typing import Sequence, Any, Iterable, Mapping, Optional
+from typing import Any, Iterable, Mapping, Optional, Sequence
 
 from astrotransit.validation.fpp_benchmark import (
     FPPBenchmarkCase,

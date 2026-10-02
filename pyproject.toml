@@ -92,9 +92,29 @@ target-version = "py311"
 line-length = 100
 
 [tool.ruff.lint]
-# Repository-wide gate. Legacy style-only rules (imports, preview upgrades) are
-# intentionally not release blockers; correctness rules remain mandatory.
-select = ["E4", "E7", "E9", "F"]
+# Repository-wide gate. Legacy style-only rules are progressively added
+# via dedicated PRs; correctness rules remain mandatory.
+#
+# Kademeli genisleme:
+#   - Bu PR: I (isort), W (warning), B (bugbear), SIM (simplify), RUF
+#   - Gelecek: UP (pyupgrade), E501 refactor
+#
+# Turkce karakterler (RUF001/002/003) ve uzun satirlar (E501) bilincli olarak
+# ignore edilir: docstring/yorumlar Turkce ve legacy satirlar refactor bekliyor.
+select = ["E4", "E7", "E9", "F", "W", "I", "B", "SIM", "RUF"]
+ignore = [
+    "E501",      # line-too-long — legacy satirlar, ayri PR
+    "RUF001",    # ambiguous unicode in string (Turkce karakterler)
+    "RUF002",    # ambiguous unicode in docstring (Turkce)
+    "RUF003",    # ambiguous unicode in comment (Turkce)
+]
+
+[tool.ruff.lint.per-file-ignores]
+# Testlerde assertion'i kisaltmak icin E402 (import not at top) serbest
+"tests/**/*.py" = ["E402"]
+# Typer CLI'da "typer.Option(...)" fonksiyon cagrisi default arg olarak
+# kullanilir - bu Typer'in resmi tasarimidir, B008 false positive.
+"cli/main.py" = ["B008"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

@@ -10,7 +10,6 @@ from importlib import metadata
 from pathlib import Path
 from typing import Any, Iterable, Mapping
 
-
 CORE_PACKAGES = (
     "astrotransit",
     "astropy",

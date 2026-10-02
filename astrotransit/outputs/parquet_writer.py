@@ -224,7 +224,7 @@ class ParquetWriter:
         self.flush()
         if self._writer is not None:
             self._writer.close()
-        elif self.n_written == 0 and not self._existing_rows:
+        elif self.n_written == 0 and not self._existing_rows:  # noqa: SIM102
             # Boş yazıcıda bile geçerli bir dosya üretmek daha öngörülebilir.
             # Ancak dosya diskte zaten varsa ve doluysa üzerine boş tablo yazıp ezme!
             if not self.path.exists() or self.path.stat().st_size == 0:

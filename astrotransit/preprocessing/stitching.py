@@ -223,7 +223,7 @@ def _collapse_duplicate_times(
     combined_flux = np.empty(unique.size, dtype=float)
     combined_error = np.empty(unique.size, dtype=float)
     combined_labels = np.empty(unique.size, dtype=int)
-    for index, (start, count) in enumerate(zip(first, counts)):
+    for index, (start, count) in enumerate(zip(first, counts, strict=False)):
         stop = start + count
         weights = 1.0 / np.maximum(error[start:stop], 1e-12) ** 2
         combined_flux[index] = float(np.average(flux[start:stop], weights=weights))

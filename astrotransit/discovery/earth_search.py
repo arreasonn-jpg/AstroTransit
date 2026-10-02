@@ -8,12 +8,11 @@ her zaman bağımsız olarak okunabilir kalır.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 import json
 import math
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Iterable
-
 
 _STATUS_LABELS = {
     "photometric_earth_like_candidate": "Photometric Earth-like candidate",

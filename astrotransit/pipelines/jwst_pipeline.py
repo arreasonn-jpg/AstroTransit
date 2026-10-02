@@ -29,14 +29,14 @@ from typing import Any, Optional
 import numpy as np
 from loguru import logger
 
-from astrotransit.settings import Settings, get_settings
 from astrotransit.data.mast_client import MASTClient, MASTConnectionError, MASTQueryError
+from astrotransit.modeling.map_fit import MAPFitResult, MAPFitter
 from astrotransit.preprocessing.jwst_detrend import (
-    JWSTObservationData,
-    JWSTGPDetrending,
     JWSTDetrendedData,
+    JWSTGPDetrending,
+    JWSTObservationData,
 )
-from astrotransit.modeling.map_fit import MAPFitter, MAPFitResult
+from astrotransit.settings import Settings, get_settings
 from astrotransit.validation.followup import FollowupEvidence
 
 

@@ -28,7 +28,6 @@ from scipy import stats
 
 from astrotransit.quality.vetting import VettingVerdict
 
-
 # ──────────────────────────────────────────────────────────────
 # Sabitler — eşikler
 # ──────────────────────────────────────────────────────────────
@@ -383,7 +382,7 @@ class ResidualAnalyzer:
         sample = in_res if n_in <= 5000 else in_res[:5000]
 
         try:
-            stat, p_value = stats.shapiro(sample)
+            _stat, p_value = stats.shapiro(sample)
         except Exception as exc:
             logger.warning(f"Shapiro-Wilk hatası: {exc}")
             return ResidualTest(

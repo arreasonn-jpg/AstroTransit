@@ -36,7 +36,6 @@ from scipy import stats
 
 from astrotransit.quality.vetting import VettingVerdict
 
-
 # ──────────────────────────────────────────────────────────────
 # Sabitler / eşikler
 # ──────────────────────────────────────────────────────────────
@@ -572,10 +571,7 @@ class TimingAnalyzer:
             ep_obs = np.rint((obs - base_t0) / period).astype(float)
 
         # t0 yoksa robust tahmin
-        if t0 is None:
-            t0_used = float(np.median(obs - ep * period))
-        else:
-            t0_used = float(t0)
+        t0_used = float(np.median(obs - ep * period)) if t0 is None else float(t0)
 
         expected = t0_used + ep * period
         oc_days = obs - expected
@@ -614,7 +610,7 @@ class TimingAnalyzer:
         details: dict = {
             "period_days": float(period),
             "t0_used": None if t0_used is None else float(t0_used),
-            "n_transits": int(len(oc_days)),
+            "n_transits": len(oc_days),
             "epochs": [float(x) for x in np.atleast_1d(epochs).tolist()],
             "oc_days": [float(x) for x in oc_days.tolist()],
             "oc_minutes": [float(x) for x in np.atleast_1d(_days_to_minutes(oc_days)).tolist()],

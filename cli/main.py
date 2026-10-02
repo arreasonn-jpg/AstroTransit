@@ -16,8 +16,8 @@ from typing import Optional
 
 import typer
 from rich.console import Console
-from rich.table import Table
 from rich.panel import Panel
+from rich.table import Table
 
 app = typer.Typer(
     name="astrotransit",
@@ -239,7 +239,7 @@ def target_pool(
             builder.write_json(entries, destination)
     except (OSError, ValueError, TypeError, json.JSONDecodeError) as exc:
         console.print(f"[red]Hedef havuzu oluşturulamadı: {exc}[/red]")
-        raise typer.Exit(1)
+        raise typer.Exit(1) from exc
 
     n_eligible = sum(entry.eligible for entry in entries)
     console.print(
@@ -405,7 +405,7 @@ def followup_update(
         evidence = json.loads(evidence_path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as exc:
         console.print(f"[red]Kanıt JSON'u okunamadı: {exc}[/red]")
-        raise typer.Exit(1)
+        raise typer.Exit(1) from exc
     if not isinstance(evidence, dict):
         console.print("[red]Kanıt JSON'u bir nesne olmalıdır.[/red]")
         raise typer.Exit(1)
@@ -430,7 +430,7 @@ def followup_update(
     except (TypeError, ValueError, RuntimeError) as exc:
         manager.close()
         console.print(f"[red]Follow-up güncellemesi başarısız: {exc}[/red]")
-        raise typer.Exit(1)
+        raise typer.Exit(1) from exc
 
     console.print(
         Panel(
@@ -474,7 +474,7 @@ def migrate_outputs(
             raise typer.Exit(2)
     except (OSError, ValueError, TypeError, ImportError, json.JSONDecodeError) as exc:
         console.print(f"[red]Migration başarısız: {exc}[/red]")
-        raise typer.Exit(1)
+        raise typer.Exit(1) from exc
     console.print(
         Panel(
             f"[bold green]Schema migration tamamlandı[/bold green]\\n"
@@ -531,6 +531,7 @@ def benchmark(
             report_json = Path(output or orchestrator.settings.benchmark.report_json)
             report_csv = Path(csv_output or orchestrator.settings.benchmark.report_csv)
             from dataclasses import replace
+
             from astrotransit.validation.provenance import build_manifest
 
             report = replace(

@@ -24,7 +24,6 @@ from typing import Optional
 import numpy as np
 from loguru import logger
 
-
 _MSTAR_TO_MEARTH = 332946.0
 _REARTH_TO_AU = 4.26352e-5
 

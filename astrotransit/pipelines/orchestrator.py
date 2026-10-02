@@ -16,25 +16,25 @@ Desteklenen modlar:
 from __future__ import annotations
 
 from enum import Enum
-from typing import cast, Any, Optional
+from typing import Any, Optional, cast
 
 from loguru import logger
 
-from astrotransit.settings import get_settings
 from astrotransit.logging_config import setup_logging
-from astrotransit.pipelines.tess_pipeline import (
-    TESSPipeline,
-    TESSTargetResult,
+from astrotransit.outputs.writers import OutputManager
+from astrotransit.pipelines.benchmark_pipeline import (
+    BenchmarkPipeline,
+    BenchmarkResult,
 )
 from astrotransit.pipelines.jwst_pipeline import (
     JWSTFollowUpPipeline,
     JWSTFollowUpResult,
 )
-from astrotransit.pipelines.benchmark_pipeline import (
-    BenchmarkPipeline,
-    BenchmarkResult,
+from astrotransit.pipelines.tess_pipeline import (
+    TESSPipeline,
+    TESSTargetResult,
 )
-from astrotransit.outputs.writers import OutputManager
+from astrotransit.settings import get_settings
 
 
 class PipelineMode(str, Enum):

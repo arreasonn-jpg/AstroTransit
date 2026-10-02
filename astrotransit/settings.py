@@ -21,8 +21,10 @@ if sys.version_info >= (3, 11):
 else:
     try:
         import tomli as tomllib
-    except ImportError:
-        raise ImportError("Python <3.11 için 'tomli' paketi gereklidir: pip install tomli")
+    except ImportError as exc:
+        raise ImportError(
+            "Python <3.11 için 'tomli' paketi gereklidir: pip install tomli"
+        ) from exc
 
 
 # ──────────────────────────────────────

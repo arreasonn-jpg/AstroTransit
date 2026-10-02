@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
-from dataclasses import asdict, is_dataclass
-from enum import Enum
 import json
 import math
+from dataclasses import asdict, is_dataclass
+from enum import Enum
 from pathlib import Path
 from typing import Any, Iterable, Optional
 
@@ -22,7 +22,7 @@ class NumpyEncoder(json.JSONEncoder):
     JSON standardına uygun olarak ``null`` yazılır.
     """
 
-    def default(self, obj: Any) -> Any:  # noqa: D401
+    def default(self, obj: Any) -> Any:
         if isinstance(obj, np.ndarray):
             return obj.tolist()
         if isinstance(obj, np.generic):

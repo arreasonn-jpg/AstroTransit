@@ -43,9 +43,9 @@ def parameter_recovery(
         bounds = list(intervals)
         if len(bounds) != len(expected):
             raise ValueError("intervals truth/recovered ile aynı uzunlukta olmalıdır.")
-        interval_values = [lo <= value <= hi for value, (lo, hi) in zip(measured, [item for item, ok in zip(bounds, valid) if ok])]
+        interval_values = [lo <= value <= hi for value, (lo, hi) in zip(measured, [item for item, ok in zip(bounds, valid, strict=False) if ok], strict=False)]
     return RecoveryMetric(
-        n=int(len(errors)),
+        n=len(errors),
         bias=float(np.mean(errors)),
         scatter=float(np.std(errors)),
         rmse=float(np.sqrt(np.mean(errors ** 2))),
@@ -61,7 +61,7 @@ def interval_coverage(
     bounds = list(intervals)
     if len(values) != len(bounds):
         raise ValueError("truth ve intervals aynı uzunlukta olmalıdır.")
-    valid = [(float(value), float(lo), float(hi)) for value, (lo, hi) in zip(values, bounds)
+    valid = [(float(value), float(lo), float(hi)) for value, (lo, hi) in zip(values, bounds, strict=False)
              if np.isfinite(value) and np.isfinite(lo) and np.isfinite(hi)]
     return float(np.mean([lo <= value <= hi for value, lo, hi in valid])) if valid else None
 

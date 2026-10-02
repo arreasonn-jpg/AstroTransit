@@ -72,7 +72,7 @@ def parameter_boundary_hits(
     if not (len(values) == len(bounds) == len(names)):
         raise ValueError("values, bounds, and names must have equal lengths")
     hits: list[str] = []
-    for value, (lower, upper), name in zip(values, bounds, names):
+    for value, (lower, upper), name in zip(values, bounds, names, strict=False):
         value = float(value)
         if lower is not None and np.isclose(
             value, lower, rtol=relative_tolerance, atol=absolute_tolerance

@@ -12,20 +12,21 @@ from typing import Optional
 
 from loguru import logger
 
-from astrotransit.preprocessing.tess_detrend import DetrendedLightCurve
 from astrotransit.detection.cascade import CascadeCandidate
-from astrotransit.quality.metrics import QualityMetrics, QualityMetricsCalculator
-from astrotransit.quality.snr import SNRBreakdown, SNRCalculator
-from astrotransit.quality.vetting import VettingReport, FalsePositiveVetter
-from astrotransit.quality.scorer import QualityScore, CandidateScorer
-from astrotransit.settings import Settings, get_settings
-
-from astrotransit.quality.anomaly_scorer import AnomalyScorer, AnomalyReport
-from astrotransit.quality.residual_analysis import ResidualAnalyzer, ResidualReport
-from astrotransit.quality.transit_consistency import TransitConsistencyAnalyzer, TransitConsistencyReport
-from astrotransit.quality.timing_analysis import TimingAnalyzer, TimingReport
+from astrotransit.preprocessing.tess_detrend import DetrendedLightCurve
+from astrotransit.quality.anomaly_scorer import AnomalyReport, AnomalyScorer
 from astrotransit.quality.fpp import SimpleFPPCalculator, SimpleFPPReport
-
+from astrotransit.quality.metrics import QualityMetrics, QualityMetricsCalculator
+from astrotransit.quality.residual_analysis import ResidualAnalyzer, ResidualReport
+from astrotransit.quality.scorer import CandidateScorer, QualityScore
+from astrotransit.quality.snr import SNRBreakdown, SNRCalculator
+from astrotransit.quality.timing_analysis import TimingAnalyzer, TimingReport
+from astrotransit.quality.transit_consistency import (
+    TransitConsistencyAnalyzer,
+    TransitConsistencyReport,
+)
+from astrotransit.quality.vetting import FalsePositiveVetter, VettingReport
+from astrotransit.settings import Settings, get_settings
 
 
 @dataclass
@@ -140,7 +141,7 @@ class QualityEvaluationPipeline:
             snr_max=q_cfg.min_snr * 6,
         )
 
-        
+
         self._residual_analyzer = ResidualAnalyzer()
         self._transit_consistency_analyzer = TransitConsistencyAnalyzer()
         self._timing_analyzer = TimingAnalyzer()

@@ -32,7 +32,7 @@ import numpy as np
 #: Gözlem tasarımının dondurulmuş parametreleri (korpus özeti bunları taşır).
 BASELINE_DAYS = 27.0
 CADENCE_DAYS = 600.0 / 86400.0  # 600 s örneklenme
-N_POINTS = int(round(BASELINE_DAYS / CADENCE_DAYS))  # 3888 nokta
+N_POINTS = round(BASELINE_DAYS / CADENCE_DAYS)  # 3888 nokta
 NOISE_PPM = 600.0
 
 #: Vetting/FPP karar eşiği (heuristik proxy için ilan edilmiş red eşiği).
@@ -535,8 +535,8 @@ __all__ = [
     "BASELINE_DAYS",
     "CADENCE_DAYS",
     "LEAK_OUTCOME",
-    "N_POINTS",
     "NOISE_PPM",
+    "N_POINTS",
     "REJECTION_OUTCOMES",
     "AdversarialScenario",
     "build_adversarial_report",

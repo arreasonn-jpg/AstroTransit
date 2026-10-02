@@ -22,8 +22,8 @@ from dataclasses import dataclass
 import numpy as np
 from loguru import logger
 
-from astrotransit.preprocessing.tess_detrend import DetrendedLightCurve
 from astrotransit.detection.cascade import CascadeCandidate
+from astrotransit.preprocessing.tess_detrend import DetrendedLightCurve
 
 
 @dataclass
@@ -157,10 +157,7 @@ class SNRCalculator:
             snr_tls = float(candidate.tls_result.snr)
 
         # 5. Adopted SNR
-        if snr_tls > 0:
-            snr_adopted = snr_tls
-        else:
-            snr_adopted = snr_dutycycle
+        snr_adopted = snr_tls if snr_tls > 0 else snr_dutycycle
 
         logger.debug(
             f"SNR hesabı — "

@@ -8,7 +8,6 @@ from dataclasses import asdict, dataclass, is_dataclass
 from pathlib import Path
 from typing import Any, Iterable, Mapping
 
-
 DEFAULT_EXCLUDED_KEYS = frozenset(
     {
         "created_at",

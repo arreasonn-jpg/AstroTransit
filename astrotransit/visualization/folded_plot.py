@@ -9,13 +9,13 @@ from __future__ import annotations
 
 from typing import Optional
 
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 
-from astrotransit.visualization.base import FigureManager, Colors
 from astrotransit.detection.cascade import CascadeCandidate
 from astrotransit.detection.tls_search import TLSResult
 from astrotransit.modeling.map_fit import MAPFitResult
+from astrotransit.visualization.base import Colors, FigureManager
 
 
 class FoldedPlotter:

@@ -20,15 +20,15 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Optional
+from typing import ClassVar, Optional
 
 import numpy as np
 from loguru import logger
 
+from astrotransit.detection.cascade import CascadeCandidate
 from astrotransit.quality.metrics import QualityMetrics
 from astrotransit.quality.snr import SNRBreakdown
 from astrotransit.quality.vetting import FPP_METHOD, VettingReport, VettingVerdict
-from astrotransit.detection.cascade import CascadeCandidate
 
 
 # ──────────────────────────────────────
@@ -194,7 +194,7 @@ class CandidateScorer:
     """
 
     # Skor ağırlıkları (toplam = 1.0)
-    WEIGHTS = {
+    WEIGHTS: ClassVar[dict[str, float]] = {
         "snr": 0.20,
         "completeness": 0.10,
         "transit_quality": 0.20,
@@ -358,7 +358,7 @@ class CandidateScorer:
 
         # ── Anomali cezasi (her bayrak icin -15 puan) ──
         # Anomaliler ciddi. Her fiziksel disi bulgu skoru dusurmeli.
-        is_anomalous_pre, anomaly_flags_pre = self._detect_anomaly(
+        _is_anomalous_pre, anomaly_flags_pre = self._detect_anomaly(
             candidate, metrics, vetting
         )
         n_anomalies = len(anomaly_flags_pre)

@@ -24,7 +24,6 @@ from typing import Optional
 import numpy as np
 from loguru import logger
 
-
 _SOLAR_TEFF_K = 5772.0
 _CONSERVATIVE_HZ_INNER_S = 1.10
 _CONSERVATIVE_HZ_OUTER_S = 0.35
