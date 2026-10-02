@@ -12,11 +12,12 @@ from pathlib import Path
 from typing import Any, Optional, Tuple
 
 import matplotlib
+
 matplotlib.use('Agg', force=True)
 import matplotlib.pyplot as plt
-from matplotlib.figure import Figure
-from matplotlib.axes import Axes
 from loguru import logger
+from matplotlib.axes import Axes
+from matplotlib.figure import Figure
 
 
 # ──────────────────────────────────────

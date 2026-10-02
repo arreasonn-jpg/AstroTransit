@@ -10,13 +10,13 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Optional
 
+import astropy.units as u
 import numpy as np
 from astropy.timeseries import BoxLeastSquares
-import astropy.units as u
 from loguru import logger
 
-from astrotransit.preprocessing.tess_detrend import DetrendedLightCurve
 from astrotransit.detection.thresholds import BLSThresholds
+from astrotransit.preprocessing.tess_detrend import DetrendedLightCurve
 
 
 # ──────────────────────────────────────

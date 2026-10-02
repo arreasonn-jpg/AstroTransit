@@ -104,7 +104,7 @@ def evaluate_fpp_benchmark(
 
 def _calibration_curve(probabilities: np.ndarray, labels: np.ndarray, bins: int = 10) -> list[dict[str, Any]]:
     rows: list[dict[str, Any]] = []
-    for lower, upper in zip(np.linspace(0, 1, bins, endpoint=False), np.linspace(0, 1, bins + 1)[1:]):
+    for lower, upper in zip(np.linspace(0, 1, bins, endpoint=False), np.linspace(0, 1, bins + 1)[1:], strict=False):
         mask = (probabilities >= lower) & (probabilities <= upper if upper == 1 else probabilities < upper)
         if np.any(mask):
             rows.append({"lower": float(lower), "upper": float(upper), "n": int(mask.sum()),

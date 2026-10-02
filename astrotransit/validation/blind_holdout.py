@@ -99,7 +99,7 @@ def allocate_quotas(pool: Mapping[str, int], total: int, *, minimum: int = 0) ->
     if remaining > 0 and headroom_total > 0:
         exact = {key: remaining * headroom[key] / headroom_total for key in available}
         for key, value in exact.items():
-            quotas[key] += int(math.floor(value))
+            quotas[key] += math.floor(value)
         leftover = remaining - sum(quotas[key] - base[key] for key in available)
         order = sorted(available, key=lambda key: (-(exact[key] - math.floor(exact[key])), key))
         for key in order:

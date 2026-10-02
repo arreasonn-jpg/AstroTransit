@@ -8,7 +8,6 @@ from __future__ import annotations
 
 from astropy.time import Time
 
-
 # TESS Barycentric Julian Date offset
 # TESS BJD = BJD - 2457000.0
 TESS_BJD_OFFSET = 2457000.0

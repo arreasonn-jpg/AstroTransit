@@ -16,14 +16,15 @@ Karar akışı:
 
 from __future__ import annotations
 
-from typing import cast, TYPE_CHECKING, Optional, Union
+import contextlib
+from typing import TYPE_CHECKING, Optional, Union, cast
 
 from loguru import logger
 
-from astrotransit.preprocessing.tess_detrend import DetrendedLightCurve
 from astrotransit.detection.cascade import CascadeCandidate
+from astrotransit.modeling.map_fit import MAPFitResult, MAPFitter
 from astrotransit.modeling.parameters import TransitPriors
-from astrotransit.modeling.map_fit import MAPFitter, MAPFitResult
+from astrotransit.preprocessing.tess_detrend import DetrendedLightCurve
 from astrotransit.settings import Settings, get_settings
 
 # PyMC opsiyonel — tip stub'ı TYPE_CHECKING ile, runtime'da try/except
@@ -34,7 +35,7 @@ else:
     FitResult = MAPFitResult
 
 try:
-    from astrotransit.modeling.pymc_fit import PyMCFitter, MCMCFitResult  # noqa: F811
+    from astrotransit.modeling.pymc_fit import MCMCFitResult, PyMCFitter
     _PYMC_AVAILABLE = True
 except ImportError:
     _PYMC_AVAILABLE = False
@@ -181,10 +182,8 @@ class ModelingOrchestrator:
             if getattr(mcmc_result, attr, None) is None:
                 val = getattr(map_result, attr, None)
                 if val is not None:
-                    try:
+                    with contextlib.suppress(Exception):
                         setattr(mcmc_result, attr, val)
-                    except Exception:
-                        pass
 
         # Posterior merkezlerini üstüne yaz (daha iyi MCMC değerleri)
         posterior_map = {
@@ -197,10 +196,8 @@ class ModelingOrchestrator:
         for attr, post_name in posterior_map.items():
             val = self._posterior_center(mcmc_result, post_name)
             if val is not None:
-                try:
+                with contextlib.suppress(Exception):
                     setattr(mcmc_result, attr, val)
-                except Exception:
-                    pass
 
         # Derived bundle varsa oradan da doldur
         derived = getattr(mcmc_result, "derived", None)
@@ -215,10 +212,8 @@ class ModelingOrchestrator:
                 if getattr(mcmc_result, attr, None) is None:
                     val = getattr(derived, attr, None)
                     if val is not None:
-                        try:
+                        with contextlib.suppress(Exception):
                             setattr(mcmc_result, attr, val)
-                        except Exception:
-                            pass
 
         # Output contract etiketleri
         for attr, val in [
@@ -226,17 +221,13 @@ class ModelingOrchestrator:
             ("period_err_source", "fixed_in_mcmc"),
         ]:
             if not hasattr(mcmc_result, attr):
-                try:
+                with contextlib.suppress(Exception):
                     setattr(mcmc_result, attr, val)
-                except Exception:
-                    pass
 
         # period_err None olarak bırak (fixed, sample edilmedi)
         if getattr(mcmc_result, "period_err", None) in (None, 0.0):
-            try:
-                setattr(mcmc_result, "period_err", None)
-            except Exception:
-                pass
+            with contextlib.suppress(Exception):
+                mcmc_result.period_err = None
 
         logger.debug(
             f"MCMC harmonization tamamlandı — "

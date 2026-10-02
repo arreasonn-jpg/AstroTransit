@@ -1,40 +1,41 @@
 # Pre-commit hooks — hızlı yerel kalite kontrolleri.
 # CI'daki kontrollerin bir kısmını commit öncesinde yakalar.
 #
+# Kapsam: simdilik sadece astrotransit/ cli/ dashboard/.
+# tests/ ve scripts/ temizligi ayri PR'larda (chore/ruff-tests-scripts).
+#
 # Kurulum:
 #   pip install -e ".[dev]"
 #   pre-commit install
 #
-# Manuel çalıştırma:
+# Manuel calistirma:
 #   pre-commit run --all-files
 
 repos:
-  # Genel metin/dosya hijyeni
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v5.0.0
     hooks:
       - id: trailing-whitespace
-        exclude: '\.(json|csv|jsonl)$'
+        files: ^(astrotransit|cli|dashboard)/
       - id: end-of-file-fixer
-        exclude: '\.(json|csv|jsonl)$'
+        files: ^(astrotransit|cli|dashboard)/
       - id: check-yaml
-        args: [--allow-multiple-documents]
       - id: check-toml
       - id: check-added-large-files
         args: [--maxkb=5000]
       - id: check-merge-conflict
       - id: mixed-line-ending
         args: [--fix=lf]
+        files: ^(astrotransit|cli|dashboard)/
 
-  # Ruff — proje pyproject.toml ayarlarını kullanır
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.16.6
     hooks:
       - id: ruff
         args: [--fix, --exit-non-zero-on-fix]
         types_or: [python, pyi]
+        files: ^(astrotransit|cli|dashboard)/
 
-  # Mypy — proje bağımlılıklarıyla birlikte
   - repo: local
     hooks:
       - id: mypy

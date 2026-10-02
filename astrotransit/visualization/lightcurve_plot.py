@@ -9,15 +9,13 @@ from __future__ import annotations
 
 from typing import Optional
 
-import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
+import matplotlib.pyplot as plt
 
-from astrotransit.visualization.base import (
-    FigureManager, Colors
-)
-from astrotransit.preprocessing.tess_detrend import DetrendedLightCurve
-from astrotransit.preprocessing.normalization import NormalizedLightCurve
 from astrotransit.detection.cascade import CascadeCandidate
+from astrotransit.preprocessing.normalization import NormalizedLightCurve
+from astrotransit.preprocessing.tess_detrend import DetrendedLightCurve
+from astrotransit.visualization.base import Colors, FigureManager
 
 
 class LightCurvePlotter:

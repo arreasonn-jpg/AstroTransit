@@ -29,7 +29,6 @@ from typing import Any, Mapping, Optional, Sequence
 
 import numpy as np
 
-
 EARTH_SIMILARITY_DEFINITION_VERSION = "1.0"
 
 

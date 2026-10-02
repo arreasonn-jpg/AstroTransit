@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from dataclasses import fields
 import json
+from dataclasses import fields
 from pathlib import Path
 from typing import Any, Mapping
 
@@ -89,7 +89,7 @@ def flatten_nested_record(payload: Mapping[str, Any]) -> dict[str, Any]:
         "dec_deg": stellar.get("dec_deg", 0.0),
     })
     detection = sections["detection"]
-    for key, source in (("bls", "bls"), ("tls", "tls"), ("cascade", "cascade")):
+    for key, _source in (("bls", "bls"), ("tls", "tls"), ("cascade", "cascade")):
         block = detection.get(key, {}) or {}
         if key == "bls":
             result.update({"bls_period": block.get("period_days", 0.0), "bls_power": block.get("power", 0.0), "bls_depth_ppm": block.get("depth_ppm", 0.0)})

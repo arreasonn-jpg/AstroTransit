@@ -31,7 +31,6 @@ from loguru import logger
 
 from astrotransit.quality.vetting import VettingVerdict
 
-
 # ──────────────────────────────────────────────────────────────
 # Eşikler
 # ──────────────────────────────────────────────────────────────

@@ -8,20 +8,20 @@ döndürür.
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional
-from dataclasses import dataclass
 
 from loguru import logger
 
-from astrotransit.visualization.base import FigureManager
-from astrotransit.visualization.lightcurve_plot import LightCurvePlotter
-from astrotransit.visualization.periodogram_plot import PeriodogramPlotter
-from astrotransit.visualization.folded_plot import FoldedPlotter
-from astrotransit.visualization.diagnostic_plots import DiagnosticPlotter
-from astrotransit.visualization.summary_panel import SummaryPanelPlotter
 from astrotransit.settings import Settings, get_settings
 from astrotransit.utils.paths import ProjectPaths
+from astrotransit.visualization.base import FigureManager
+from astrotransit.visualization.diagnostic_plots import DiagnosticPlotter
+from astrotransit.visualization.folded_plot import FoldedPlotter
+from astrotransit.visualization.lightcurve_plot import LightCurvePlotter
+from astrotransit.visualization.periodogram_plot import PeriodogramPlotter
+from astrotransit.visualization.summary_panel import SummaryPanelPlotter
 
 
 @dataclass

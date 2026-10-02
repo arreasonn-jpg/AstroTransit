@@ -200,11 +200,11 @@ class TESSDetrending:
         if isinstance(method, str):
             try:
                 method = DetrendMethod(method.lower())
-            except ValueError:
+            except ValueError as exc:
                 raise ValueError(
                     f"Geçersiz detrending yöntemi: '{method}'. "
                     f"Desteklenenler: {[m.value for m in DetrendMethod]}"
-                )
+                ) from exc
 
         self.method = method
         self.window_length = window_length

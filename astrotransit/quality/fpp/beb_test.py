@@ -35,7 +35,6 @@ from loguru import logger
 
 from astrotransit.quality.vetting import VettingVerdict
 
-
 _CENTROID_WARN_ARCSEC = 5.0
 _CENTROID_FAIL_ARCSEC = 10.0
 

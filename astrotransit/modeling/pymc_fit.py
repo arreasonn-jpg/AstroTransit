@@ -45,13 +45,13 @@ except ImportError:
     _ARVIZ_AVAILABLE = False
     logger.warning("arviz bulunamadı: pip install arviz")
 
-from astrotransit.preprocessing.tess_detrend import DetrendedLightCurve
+from astrotransit.modeling.map_fit import MAPFitResult
 from astrotransit.modeling.parameters import (
-    TransitPriors,
     DerivedParameters,
+    TransitPriors,
     compute_derived_parameters,
 )
-from astrotransit.modeling.map_fit import MAPFitResult
+from astrotransit.preprocessing.tess_detrend import DetrendedLightCurve
 
 
 # ──────────────────────────────────────

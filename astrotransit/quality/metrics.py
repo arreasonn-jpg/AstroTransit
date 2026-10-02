@@ -16,11 +16,11 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 
 import numpy as np
-from scipy import stats as scipy_stats
 from loguru import logger
+from scipy import stats as scipy_stats
 
-from astrotransit.preprocessing.tess_detrend import DetrendedLightCurve
 from astrotransit.detection.cascade import CascadeCandidate
+from astrotransit.preprocessing.tess_detrend import DetrendedLightCurve
 
 
 # ──────────────────────────────────────

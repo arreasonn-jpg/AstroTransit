@@ -18,7 +18,7 @@ def generate_validation_figures(report: Mapping[str, Any], output_dir: str | Pat
                    for row in targets if row.get("expected_period_days") is not None and row.get("recovered_period_days") is not None]
     if period_rows:
         figure, axis = plt.subplots()
-        x, y = zip(*period_rows)
+        x, y = zip(*period_rows, strict=False)
         axis.scatter(x, y, s=18)
         axis.plot([min(x), max(x)], [min(x), max(x)], "k--", linewidth=.8)
         axis.set(xlabel="Expected period (days)", ylabel="Recovered period (days)", title="Injected/expected vs recovered period")

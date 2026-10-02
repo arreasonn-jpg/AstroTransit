@@ -8,12 +8,11 @@ harmonik yapıları görselleştirir.
 
 from __future__ import annotations
 
-
 import matplotlib.pyplot as plt
 
-from astrotransit.visualization.base import FigureManager, Colors
 from astrotransit.detection.bls_search import BLSResult
 from astrotransit.detection.tls_search import TLSResult
+from astrotransit.visualization.base import Colors, FigureManager
 
 
 class PeriodogramPlotter:

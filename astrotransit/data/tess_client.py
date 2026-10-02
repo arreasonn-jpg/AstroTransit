@@ -15,11 +15,11 @@ Sonraki fazlarda eklenecek:
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
 import json
-from pathlib import Path
 import re
 import zipfile
+from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Any, Optional
 
 import numpy as np
@@ -30,9 +30,11 @@ try:  # Import is intentionally lazy-friendly: data models work offline.
 except ImportError:  # pragma: no cover - exercised only in minimal installs
     lk = None
 
-from astrotransit.data.temp_cache import TempCache
+import contextlib
+
 from astrotransit.data.mast_client import MASTClient
-from astrotransit.utils.identifiers import normalize_tic_id, extract_tic_number
+from astrotransit.data.temp_cache import TempCache
+from astrotransit.utils.identifiers import extract_tic_number, normalize_tic_id
 
 
 # ──────────────────────────────────────
@@ -280,10 +282,7 @@ class TESSClient:
             )
 
         # TIC ID standardizasyonu
-        if isinstance(target, int):
-            target_str = normalize_tic_id(target)
-        else:
-            target_str = target
+        target_str = normalize_tic_id(target) if isinstance(target, int) else target
 
         logger.info(
             f"TESS araması başlatılıyor — hedef: {target_str}, "
@@ -645,10 +644,8 @@ class TESSClient:
             self._cache.register(identifier, path)
         except (OSError, TypeError, ValueError) as exc:
             logger.warning(f"TESS cache yazılamadı: {identifier} ({exc})")
-            try:
+            with contextlib.suppress(OSError):
                 temp_path.unlink(missing_ok=True)
-            except OSError:
-                pass
 
     def get_lightcurve(
         self,

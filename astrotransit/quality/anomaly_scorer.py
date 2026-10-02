@@ -34,9 +34,8 @@ import numpy as np
 from loguru import logger
 
 from astrotransit.quality.residual_analysis import ResidualReport
-from astrotransit.quality.transit_consistency import TransitConsistencyReport
 from astrotransit.quality.timing_analysis import TimingReport
-
+from astrotransit.quality.transit_consistency import TransitConsistencyReport
 
 # ──────────────────────────────────────────────────────────────
 # Varsayılan ağırlıklar

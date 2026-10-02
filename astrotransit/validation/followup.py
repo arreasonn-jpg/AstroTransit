@@ -7,10 +7,9 @@ Kütle, atmosfer veya yaşam ölçümü yoksa bu değerler Dünya ile doldurulma
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
 import math
+from dataclasses import dataclass, field
 from typing import Any, Iterable, Mapping, Optional
-
 
 FOLLOWUP_OBSERVATION_TYPES = {
     "additional_transit",
@@ -137,10 +136,7 @@ def validate_followup_evidence(
     """
 
     items: tuple[FollowupEvidence, ...]
-    if isinstance(evidence, FollowupEvidence):
-        items = (evidence,)
-    else:
-        items = tuple(evidence)
+    items = (evidence,) if isinstance(evidence, FollowupEvidence) else tuple(evidence)
     if not items:
         return FollowupValidationResult(target_id=target_id)
     if not all(isinstance(item, FollowupEvidence) for item in items):

@@ -8,6 +8,7 @@ ve edge artifact'larını giderir.
 
 from __future__ import annotations
 
+import itertools
 from dataclasses import dataclass, field
 
 import numpy as np
@@ -212,11 +213,11 @@ class LightCurveCleaner:
         gap_indices = self._detect_gaps(time)
 
         # Tüm bölünme noktaları
-        split_points = [0] + gap_indices + [len(time)]
+        split_points = [0, *gap_indices, len(time)]
 
         segments = []
 
-        for i, (start, end) in enumerate(zip(split_points[:-1], split_points[1:])):
+        for i, (start, end) in enumerate(itertools.pairwise(split_points)):
             seg_time = time[start:end]
             seg_flux = flux[start:end]
             seg_err = flux_err[start:end]

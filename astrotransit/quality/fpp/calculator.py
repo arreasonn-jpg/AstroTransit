@@ -41,10 +41,9 @@ from typing import Optional
 import numpy as np
 from loguru import logger
 
-from astrotransit.quality.fpp.eb_test import EBScenarioEvaluator, EBScenarioReport
 from astrotransit.quality.fpp.beb_test import BEBScenarioEvaluator, BEBScenarioReport
+from astrotransit.quality.fpp.eb_test import EBScenarioEvaluator, EBScenarioReport
 from astrotransit.quality.fpp.neb_test import NEBScenarioEvaluator, NEBScenarioReport
-
 
 FPP_PROXY_METHOD = "scenario_based_proxy_uncalibrated_v1"
 

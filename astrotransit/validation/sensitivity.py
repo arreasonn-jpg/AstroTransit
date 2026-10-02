@@ -4,7 +4,11 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Iterable, Mapping
 
-from astrotransit.science.earth_similarity import EarthSimilarityProfile, SimilarityDimension, score_earth_similarity
+from astrotransit.science.earth_similarity import (
+    EarthSimilarityProfile,
+    SimilarityDimension,
+    score_earth_similarity,
+)
 
 
 @dataclass(frozen=True)
