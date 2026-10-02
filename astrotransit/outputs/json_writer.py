@@ -31,7 +31,7 @@ class NumpyEncoder(json.JSONEncoder):
             return str(obj)
         if isinstance(obj, Enum):
             return obj.value
-        if is_dataclass(obj):
+        if is_dataclass(obj) and not isinstance(obj, type):
             return asdict(obj)
         return super().default(obj)
 
@@ -56,7 +56,7 @@ def _sanitize(value: Any) -> Any:
         return str(value)
     if isinstance(value, Enum):
         return _sanitize(value.value)
-    if is_dataclass(value):
+    if is_dataclass(value) and not isinstance(value, type):
         return _sanitize(asdict(value))
     return value
 
@@ -126,4 +126,7 @@ class JSONWriter:
         """JSON aday kaydını okur."""
 
         with Path(path).open("r", encoding="utf-8") as handle:
-            return json.load(handle)
+            data = json.load(handle)
+            if not isinstance(data, dict):
+                raise ValueError(f"Expected JSON object at top level: {path}")
+            return data

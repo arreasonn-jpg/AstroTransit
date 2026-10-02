@@ -360,7 +360,7 @@ class BEBScenarioEvaluator:
     @staticmethod
     def _compute_flag(
         indicators: list[BEBIndicator],
-        p_beb: float,
+        p_beb: float | None,
     ) -> str:
         n_fail = sum(1 for ind in indicators if ind.verdict == VettingVerdict.FAIL)
         n_warn = sum(1 for ind in indicators if ind.verdict == VettingVerdict.WARN)

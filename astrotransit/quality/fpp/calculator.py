@@ -404,7 +404,7 @@ class SimpleFPPCalculator:
             "neb": p_neb if available.get("neb", False) else -1.0,
         }
 
-        best_name = max(probs, key=probs.get)
+        best_name = max(probs, key=lambda k: probs[k])
         if probs[best_name] < 0:
             return "none"
         return best_name
@@ -443,9 +443,15 @@ class SimpleFPPCalculator:
 
         if confidence == "LOW":
             dominant = None
-            available = [c for c in components if c.available and c.probability is not None]
+            available = [
+                c for c in components
+                if c.available and c.probability is not None
+            ]
             if available:
-                dominant = max(available, key=lambda c: float(c.probability)).name
+                dominant = max(
+                    available,
+                    key=lambda c: float(c.probability) if c.probability is not None else 0.0,
+                ).name
             return f"deprioritize_or_inspect_{dominant or 'fp_scenario'}"
 
         return "insufficient_data"

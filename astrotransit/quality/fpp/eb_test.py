@@ -450,11 +450,13 @@ class EBScenarioEvaluator:
         for test in tests:
             if getattr(test, "name", None) == test_name:
                 value = getattr(test, "value", None)
+                if value is None:
+                    return None
                 try:
-                    value = float(value)
+                    fvalue = float(value)
                 except Exception:
                     return None
-                return value if np.isfinite(value) else None
+                return fvalue if np.isfinite(fvalue) else None
         return None
 
     @staticmethod
@@ -470,7 +472,7 @@ class EBScenarioEvaluator:
     @staticmethod
     def _compute_flag(
         indicators: list[EBIndicator],
-        p_eb: float,
+        p_eb: float | None,
     ) -> str:
         n_fail = sum(1 for ind in indicators if ind.verdict == VettingVerdict.FAIL)
         n_warn = sum(1 for ind in indicators if ind.verdict == VettingVerdict.WARN)

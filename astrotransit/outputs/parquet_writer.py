@@ -155,6 +155,7 @@ class ParquetWriter:
             )
 
         table = pa.Table.from_pylist(self._buffer, schema=self.schema)
+        assert self._writer is not None  # narrowing for mypy
         self._writer.write_table(table)
         self._buffer.clear()
         logger.debug(f"Parquet batch yazıldı: {self.path}")
