@@ -42,7 +42,7 @@ jobs:
       - name: Compile
         run: python -m compileall -q astrotransit cli dashboard
       - name: Pytest with coverage
-        run: python -m pytest -q --cov=astrotransit --cov-report=term --cov-report=xml
+        run: python -m pytest -q --cov=astrotransit --cov-report=term --cov-report=xml --cov-fail-under=48
       - name: CLI contract smoke tests
         run: |
           python -m cli.main --help
@@ -155,3 +155,24 @@ jobs:
         run: docker build -t astrotransit:ci .
       - name: Smoke test CLI inside the image
         run: docker run --rm astrotransit:ci version
+
+  type-check:
+    name: mypy (Python 3.11)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Install package and dev tools
+        run: python -m pip install --upgrade pip && python -m pip install -e ".[dev]"
+      - name: Run mypy (informational, non-blocking)
+        # Faz 1: bilgilendirici. Mevcut 130 tip hatası kademeli
+        # kapatılacak; hatalar sıfıra indiğinde continue-on-error
+        # kaldırılacak ve bu adım zorunlu hale gelecek.
+        continue-on-error: true
+        run: mypy astrotransit cli dashboard

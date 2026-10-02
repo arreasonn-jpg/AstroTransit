@@ -51,6 +51,7 @@ modeling = [
 ]
 dev = [
     "pytest>=7.0",
+    "mypy>=1.10",
     "pytest-cov>=4.0",
     "ruff>=0.1",
     "jsonschema>=4.20",
@@ -97,3 +98,56 @@ select = ["E4", "E7", "E9", "F"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["."]
+
+[tool.mypy]
+python_version = "3.11"
+show_error_codes = true
+pretty = true
+ignore_missing_imports = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_unused_configs = true
+no_implicit_optional = true
+warn_return_any = true
+strict_equality = true
+
+exclude = [
+    '^build/',
+    '^dist/',
+    '^\.venv/',
+    '^notebooks/',
+    '^scripts/',
+    '^release/',
+]
+
+# Kademeli sıkılaştırma planı (Faz 2):
+# - Modül gruplarına göre disallow_untyped_defs
+# - disallow_any_generics / disallow_untyped_calls
+# Bu taban yapılandırma, CI'da bilgilendirici olarak çalışır.
+
+[tool.coverage.run]
+branch = true
+source = ["astrotransit", "cli", "dashboard"]
+omit = [
+    "*/tests/*",
+    "*/__pycache__/*",
+    "*/site-packages/*",
+]
+
+[tool.coverage.report]
+# Faz 1 tabanı: 2026-10 baseline %49.25 (branch=true).
+# Kademeli artış planı: her kapsam PR'ı sonrası +2 puan.
+fail_under = 48
+precision = 2
+show_missing = true
+skip_covered = false
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if self.debug:",
+    "if __name__ == .__main__.:",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if TYPE_CHECKING:",
+    "@(abc\\.)?abstractmethod",
+]
