@@ -164,9 +164,10 @@ omit = [
 ]
 
 [tool.coverage.report]
-# Kademeli artış: 48 -> 52 (mevcut %53.62 uzerinde tampon).
-# PR #36 sonrasi validation testleriyle ciddi artis oldu.
-fail_under = 52
+# Kademeli artis: 48 -> 52 -> 55 (mevcut %58.39 uzerinde tampon).
+# test/coverage-boost-1: 4 modul %0 -> %98 (habitability, moon_potential,
+# architecture_anomalies, eb_coorbital_discriminator).
+fail_under = 55
 precision = 2
 show_missing = true
 skip_covered = false
