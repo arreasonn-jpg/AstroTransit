@@ -18,7 +18,7 @@ RUN apt-get update \
 
 WORKDIR /build
 
-COPY envs/requirements.lock /tmp/requirements.lock
+COPY envs/requirements-docker.lock /tmp/requirements.lock
 
 RUN python -m pip install --upgrade pip setuptools wheel \
     && python -m pip wheel --wheel-dir /wheels \
@@ -52,7 +52,7 @@ RUN apt-get update \
 
 WORKDIR /app
 
-# BuildKit bind mount: wheel'ler ve requirements.lock hicbir
+# BuildKit bind mount: wheel'ler ve requirements-docker.lock hicbir
 # layer'a kopyalanmaz, RUN biter bitmez kaybolur.
 RUN --mount=type=bind,from=builder,source=/wheels,target=/wheels \
     --mount=type=bind,from=builder,source=/tmp/requirements.lock,target=/tmp/requirements.lock \
