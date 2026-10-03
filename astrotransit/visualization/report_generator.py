@@ -181,16 +181,18 @@ class VisualizationReportGenerator:
 
         # ── 1: Light curve ──
         try:
+            safe_id = target_id.replace(" ", "_")
             if normalized is not None:
                 self._lc_plotter.plot_raw_and_detrended(
                     normalized, detrended, candidate, save=True
                 )
+                suffix = "lightcurve"
             else:
                 self._lc_plotter.plot_detrended_only(detrended, candidate, save=True)
-            safe_id = target_id.replace(" ", "_")
+                suffix = "detrended"
             report.lightcurve = (
                 self._figure_dir
-                / f"{safe_id}_S{sector:02d}_lightcurve.{self.settings.outputs.figure_format}"
+                / f"{safe_id}_S{sector:02d}_{suffix}.{self.settings.outputs.figure_format}"
             )
         except Exception as e:
             logger.warning(f"Light curve grafiği başarısız: {e}")
