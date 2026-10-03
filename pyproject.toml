@@ -17,7 +17,6 @@ dependencies = [
     "astropy>=5.0",
     "astroquery>=0.4.6",
     "lightkurve>=2.4",
-    "boto3>=1.26",
     "wotan>=1.9",
     "transitleastsquares",
     # PEP 632: std 'distutils' Python 3.12'de kaldırıldı; batman-package
@@ -29,10 +28,8 @@ dependencies = [
     "pandas>=2.0",
     "pyarrow>=12.0",
     "matplotlib>=3.7",
-    "plotly>=5.14",
     "typer>=0.9",
     "rich>=13.0",
-    "streamlit>=1.24",
     "pydantic>=2.0",
     "tqdm>=4.65",
     "loguru>=0.7",
@@ -41,6 +38,10 @@ dependencies = [
 [project.optional-dependencies]
 jwst = [
     "celerite2>=0.1.2",
+]
+dashboard = [
+    "streamlit>=1.24",
+    "plotly>=5.14",
 ]
 modeling = [
     "pymc>=5.0",
