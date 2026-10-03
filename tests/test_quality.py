@@ -7,6 +7,7 @@ import pytest
 class TestSNR:
     """SNR hesaplama testleri."""
 
+    @pytest.mark.slow
     def test_snr_positive_for_transit(self, detrended_lc):
         # Kaskad tespiti TLS gerektirir; zarif degradasyon tasarımına göre
         # bağımlılık import edilemiyorsa bu test atlanır.

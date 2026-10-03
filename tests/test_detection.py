@@ -69,6 +69,7 @@ class TestBLSSearch:
 class TestCascade:
     """Kademeli tespit sistemi testleri."""
 
+    @pytest.mark.slow
     def test_cascade_confirmed(self, detrended_lc):
         # TLS olmadan kaskad kurulamaz; zarif degradasyon tasarımına göre
         # bağımlılık import edilemiyorsa bu test atlanır.

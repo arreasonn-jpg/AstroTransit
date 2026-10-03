@@ -126,6 +126,10 @@ ignore = [
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["."]
+markers = [
+    "slow: agir simulasyon testleri (>10s). Normalde hepsi calisir;",
+    "      hizli yerel gelistirme icin -m 'not slow' kullanilabilir.",
+]
 
 [tool.mypy]
 python_version = "3.11"

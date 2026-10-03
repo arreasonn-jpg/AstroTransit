@@ -4,6 +4,8 @@ from __future__ import annotations
 import importlib.util
 from pathlib import Path
 
+import pytest
+
 SCRIPT = Path("scripts/validation/analyze_real_noise_injection_parameters.py")
 SPEC = importlib.util.spec_from_file_location("injection_parameter_recovery", SCRIPT)
 ANALYSIS = importlib.util.module_from_spec(SPEC)
@@ -20,6 +22,7 @@ def test_percentile_is_interpolated():
     assert ANALYSIS.percentile([0.0, 10.0], 0.25) == 2.5
 
 
+@pytest.mark.slow
 def test_frozen_trial_contract_is_accepted():
     path = Path("validation_runs/v1_injection_recovery/real_noise_v1/trials.csv")
     report = ANALYSIS.analyze(path)
