@@ -169,10 +169,10 @@ omit = [
 ]
 
 [tool.coverage.report]
-# Kademeli artis: 48 -> 52 -> 55 (mevcut %58.39 uzerinde tampon).
-# test/coverage-boost-1: 4 modul %0 -> %98 (habitability, moon_potential,
-# architecture_anomalies, eb_coorbital_discriminator).
-fail_under = 55
+# Kademeli artis: 48 -> 52 -> 55 -> 60 (mevcut %63.26 uzerinde tampon).
+# test/coverage-boost-1: 4 quality modulu %0 -> %98.
+# test/coverage-boost-2: 7 visualization modulu %10-40 -> %93-100.
+fail_under = 60
 precision = 2
 show_missing = true
 skip_covered = false
