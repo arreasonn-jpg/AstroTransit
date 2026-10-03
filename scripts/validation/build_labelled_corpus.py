@@ -8,9 +8,9 @@ from __future__ import annotations
 
 import argparse
 import csv
-from datetime import datetime, timezone
 import hashlib
 import json
+from datetime import datetime, timezone
 from pathlib import Path
 
 from astrotransit.validation.corpus import ALLOWED_LABELS, CorpusCase

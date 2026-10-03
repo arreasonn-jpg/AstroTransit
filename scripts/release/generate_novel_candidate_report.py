@@ -1,5 +1,5 @@
-from pathlib import Path
 import json
+from pathlib import Path
 
 project_root = Path(__file__).resolve().parents[2]
 
@@ -17,7 +17,8 @@ def main():
         print(f"HATA: {followup_json} bulunamadi")
         return 1
 
-    data = json.load(open(followup_json, encoding="utf-8"))
+    with open(followup_json, encoding="utf-8") as fh:
+        data = json.load(fh)
 
     params = data.get("parameters", {})
     derived = data.get("derived", {})

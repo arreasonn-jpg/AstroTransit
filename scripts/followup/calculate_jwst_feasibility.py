@@ -1,5 +1,5 @@
 """
-TIC 303241161 için JWST Transmission Spectroscopy Metric (TSM) 
+TIC 303241161 için JWST Transmission Spectroscopy Metric (TSM)
 ve Atmosferik Ölçek Yüksekliği (Scale Height) hesaplayıcı.
 Referans: Kempton et al. 2018 (TSM formülleri)
 """
@@ -24,10 +24,8 @@ u_amu = 1.660539e-24   # g
 
 # 1) Gezegen Kütle Tahmini (Chen & Kipping 2017 empirik bağıntısı)
 # Rp < 1.23: Terrestrial, 1.23 < Rp < 14.2: Neptunian
-if R_p < 1.23:
-    M_p = 0.981 * (R_p ** 3.0)
-else:
-    M_p = 1.57 * (R_p ** 1.25) # Neptunian fit
+# Rp < 1.23: Terrestrial, aksi halde Neptunian fit
+M_p = 0.981 * (R_p ** 3.0) if R_p < 1.23 else 1.57 * (R_p ** 1.25)
 
 print("="*70)
 print("TIC 303241161 - JWST FZBLTE VE SPEKTROSKOP ANALZ")
@@ -39,7 +37,7 @@ g_cgs = (G_cgs * M_p * M_earth_g) / ((R_p * R_earth_cm) ** 2)
 print(f"Gezegen Yerçekimi (g)            : {g_cgs:.2f} cm/s²")
 
 # 3) Atmosferik Ölçek Yüksekliği (H)
-# ki senaryo test edilir: 
+# ki senaryo test edilir:
 # Senaryo A: Hidrojen/Helyum zarfı (H/He dominated, mu = 2.3)
 # Senaryo B: Su Dünyası / Ağır Atmosfer (Water-world, mu = 18.0)
 mu_HHe = 2.3
@@ -85,9 +83,9 @@ else:
 
 print("""
 ÖNERLEN ENSTRÜMAN: JWST NIRISS SOSS (0.6 - 2.8 mikron)
-  - 2.2 R_earth boyutu ve ~1250 K sıcaklığı ile bu hedef 'Lava World' 
+  - 2.2 R_earth boyutu ve ~1250 K sıcaklığı ile bu hedef 'Lava World'
     veya 'Atmospheric Escape' aşamasındaki bir sub-Neptune'dür.
-  - NIRISS SOSS, su buharı (1.4 ve 1.9 mikron) ve bulut/pus (haze) 
+  - NIRISS SOSS, su buharı (1.4 ve 1.9 mikron) ve bulut/pus (haze)
     yapılarını tespit etmek için en kararlı moddur.
 """)
 print("="*70)

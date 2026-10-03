@@ -5,15 +5,15 @@ AstroTransit kurulum doğrulama scripti.
 
 from __future__ import annotations
 
-import sys
 import importlib
+import sys
 from pathlib import Path
 
 project_root = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(project_root))
 
 
-def check_package(name: str, import_name: str = None) -> tuple[bool, str]:
+def check_package(name: str, import_name: str | None = None) -> tuple[bool, str]:
     import_name = import_name or name
     try:
         mod = importlib.import_module(import_name)

@@ -67,7 +67,7 @@ def _cohort_ids() -> list[str]:
 
     try:
         from scripts.validation.run_fpp_calibration_campaign import select_cohorts
-    except Exception:  # noqa: BLE001 - campaign script must stay optional here
+    except Exception:
         return []
     try:
         payload, _ = select_cohorts(
@@ -75,7 +75,7 @@ def _cohort_ids() -> list[str]:
             ROOT / PRIOR_INJECTION_HOSTS,
             seed=HOLDOUT_SEED,
         )
-    except Exception:  # noqa: BLE001
+    except Exception:
         return []
     ids: set[str] = set()
     for group in ("false_positives", "planets"):
@@ -104,7 +104,7 @@ def _measured_rows_ids() -> list[str]:
                     payload = json.loads(path.read_text(encoding="utf-8"))
                     for row in payload.get("rows", []) or []:
                         ids.add(normalize_target_id(row.get("target_id", "")))
-            except Exception:  # noqa: BLE001 - an unreadable artefact must not fake a holdout
+            except Exception:
                 continue
     ids.discard("")
     return sorted(ids)
@@ -255,7 +255,7 @@ def _evaluate_case(case: dict[str, Any], orchestrator: Any, sector_client: Any) 
         sector_source = "lowest_available_spoc_120s_at_run"
         try:
             requested = list(sector_client.get_available_sectors(case["target_id"]))[:1]
-        except Exception as exc:  # noqa: BLE001 - archive failure stays an error row
+        except Exception as exc:
             error = f"sector_lookup_failed:{type(exc).__name__}: {exc}"
     row = {
         "target_id": normalize_target_id(case["target_id"]),
@@ -285,7 +285,7 @@ def _evaluate_case(case: dict[str, Any], orchestrator: Any, sector_client: Any) 
         row["quality_scores"] = [
             getattr(getattr(getattr(item, "quality", None), "score", None), "total_score", None) for item in sectors
         ]
-    except Exception as exc:  # noqa: BLE001 - a failed target must never count as a pass
+    except Exception as exc:
         row["error"] = f"{type(exc).__name__}: {exc}"
     return row
 

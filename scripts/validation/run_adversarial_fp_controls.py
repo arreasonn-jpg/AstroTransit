@@ -335,7 +335,7 @@ def _evaluate_scenario(
                 try:
                     fit_result = modelling.fit(detrended, candidate)
                     row["fit_status"] = "map"
-                except Exception as fit_error:  # noqa: BLE001
+                except Exception as fit_error:
                     row["fit_status"] = f"failed:{type(fit_error).__name__}"
             quality_result = quality.evaluate(detrended, candidate, fit_result)
             row["quality_class"] = str(getattr(getattr(quality_result, "score", None), "candidate_class", "") or "")
@@ -346,7 +346,7 @@ def _evaluate_scenario(
             detected_period > 0
             and abs(detected_period - scenario.period_days) / scenario.period_days <= period_tolerance
         )
-    except Exception as exc:  # noqa: BLE001 - a failing scenario must not become a pass
+    except Exception as exc:
         row["outcome"] = "error"
         row["error"] = f"{type(exc).__name__}: {exc}"
     return row

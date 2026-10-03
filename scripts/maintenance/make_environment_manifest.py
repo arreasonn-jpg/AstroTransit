@@ -17,11 +17,11 @@ import argparse
 import hashlib
 import json
 import platform
+import subprocess
 import sys
 from datetime import datetime, timezone
 from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
-import subprocess
 
 
 def _pip_freeze() -> list[str]:

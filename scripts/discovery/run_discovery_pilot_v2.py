@@ -1,8 +1,8 @@
-from pathlib import Path
+import argparse
+import json
 import sys
 import time
-import json
-import argparse
+from pathlib import Path
 
 project_root = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(project_root))
@@ -16,10 +16,11 @@ def main():
     args = parser.parse_args()
 
     import pandas as pd
+
     from astrotransit.logging_config import setup_logging
-    from astrotransit.settings import load_settings
-    from astrotransit.pipelines.tess_pipeline import TESSPipeline
     from astrotransit.outputs.writers import OutputManager
+    from astrotransit.pipelines.tess_pipeline import TESSPipeline
+    from astrotransit.settings import load_settings
 
     setup_logging(log_level="WARNING")
 
@@ -82,7 +83,7 @@ def main():
     t0 = time.time()
 
     try:
-        for i, row in df.iterrows():
+        for _i, row in df.iterrows():
             tid = int(row["tid"])
             tic_id = f"TIC {tid}"
             sector = int(row["sector"])

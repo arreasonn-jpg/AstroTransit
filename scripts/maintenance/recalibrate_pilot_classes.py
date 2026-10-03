@@ -1,6 +1,7 @@
 from pathlib import Path
-import pandas as pd
+
 import numpy as np
+import pandas as pd
 
 project_root = Path(__file__).resolve().parents[2]
 
@@ -49,13 +50,23 @@ def classify_row(row):
         return "D"
 
     # Referans yoksa konservatif fallback
-    if confirmed and score >= 92 and snr >= 20 and fpp <= 0.03:
-        if pd.isna(radius) or (0.5 <= float(radius) <= 20.0):
-            return "A"
+    if (
+        confirmed
+        and score >= 92
+        and snr >= 20
+        and fpp <= 0.03
+        and (pd.isna(radius) or (0.5 <= float(radius) <= 20.0))
+    ):
+        return "A"
 
-    if confirmed and score >= 80 and snr >= 10 and fpp <= 0.10:
-        if pd.isna(radius) or (0.5 <= float(radius) <= 25.0):
-            return "B"
+    if (
+        confirmed
+        and score >= 80
+        and snr >= 10
+        and fpp <= 0.10
+        and (pd.isna(radius) or (0.5 <= float(radius) <= 25.0))
+    ):
+        return "B"
 
     if score >= 55:
         return "C"

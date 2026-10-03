@@ -298,7 +298,7 @@ def main():
         "theme": args.theme,
         "config": str(config_path),
         "exclude_tics_file": str(exclude_file) if exclude_file else None,
-        "n_targets": int(len(df)),
+        "n_targets": len(df),
         "max_targets": args.max_targets,
         "discovery_limit": args.limit,
         "viz_enabled": bool(args.viz),

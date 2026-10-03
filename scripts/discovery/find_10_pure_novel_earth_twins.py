@@ -2,10 +2,11 @@
 AstroTransit — 10 Pure Novel Earth Twins Finder (Bug-Free & Astrophysically Accurate)
 100% Non-TOI, ESI >= 0.90, Terrestrial TSM Thresholds
 """
-import requests
-import pandas as pd
-import numpy as np
 from pathlib import Path
+
+import numpy as np
+import pandas as pd
+import requests
 from astroquery.mast import Catalogs
 
 # ESI Sabitleri (Schulze-Makuch 2011)
@@ -73,16 +74,16 @@ novel_earth_twins = []
 for _, star in df_stars.iterrows():
     try:
         tid = int(star.get("ID"))
-        
+
         # NASA TOI KARA LSTE KONTROLÜ (TOI'DE VARSA KESNLKLE ELE!)
         if tid in toi_blacklist:
             continue
-            
+
         teff = float(star.get("Teff"))
         r_star = float(star.get("rad"))
         tmag = float(star.get("Tmag"))
         j_mag = tmag - 0.85 # J-mag tahmini
-        
+
         if pd.isna(teff) or pd.isna(r_star) or pd.isna(tmag):
             continue
 
@@ -90,12 +91,12 @@ for _, star in df_stars.iterrows():
         for p_test in [14.2, 17.8, 21.5, 25.0, 29.3]:
             a_au = ((p_test / 365.25)**2 * (0.20))**(1/3)
             t_eq = teff * np.sqrt(r_star * 0.00465 / (2 * a_au)) * (1 - 0.3)**0.25
-            
+
             # Gezegen Yarıçapı: 0.92 - 1.08 R_earth (Dünya Birebir kizi)
             for rp_test in [0.94, 0.98, 1.00, 1.02, 1.05]:
                 esi = calc_esi(rp_test, t_eq)
                 tsm = calc_tsm(rp_test, t_eq, r_star, j_mag)
-                
+
                 # ESI >= 0.90 ve Karasal TSM >= 8.0 (Kempton 2018 Standartları)
                 if esi >= 0.90 and 235 <= t_eq <= 305:
                     novel_earth_twins.append({

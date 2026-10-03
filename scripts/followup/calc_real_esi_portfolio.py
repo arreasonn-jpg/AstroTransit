@@ -1,8 +1,8 @@
 """
 Gerçek Fotometrik Fits Üzerinden ESI ve TSM Hesaplayıcı
 """
-import pandas as pd
 import numpy as np
+import pandas as pd
 
 # Schulze-Makuch 2011 ESI Formülü
 R_EARTH = 1.00

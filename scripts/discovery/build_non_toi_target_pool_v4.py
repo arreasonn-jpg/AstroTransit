@@ -1,8 +1,8 @@
-from pathlib import Path
+import argparse
+import re
 import sys
 import time
-import re
-import argparse
+from pathlib import Path
 
 project_root = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(project_root))
@@ -98,10 +98,10 @@ def main():
 
     args = parse_args()
 
-    import pandas as pd
-    import numpy as np
-    from astroquery.mast import Catalogs
     import lightkurve as lk
+    import numpy as np
+    import pandas as pd
+    from astroquery.mast import Catalogs
 
     benchmarks_dir = project_root / "benchmarks"
     benchmarks_dir.mkdir(parents=True, exist_ok=True)

@@ -1,10 +1,11 @@
 """
 TIC 289972535 — ESI %98.66 (15.0°C) Pure Novel Earth Twin Publication Plot
 """
-import numpy as np
-import matplotlib.pyplot as plt
 from pathlib import Path
+
 import lightkurve as lk
+import matplotlib.pyplot as plt
+import numpy as np
 
 TIC_ID = "TIC 289972535"
 PERIOD = 14.2
@@ -54,8 +55,8 @@ fig, ax = plt.subplots(figsize=(10, 5.5), dpi=300)
 ax.scatter(p_fit, f_fit, color="#a2d2ff", alpha=0.22, s=8, label="TESS 2-min Cadence Data")
 
 valid_bins = ~np.isnan(binned_flux)
-ax.errorbar(binned_centers[valid_bins], binned_flux[valid_bins], yerr=binned_err[valid_bins], 
-            fmt='o', color="#e63946", ecolor="#e63946", elinewidth=1.5, capsize=2.5, 
+ax.errorbar(binned_centers[valid_bins], binned_flux[valid_bins], yerr=binned_err[valid_bins],
+            fmt='o', color="#e63946", ecolor="#e63946", elinewidth=1.5, capsize=2.5,
             markersize=6, zorder=5, label="Phase-Binned Photometry (15 min)")
 
 model_x = np.linspace(-3.5, 3.5, 500)

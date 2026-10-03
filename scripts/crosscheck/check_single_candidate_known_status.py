@@ -1,7 +1,7 @@
-from pathlib import Path
-import sys
-import re
 import argparse
+import re
+import sys
+from pathlib import Path
 
 project_root = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(project_root))
@@ -54,7 +54,8 @@ def main():
     in_verified = False
     if verified_file.exists():
         import json
-        verified = json.load(open(verified_file, encoding="utf-8"))
+        with open(verified_file, encoding="utf-8") as fh:
+            verified = json.load(fh)
         for item in verified:
             if normalize_tic(item.get("tic_id")) == target:
                 in_verified = True

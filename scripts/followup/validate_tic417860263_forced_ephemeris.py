@@ -13,12 +13,12 @@ S57'den gelen bilinen ephemeris ile tüm sektörlerde:
 
 from __future__ import annotations
 
-import json
 import csv
+import json
 import math
 import sys
+from dataclasses import asdict, dataclass, field
 from pathlib import Path
-from dataclasses import dataclass, field, asdict
 
 import numpy as np
 
@@ -178,8 +178,8 @@ def compute_odd_even(
     flux_odd = flux[odd_mask]
     flux_even = flux[even_mask]
 
-    n_odd = int(len(flux_odd))
-    n_even = int(len(flux_even))
+    n_odd = len(flux_odd)
+    n_even = len(flux_even)
 
     if n_odd < 3 or n_even < 3 or median_out == 0:
         return 0.0, 0.0, n_odd, n_even
@@ -302,7 +302,7 @@ def validate_sector(sector: int) -> SectorValidation:
             sv.error = f"Sector {sector}: insufficient data ({len(time)} points)"
             return sv
 
-        sv.n_points = int(len(time))
+        sv.n_points = len(time)
         sv.time_start = float(time[0])
         sv.time_end = float(time[-1])
         sv.time_span_days = float(time[-1] - time[0])
@@ -320,8 +320,8 @@ def validate_sector(sector: int) -> SectorValidation:
         flux_in = flux[transit_mask]
         flux_out = flux[~transit_mask]
 
-        sv.n_in_transit = int(len(flux_in))
-        sv.n_out_transit = int(len(flux_out))
+        sv.n_in_transit = len(flux_in)
+        sv.n_out_transit = len(flux_out)
 
         if len(flux_out) > 0:
             sv.median_out_transit = float(np.median(flux_out))

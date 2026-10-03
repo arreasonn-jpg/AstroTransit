@@ -13,16 +13,16 @@ gücünü sürekli bir fonksiyon olarak hesaplamak.
 """
 
 from __future__ import annotations
+
 import argparse
 from pathlib import Path
 
+import lightkurve as lk
+import matplotlib
 import numpy as np
 from loguru import logger
-import lightkurve as lk
 from scipy.interpolate import UnivariateSpline
 from scipy.signal import find_peaks
-
-import matplotlib
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
@@ -97,7 +97,7 @@ def find_anomalous_peaks(scan_phases, sig_map, primary_phase_width):
     peak_sigs = sig_map[peaks]
 
     valid_peaks = []
-    for p, s in zip(peak_phases, peak_sigs):
+    for p, s in zip(peak_phases, peak_sigs, strict=False):
         abs_p = np.abs(p)
         if abs_p <= primary_phase_width * 3.0:
             zone = "A_TRANSIT_ZONE"
@@ -131,7 +131,7 @@ def main():
     dur_phase = (args.duration_hours / 24.0) / args.period
 
     # Taramayı yap
-    scan_phases, depth_map, sig_map = scan_phase_space(phase, flux, dur_phase, steps=1000)
+    scan_phases, _depth_map, sig_map = scan_phase_space(phase, flux, dur_phase, steps=1000)
 
     # Tepe noktalarını bul
     peaks = find_anomalous_peaks(scan_phases, sig_map, dur_phase)
@@ -195,7 +195,7 @@ def main():
     print("=" * 60 + "\n")
 
     # Çizim
-    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(14, 10))
+    _fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(14, 10))
 
     # Üst panel: Full range
     ax1.plot(scan_phases, sig_map, color="blue", lw=1.5, label="Signal Power")

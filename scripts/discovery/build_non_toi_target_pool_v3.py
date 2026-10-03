@@ -1,8 +1,8 @@
-from pathlib import Path
+import random
+import re
 import sys
 import time
-import re
-import random
+from pathlib import Path
 
 project_root = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(project_root))
@@ -26,10 +26,10 @@ def main():
     print("  TOI Disi Kesif Havuzu Olusturma v3")
     print("=" * 72)
 
-    import pandas as pd
-    import numpy as np
-    from astroquery.mast import Catalogs
     import lightkurve as lk
+    import numpy as np
+    import pandas as pd
+    from astroquery.mast import Catalogs
 
     benchmarks_dir = project_root / "benchmarks"
     benchmarks_dir.mkdir(parents=True, exist_ok=True)
@@ -92,7 +92,7 @@ def main():
     page_sizes = [2000, 2000, 2000]
     page_numbers = [1, 2, 3]
 
-    for page_size, page_num in zip(page_sizes, page_numbers):
+    for page_size, page_num in zip(page_sizes, page_numbers, strict=False):
         print(f"  TIC page {page_num} indiriliyor...")
         try:
             tbl = Catalogs.query_criteria(

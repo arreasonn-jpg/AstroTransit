@@ -11,13 +11,12 @@ Example:
 from __future__ import annotations
 
 import argparse
-from datetime import datetime, timezone
 import json
+from datetime import datetime, timezone
 from pathlib import Path
-from urllib.parse import urlencode
 from urllib.error import URLError
+from urllib.parse import urlencode
 from urllib.request import Request, urlopen
-
 
 TAP_ENDPOINT = "https://exoplanetarchive.ipac.caltech.edu/TAP/sync"
 QUERY = """select top {limit} tic_id,pl_name,pl_orbper,pl_rade,disc_refname
@@ -33,7 +32,7 @@ def fetch_rows(limit: int) -> list[dict[str, str]]:
     query = QUERY.format(limit=int(limit))
     params = urlencode({"query": query, "format": "json"})
     request = Request(f"{TAP_ENDPOINT}?{params}", headers={"User-Agent": "AstroTransit/validation"})
-    with urlopen(request, timeout=60) as response:  # noqa: S310 - fixed HTTPS endpoint
+    with urlopen(request, timeout=60) as response:
         payload = json.loads(response.read().decode("utf-8"))
     if not isinstance(payload, list):
         raise ValueError("NASA Archive beklenmeyen JSON döndürdü")

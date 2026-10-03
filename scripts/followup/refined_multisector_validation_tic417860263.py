@@ -12,8 +12,8 @@ from __future__ import annotations
 import json
 import math
 import sys
+from dataclasses import asdict, dataclass
 from pathlib import Path
-from dataclasses import dataclass, asdict
 
 import numpy as np
 from scipy.optimize import minimize
@@ -241,10 +241,8 @@ def fit_single_transit_t0(
 
     d2chi2 = (chi2_plus - 2 * chi2_center + chi2_minus) / (h ** 2)
 
-    if d2chi2 > 0:
-        t0_err = 1.0 / np.sqrt(d2chi2)
-    else:
-        t0_err = 0.005  # fallback ~7 dakika
+    # d2chi2 pozitifse Gaussian; aksi halde ~7 dk fallback
+    t0_err = 1.0 / np.sqrt(d2chi2) if d2chi2 > 0 else 0.005
 
     # Sanity check
     t0_err = min(t0_err, 0.05)  # max ~72 dakika
@@ -259,7 +257,7 @@ def fit_single_transit_t0(
         "depth": float(depth_fit),
         "depth_ppm": float(depth_ppm),
         "chi2": float(best_chi2),
-        "n_points": int(len(t_local)),
+        "n_points": len(t_local),
         "n_in_transit": int(np.sum(in_fit)),
         "baseline": float(baseline),
     }
@@ -342,7 +340,7 @@ def validate_sector_forced(
     try:
         time, flux, detrended = get_detrended_data(sector)
         sv.detrending_used = detrended
-        sv.n_points = int(len(time))
+        sv.n_points = len(time)
         sv.time_span_days = float(time[-1] - time[0])
 
         first_ep = max(0, int(np.ceil((time[0] - t0) / period)))
@@ -356,8 +354,8 @@ def validate_sector_forced(
 
         flux_in = flux[transit_mask]
         flux_out = flux[~transit_mask]
-        sv.n_in_transit = int(len(flux_in))
-        sv.n_out_transit = int(len(flux_out))
+        sv.n_in_transit = len(flux_in)
+        sv.n_out_transit = len(flux_out)
 
         if len(flux_in) < 3 or len(flux_out) < 10:
             sv.error = "insufficient points"
@@ -557,9 +555,9 @@ def main():
         keep = np.abs(resid) < 3.0 * rms
         n_before = len(epochs_all)
 
-        epochs_all = [e for e, k in zip(epochs_all, keep) if k]
-        tc_all = [t for t, k in zip(tc_all, keep) if k]
-        err_all = [r for r, k in zip(err_all, keep) if k]
+        epochs_all = [e for e, k in zip(epochs_all, keep, strict=False) if k]
+        tc_all = [t for t, k in zip(tc_all, keep, strict=False) if k]
+        err_all = [r for r, k in zip(err_all, keep, strict=False) if k]
 
         n_clipped = n_before - len(epochs_all)
         print(f"  Iteration {iteration+1}: {n_clipped} outliers clipped, {len(epochs_all)} remaining")
