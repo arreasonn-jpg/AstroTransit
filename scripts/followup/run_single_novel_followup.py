@@ -1,6 +1,6 @@
-from pathlib import Path
-import sys
 import argparse
+import sys
+from pathlib import Path
 
 project_root = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(project_root))
@@ -13,9 +13,9 @@ def main():
     parser.add_argument("--mcmc", action="store_true", help="WSL MCMC modunu kullan")
     args = parser.parse_args()
 
-    from astrotransit.settings import load_settings
-    from astrotransit.pipelines.tess_pipeline import TESSPipeline
     from astrotransit.outputs.writers import OutputManager
+    from astrotransit.pipelines.tess_pipeline import TESSPipeline
+    from astrotransit.settings import load_settings
 
     if args.mcmc:
         config_path = project_root / "configs" / "wsl_mcmc.toml"

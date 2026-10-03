@@ -32,18 +32,16 @@ import argparse
 import json
 from pathlib import Path
 
+import matplotlib
 import numpy as np
 from loguru import logger
 from scipy.interpolate import UnivariateSpline
-
-import matplotlib
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from matplotlib.gridspec import GridSpec
 
 from astrotransit.data.tess_client import TESSClient, TESSNoDataError
-
 
 # ──────────────────────────────────────────────────────────────
 # Detrend
@@ -229,10 +227,10 @@ def cross_sector_verdict(
     l5_strong = l5_asi >= 0.60 and any(s >= 5.0 for s in l5_sigs)
     l4_strong = l4_asi >= 0.60 and any(s >= 5.0 for s in l4_sigs)
 
-    coorbital_size_guard = True
-    if mean_prim_ppm > 0:
-        if mean_l4_ppm > 0.8 * mean_prim_ppm or mean_l5_ppm > 0.8 * mean_prim_ppm:
-            coorbital_size_guard = False
+    coorbital_size_guard = not (
+        mean_prim_ppm > 0
+        and (mean_l4_ppm > 0.8 * mean_prim_ppm or mean_l5_ppm > 0.8 * mean_prim_ppm)
+    )
 
     if l5_strong and l4_strong:
         if coorbital_size_guard:
@@ -315,7 +313,7 @@ def make_figure(
 
     colors = plt.cm.tab10(np.linspace(0, 0.8, n))
 
-    for ridx, (res, col) in enumerate(zip(sector_results, colors)):
+    for ridx, (res, col) in enumerate(zip(sector_results, colors, strict=False)):
         sec_num = res["sector"]
         bc = np.array(res["bin_centers"])
         bm = np.array(res["bin_medians"])
@@ -368,8 +366,8 @@ def make_figure(
     l4_asi = cross_sector_asi([r["scores"] for r in sector_results], "L4")
     l5_asi = cross_sector_asi([r["scores"] for r in sector_results], "L5")
 
-    l4_str = "  ".join(f"S{s}:{v:.1f}σ" for s, v in zip(sector_nums, l4_sigs))
-    l5_str = "  ".join(f"S{s}:{v:.1f}σ" for s, v in zip(sector_nums, l5_sigs))
+    l4_str = "  ".join(f"S{s}:{v:.1f}σ" for s, v in zip(sector_nums, l4_sigs, strict=False))
+    l5_str = "  ".join(f"S{s}:{v:.1f}σ" for s, v in zip(sector_nums, l5_sigs, strict=False))
 
     txt = (
         f"CROSS-SECTOR ARCHITECTURE ANALYSIS — TIC {tic_id}  (P={period:.4f}d)\n"
@@ -452,11 +450,8 @@ def main():
             args.duration_hours = dur_hours_auto
     else:
         period = args.period
-        if args.t0 is not None:
-            t0 = args.t0
-        else:
-            # t0 bilinmiyorsa ilk sektörün ortasını kullan
-            t0 = float(np.mean(selected[0].time))
+        # t0 bilinmiyorsa ilk sektörün ortasını kullan
+        t0 = args.t0 if args.t0 is not None else float(np.mean(selected[0].time))
 
     logger.info(f"Kullanılan: period={period:.5f}d, t0={t0:.5f}, dur={args.duration_hours:.3f}h")
 
@@ -578,8 +573,8 @@ def main():
         "cross_sector": {
             "L4_ASI": l4_asi,
             "L5_ASI": l5_asi,
-            "L4_sigs_per_sector": dict(zip(sector_nums, l4_sigs)),
-            "L5_sigs_per_sector": dict(zip(sector_nums, l5_sigs)),
+            "L4_sigs_per_sector": dict(zip(sector_nums, l4_sigs, strict=False)),
+            "L5_sigs_per_sector": dict(zip(sector_nums, l5_sigs, strict=False)),
         },
         "verdict": verdict,
         "reason": reason,

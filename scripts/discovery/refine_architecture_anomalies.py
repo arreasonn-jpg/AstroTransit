@@ -51,10 +51,7 @@ def compute_period_mismatch_score(row: pd.Series) -> float:
     tls_p = safe_float(row.get("tls_period"), 0.0)
     adopted_p = safe_float(row.get("period"), 0.0)
 
-    if cascade_status == "period_mismatch":
-        base = 55.0
-    else:
-        base = 0.0
+    base = 55.0 if cascade_status == "period_mismatch" else 0.0
 
     if bls_p > 0 and tls_p > 0:
         ratio = max(bls_p, tls_p) / max(min(bls_p, tls_p), 1e-6)

@@ -1,5 +1,6 @@
-from pathlib import Path
 import sys
+from pathlib import Path
+
 import pandas as pd
 
 project_root = Path(__file__).resolve().parents[2]
@@ -7,9 +8,9 @@ sys.path.insert(0, str(project_root))
 
 
 def main():
-    from astrotransit.settings import load_settings
-    from astrotransit.pipelines.tess_pipeline import TESSPipeline
     from astrotransit.outputs.writers import OutputManager
+    from astrotransit.pipelines.tess_pipeline import TESSPipeline
+    from astrotransit.settings import load_settings
 
     recal_path = project_root / "outputs" / "parquet" / "astrotransit_candidates_recal.parquet"
     if not recal_path.exists():
@@ -59,7 +60,7 @@ def main():
     results = []
 
     try:
-        for i, row in df_good.iterrows():
+        for _i, row in df_good.iterrows():
             target = row["source_id"]
             sector = int(row["sector"])
 

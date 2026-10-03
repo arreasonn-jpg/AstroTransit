@@ -22,13 +22,13 @@ Kullanım:
 from __future__ import annotations
 
 import argparse
+import contextlib
 import json
 import sys
 from pathlib import Path
 
 import numpy as np
 from loguru import logger
-
 
 # ──────────────────────────────────────────────────────────────
 # Yardımcı: Light curve indirme
@@ -69,10 +69,8 @@ def extract_spoc_metadata(lc) -> dict:
     for key in ["CROWDSAP", "crowdsap"]:
         val = lc.meta.get(key)
         if val is not None:
-            try:
+            with contextlib.suppress(ValueError, TypeError):
                 crowdsap = float(val)
-            except (ValueError, TypeError):
-                pass
 
     meta["crowding_ratio"] = crowdsap
     logger.info(f"CROWDSAP = {crowdsap}")
@@ -159,9 +157,9 @@ def gaia_neighbor_search(
         return result
 
     try:
-        from astroquery.gaia import Gaia
         import astropy.units as u
         from astropy.coordinates import SkyCoord
+        from astroquery.gaia import Gaia
 
         coord = SkyCoord(ra=float(ra), dec=float(dec), unit=(u.deg, u.deg), frame="icrs")
 
@@ -272,9 +270,9 @@ def gaia_neighbor_search(
     return result
 
     try:
-        from astroquery.gaia import Gaia
         import astropy.units as u
         from astropy.coordinates import SkyCoord
+        from astroquery.gaia import Gaia
 
         coord = SkyCoord(ra=float(ra), dec=float(dec), unit=(u.deg, u.deg), frame="icrs")
 
@@ -539,10 +537,10 @@ def main():
     )
 
     # ── 5) Anomaly analizi ──
-    from astrotransit.quality.residual_analysis import ResidualAnalyzer
-    from astrotransit.quality.transit_consistency import TransitConsistencyAnalyzer
-    from astrotransit.quality.timing_analysis import TimingAnalyzer
     from astrotransit.quality.anomaly_scorer import AnomalyScorer
+    from astrotransit.quality.residual_analysis import ResidualAnalyzer
+    from astrotransit.quality.timing_analysis import TimingAnalyzer
+    from astrotransit.quality.transit_consistency import TransitConsistencyAnalyzer
 
     residual_report = ResidualAnalyzer().analyze(
         target_id=target_id,
@@ -581,7 +579,7 @@ def main():
     logger.info(f"Anomaly: {anomaly_report.summary()}")
 
     # ── 6) FPP hesabı ──
-    from astrotransit.quality.fpp import SimpleFPPCalculator, FPPReportWriter
+    from astrotransit.quality.fpp import FPPReportWriter, SimpleFPPCalculator
 
     # Even/odd depth ve v-shape — transit_report details'tan çek
     td = transit_report.details or {}

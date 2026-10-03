@@ -20,7 +20,6 @@ import numpy as np
 import pandas as pd
 from loguru import logger
 
-
 _SOLAR_TEFF_K = 5772.0
 
 

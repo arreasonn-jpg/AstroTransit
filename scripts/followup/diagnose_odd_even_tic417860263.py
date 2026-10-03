@@ -24,7 +24,7 @@ def diagnose():
     print("=" * 70)
     print("TIC 417860263 (HD 224792) — Odd-Even Teşhis Raporu")
     print("=" * 70)
-    
+
     # Test 1: Derinlik vs sektör süresi korelasyonu
     print("\n[TEST 1] Derinlik vs Sektör Süresi")
     print("-" * 50)
@@ -33,10 +33,10 @@ def diagnose():
         flag = "⚠️" if abs(ratio - 100) > 50 else "✅"
         print(f"  S{s}: {d['depth']:>6} ppm ({ratio:>5.1f}%) "
               f"span={d['span']:.1f}d {flag}")
-    
+
     print("\n  → Derinlik sektör süresiyle azalıyorsa: detrending artefaktı")
     print("  → Derinlik rastgele değişiyorsa: yıldız aktivitesi")
-    
+
     # Test 2: Odd-even farkı vs SNR
     print("\n[TEST 2] Odd-Even Farkı Anlamlılığı")
     print("-" * 50)
@@ -48,10 +48,10 @@ def diagnose():
         sig_flag = "🚨" if sigma_diff > 3 else "⚠️" if sigma_diff > 1.5 else "✅"
         print(f"  S{s}: Δ={diff:>+7.0f} ppm  "
               f"(odd={d['odd']:>+6}, even={d['even']:>+6}) {sig_flag}")
-    
+
     print("\n  → Tüm sektörlerde tutarlı fark: gerçek fiziksel sinyal (EB?)")
     print("  → Sadece düşük SNR sektörlerde fark: gürültü artefaktı")
-    
+
     # Test 3: Negatif derinlik sektörleri
     print("\n[TEST 3] Negatif Derinlik Sektörleri")
     print("-" * 50)
@@ -64,7 +64,7 @@ def diagnose():
         print("    Bu, yıldız aktivite döngüsüyle uyumlu olabilir")
     else:
         print("  ✅ Tüm sektörlerde pozitif derinlik")
-    
+
     # Test 4: EB olasılık kontrolü
     print("\n[TEST 4] EB Olasılık Kontrolü")
     print("-" * 50)
@@ -76,7 +76,7 @@ def diagnose():
         print("  ⚠️ 0.3-1% → EB veya büyük gezegen")
     else:
         print("  ✅ <0.3% → gezegen boyutuyla tutarlı")
-    
+
     # Sonuç
     print("\n" + "=" * 70)
     print("SONUÇ VE ÖNERİLER")
@@ -88,7 +88,7 @@ def diagnose():
      a) Yıldız lekesi döngüsü (M dwarf aktivite)
      b) Detrending overfitting (özellikle kısa sektörlerde)
      c) Gerçek fiziksel değişim (precessing orbit?)
-  
+
   ÖNERİLEN SONRAKİ ADIMLAR:
   → S57 ve S58 ham light curve'larını indir
   → Farklı detrending yöntemleri dene (biweight vs GP vs spline)

@@ -2,12 +2,13 @@
 AstroTransit — Pure Novelty Earth Twin Finder (Robust & Bug-Free)
 100% Non-TOI, Real Project Outputs & Catalog Intersection
 """
-import requests
-import pandas as pd
-import numpy as np
-from pathlib import Path
 import glob
 import json
+from pathlib import Path
+
+import numpy as np
+import pandas as pd
+import requests
 
 # ESI Sabitleri (Schulze-Makuch 2011)
 R_EARTH = 1.00
@@ -20,17 +21,17 @@ W_TEMP = 5.58
 def calc_esi(r_p, t_eq):
     if pd.isna(r_p) or pd.isna(t_eq) or r_p <= 0 or t_eq <= 0:
         return 0.0
-    
+
     esi_r = (1.0 - abs((r_p - R_EARTH) / (r_p + R_EARTH))) ** W_RADIUS
     esi_t = (1.0 - abs((t_eq - T_EARTH) / (t_eq + T_EARTH))) ** W_TEMP
-    
+
     m_p = 0.981 * (r_p ** 3.0) if r_p < 1.23 else 1.57 * (r_p ** 1.25)
     v_esc = 11.19 * np.sqrt(m_p / r_p)
     rho = 5.51 * (m_p / (r_p ** 3.0))
-    
+
     esi_rho = (1.0 - abs((rho - 5.51) / (rho + 5.51))) ** W_DENSITY
     esi_v = (1.0 - abs((v_esc - 11.19) / (v_esc + 11.19))) ** W_ESCAPE
-    
+
     return round(float((esi_r * esi_t * esi_rho * esi_v) ** (1.0 / 4.0)), 4)
 
 def calc_tsm(r_p, t_eq, r_star, j_mag):
@@ -83,10 +84,10 @@ for pat in json_patterns:
                 if not tid_str.isdigit():
                     continue
                 tid = int(tid_str)
-                
+
                 if tid in toi_blacklist:
                     continue
-                
+
                 rp = float(d.get("derived", {}).get("planet_radius_rearth", d.get("parameters", {}).get("rp_rs", 0)*109.0))
                 teq = float(d.get("derived", {}).get("equilibrium_temperature_k", 300.0))
                 period = float(d.get("parameters", {}).get("period_days", 0.0))
@@ -99,11 +100,11 @@ for pat in json_patterns:
                 r_star = float(d.get("stellar", {}).get("radius_rsun", 0.5))
                 tmag = float(d.get("stellar", {}).get("tmag", 10.0))
                 j_mag = tmag - 0.8
-                
+
                 if rp > 0 and teq > 0:
                     esi = calc_esi(rp, teq)
                     tsm = calc_tsm(rp, teq, r_star, j_mag)
-                    
+
                     candidates.append({
                         "TIC_ID": f"TIC {tid}",
                         "TID": tid,
@@ -132,7 +133,7 @@ for pat in csv_patterns:
         try:
             df = pd.read_csv(cf)
             cols = {c.lower(): c for c in df.columns}
-            
+
             id_c = next((v for k, v in cols.items() if 'tic' in k or 'tid' in k or 'source' in k), None)
             rp_c = next((v for k, v in cols.items() if 'radius' in k or 'rp' in k or 'rade' in k), None)
             teq_c = next((v for k, v in cols.items() if 'teq' in k or 'temp' in k or 'eqt' in k), None)
@@ -149,10 +150,10 @@ for pat in csv_patterns:
                         if not raw_id.isdigit():
                             continue
                         tid = int(raw_id)
-                        
+
                         if tid in toi_blacklist:
                             continue
-                        
+
                         rp = float(r[rp_c])
                         teq = float(r[teq_c])
                         period = float(r[p_c]) if p_c and not pd.isna(r[p_c]) else 0.0
@@ -162,11 +163,11 @@ for pat in csv_patterns:
                         fpp = float(r[fpp_c])
                         r_star = float(r[rstar_c]) if rstar_c and not pd.isna(r[rstar_c]) else 0.4
                         tmag = float(r[tmag_c]) if tmag_c and not pd.isna(r[tmag_c]) else 10.5
-                        
+
                         if 0.1 < rp < 15.0 and 100 < teq < 1500:
                             esi = calc_esi(rp, teq)
                             tsm = calc_tsm(rp, teq, r_star, tmag - 0.8)
-                            
+
                             candidates.append({
                                 "TIC_ID": f"TIC {tid}",
                                 "TID": tid,
@@ -189,12 +190,12 @@ for pat in csv_patterns:
 if len(candidates) > 0:
     res_df = pd.DataFrame(candidates)
     res_df = res_df.drop_duplicates(subset=["TID"]).sort_values(by=["ESI_Score", "TSM_Score"], ascending=[False, False])
-    
+
     top10_df = res_df.head(10)
     out_csv = Path("outputs_habitable_search/top10_pure_novelty_candidates.csv")
     out_csv.parent.mkdir(parents=True, exist_ok=True)
     top10_df.to_csv(out_csv, index=False)
-    
+
     print("\n3/3 TARAMA TAMAMLANDI! EN YÜKSEK ESI SKORLU 10 ÖZGÜN ADAY:")
     print("="*95)
     print(top10_df[["TIC_ID", "Status", "ESI_Score", "TSM_Score", "Rp_Earth", "Teq_K", "Period_days", "SNR", "FPP"]].to_string(index=False))

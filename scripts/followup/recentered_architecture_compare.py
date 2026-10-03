@@ -34,19 +34,19 @@ import argparse
 import json
 from pathlib import Path
 
+import matplotlib
 import numpy as np
 from loguru import logger
 from scipy.interpolate import UnivariateSpline
 
-import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from matplotlib.gridspec import GridSpec
 
 try:
     import lightkurve as lk
-except ImportError:
-    raise ImportError("pip install lightkurve")
+except ImportError as exc:
+    raise ImportError("pip install lightkurve") from exc
 
 
 # ─────────────────────────────────────────────────────────────
@@ -414,7 +414,7 @@ def make_figure(
         sigs = [sc[k]["sig"] for k in window_keys]
         colors_b = ["#1f77b4" if s > 0 else "#d62728" for s in sigs]
         bars = ax2.barh(window_labels, sigs, color=colors_b, alpha=0.75)
-        for bar, sig in zip(bars, sigs):
+        for bar, sig in zip(bars, sigs, strict=False):
             ax2.text(
                 sig + (0.15 if sig >= 0 else -0.15),
                 bar.get_y() + bar.get_height() / 2,

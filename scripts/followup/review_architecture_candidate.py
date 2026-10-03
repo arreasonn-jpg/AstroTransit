@@ -34,17 +34,17 @@ import argparse
 import json
 from pathlib import Path
 
+import matplotlib
 import numpy as np
 from loguru import logger
 
-import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
 try:
     import lightkurve as lk
-except ImportError:
-    raise ImportError("Lütfen lightkurve paketini yükleyin: pip install lightkurve")
+except ImportError as exc:
+    raise ImportError("Lütfen lightkurve paketini yükleyin: pip install lightkurve") from exc
 
 from scipy.interpolate import UnivariateSpline
 
@@ -94,7 +94,7 @@ def detrend_lightcurve(time: np.ndarray, flux: np.ndarray, knot_spacing_days: fl
 
     spline = UnivariateSpline(time, flux, w=weights, k=3, s=len(time)*0.5)
     trend = spline(time)
-    
+
     detrended = flux / trend
     return detrended
 
@@ -109,7 +109,7 @@ def calculate_window_score(
     """Belirli bir faz penceresindeki sinyalin gücünü ölçer."""
     # Fazı -0.5 ile +0.5 arasına çek ve hedefe göre hizala
     shifted_phase = ((phase - target_phase + 0.5) % 1.0) - 0.5
-    
+
     in_window = np.abs(shifted_phase) < (window_width / 2.0)
     out_window = ~in_window
 
@@ -126,7 +126,7 @@ def calculate_window_score(
 
     depth = out_med - in_med
     depth_ppm = float(depth * 1e6)
-    
+
     # Kaba bir SNR/Significance hesabı
     # sqrt(N) ile istatistiksel güveni artır
     sig = float((depth / max(out_std, 1e-6)) * np.sqrt(n_pts))
@@ -143,14 +143,14 @@ def bin_folded_lc(phase: np.ndarray, flux: np.ndarray, bins: int = 150):
     bins_arr = np.linspace(-0.5, 0.5, bins + 1)
     bin_centers = 0.5 * (bins_arr[1:] + bins_arr[:-1])
     bin_medians = np.zeros(bins)
-    
+
     for i in range(bins):
         mask = (phase >= bins_arr[i]) & (phase < bins_arr[i+1])
         if np.sum(mask) > 0:
             bin_medians[i] = np.median(flux[mask])
         else:
             bin_medians[i] = np.nan
-            
+
     return bin_centers, bin_medians
 
 
@@ -164,17 +164,17 @@ def plot_architecture(
     scores: dict,
     outpath: Path,
 ):
-    fig, axes = plt.subplots(3, 1, figsize=(12, 14), gridspec_kw={'height_ratios': [2, 1, 1]})
-    
+    _fig, axes = plt.subplots(3, 1, figsize=(12, 14), gridspec_kw={'height_ratios': [2, 1, 1]})
+
     # 1. Tam faz
     ax = axes[0]
     ax.scatter(phase, flux, s=1, color="gray", alpha=0.3, label="Unbinned")
     ax.scatter(bin_phase, bin_flux, s=20, color="blue", label="Binned")
-    
+
     # Trojan pencerelerini çiz (±1/6)
     ax.axvspan(-0.166 - 0.02, -0.166 + 0.02, color="orange", alpha=0.1, label="L4/Trojan Window")
     ax.axvspan(0.166 - 0.02, 0.166 + 0.02, color="green", alpha=0.1, label="L5/Trojan Window")
-    
+
     # Secondary penceresi
     ax.axvspan(-0.5, -0.48, color="red", alpha=0.1, label="Secondary/EB")
     ax.axvspan(0.48, 0.5, color="red", alpha=0.1)
@@ -189,14 +189,14 @@ def plot_architecture(
     ax = axes[1]
     mask = np.abs(phase) < 0.1
     ax.scatter(phase[mask], flux[mask], s=2, color="gray", alpha=0.5)
-    
+
     b_mask = np.abs(bin_phase) < 0.1
     ax.scatter(bin_phase[b_mask], bin_flux[b_mask], s=30, color="blue")
-    
+
     # Shoulder bölgeleri
     ax.axvspan(-0.06, -0.02, color="purple", alpha=0.1, label="Pre-Shoulder")
     ax.axvspan(0.02, 0.06, color="cyan", alpha=0.1, label="Post-Shoulder")
-    
+
     ax.set_title("Transit Zoom & Shoulder Windows")
     ax.set_xlim(-0.1, 0.1)
     ax.set_ylim(np.nanpercentile(flux[mask], 0.1), np.nanpercentile(flux[mask], 99.9))
@@ -206,7 +206,7 @@ def plot_architecture(
     # 3. Text Panel / Score özeti
     ax = axes[2]
     ax.axis("off")
-    
+
     text = (
         f"ARCHITECTURE SCORES\n"
         f"-------------------\n"
@@ -216,7 +216,7 @@ def plot_architecture(
         f"Post-Shoulder     : {scores['post_shoulder']['significance']:>5.1f} sig  ({scores['post_shoulder']['median_depth_ppm']:>5.0f} ppm)\n"
         f"Secondary Eclipse : {scores['secondary']['significance']:>5.1f} sig  ({scores['secondary']['median_depth_ppm']:>5.0f} ppm)\n"
     )
-    
+
     ax.text(0.1, 0.5, text, family="monospace", va="center", fontsize=12)
 
     plt.tight_layout()
@@ -236,28 +236,28 @@ def main():
 
     outdir = Path(args.output_dir)
     outdir.mkdir(parents=True, exist_ok=True)
-    
+
     logger.info(f"Review başlıyor: TIC {args.tic} S{args.sector}")
-    
+
     # 1. İndir
     res = download_and_clean_lc(args.tic, args.sector)
     if res is None:
         return
     time, flux_raw, _ = res
-    
+
     # 2. Detrend
     flux = detrend_lightcurve(time, flux_raw)
-    
+
     # 3. Phase fold
     phase = ((time - args.t0 + 0.5 * args.period) % args.period) / args.period - 0.5
-    
+
     # 4. Binning
     bin_phase, bin_flux = bin_folded_lc(phase, flux, bins=200)
 
     # 5. Pencereleri tarama
     # Transit fraction kabaca = (duration_hours / 24) / period
     dur_phase = (args.duration_hours / 24.0) / args.period
-    
+
     # L4 / L5 kabaca ±1/6 faz (~±60 derece). Pencere genişliği transit süresi kadar olsun
     window_w = dur_phase * 1.5
 
@@ -281,11 +281,11 @@ def main():
         },
         "scores": scores
     }
-    
+
     json_path = outdir / f"TIC_{args.tic}_S{args.sector}_arch_review.json"
     with open(json_path, "w") as f:
         json.dump(report, f, indent=2)
-        
+
     logger.info(f"JSON yazıldı: {json_path}")
 
     # 7. Çiz
@@ -300,7 +300,7 @@ def main():
         scores=scores,
         outpath=fig_path,
     )
-    
+
     logger.info(f"Figür yazıldı: {fig_path}")
 
     print("\n--- ÖZET ---")

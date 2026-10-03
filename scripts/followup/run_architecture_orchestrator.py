@@ -8,18 +8,20 @@ olarak skorlamak.
 """
 
 from __future__ import annotations
+
 import argparse
 from pathlib import Path
-import pandas as pd
-import numpy as np
-from loguru import logger
+
 import lightkurve as lk
+import numpy as np
+import pandas as pd
+from loguru import logger
 from scipy.interpolate import UnivariateSpline
 from tqdm import tqdm
 
 from astrotransit.quality.eb_coorbital_discriminator import (
-    EBCooorbitalDiscriminator,
     DiscriminatorInput,
+    EBCooorbitalDiscriminator,
 )
 
 

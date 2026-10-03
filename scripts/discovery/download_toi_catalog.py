@@ -5,9 +5,9 @@ katalogunu indirir.
 Cikti: benchmarks/toi_catalog.csv
 """
 
-from pathlib import Path
 import sys
 import time
+from pathlib import Path
 
 project_root = Path(__file__).resolve().parents[2]
 
@@ -18,9 +18,7 @@ def main():
     print("=" * 60)
 
     try:
-        from astroquery.ipac.nexsci.nasa_exoplanet_archive import (
-            NasaExoplanetArchive
-        )
+        from astroquery.ipac.nexsci.nasa_exoplanet_archive import NasaExoplanetArchive
         print("OK astroquery yuklendi")
     except ImportError:
         print("HATA: astroquery gerekli")

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+
 import requests
 
 CROSSCHECK_JSON = Path("outputs_discovery/reports/TIC_417860263_crosscheck.json")

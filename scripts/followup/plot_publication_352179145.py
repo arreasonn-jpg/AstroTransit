@@ -1,11 +1,12 @@
 """
 TIC 352179145 S84 Faz Katlanmış Transit Çizici (Publication-Ready v3 - Final)
 """
-import numpy as np
-import matplotlib.pyplot as plt
-from scipy.special import erf
 from pathlib import Path
+
 import lightkurve as lk
+import matplotlib.pyplot as plt
+import numpy as np
+from scipy.special import erf
 
 # MCMC S84 Kesin Parametreleri
 TIC_ID = "TIC 352179145"
@@ -81,8 +82,8 @@ ax.scatter(p_fit, f_fit, color="#a2d2ff", alpha=0.22, s=8, label="TESS 2-min Cad
 
 # Kutulanmış (Binned) Veri
 valid_bins = ~np.isnan(binned_flux)
-ax.errorbar(binned_centers[valid_bins], binned_flux[valid_bins], yerr=binned_err[valid_bins], 
-            fmt='o', color="#e63946", ecolor="#e63946", elinewidth=1.5, capsize=2.5, 
+ax.errorbar(binned_centers[valid_bins], binned_flux[valid_bins], yerr=binned_err[valid_bins],
+            fmt='o', color="#e63946", ecolor="#e63946", elinewidth=1.5, capsize=2.5,
             markersize=6, zorder=5, label="Phase-Binned Photometry (20 min)")
 
 # Pürüzsüz MCMC Modeli

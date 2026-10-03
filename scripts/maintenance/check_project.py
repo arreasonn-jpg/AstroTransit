@@ -464,7 +464,7 @@ def main():
     results = {}
 
     # 1. Gerekli dosyalar
-    n_ok, n_fail = check_required_files()
+    _n_ok, n_fail = check_required_files()
     results["Gerekli dosyalar"] = n_fail
 
     # 2. Kökte olmaması gerekenler

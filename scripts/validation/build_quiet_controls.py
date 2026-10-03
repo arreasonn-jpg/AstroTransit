@@ -22,10 +22,7 @@ def tic_number(value: Any) -> str:
 
 def load_ids(path: Path) -> set[str]:
     payload = json.loads(path.read_text(encoding="utf-8"))
-    if isinstance(payload, dict):
-        rows = payload.get("cases", payload.get("hosts", []))
-    else:
-        rows = payload
+    rows = payload.get("cases", payload.get("hosts", [])) if isinstance(payload, dict) else payload
     return {
         tic_number(row.get("target_id", row.get("tic_id", "")))
         for row in rows

@@ -11,23 +11,24 @@ sadece bir yarıda görünür.
 """
 
 from __future__ import annotations
+
 import argparse
 import json
 from pathlib import Path
 
+import matplotlib
 import numpy as np
 from loguru import logger
 from scipy.interpolate import UnivariateSpline
 from scipy.signal import find_peaks
 
-import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
 try:
     import lightkurve as lk
-except ImportError:
-    raise ImportError("pip install lightkurve")
+except ImportError as exc:
+    raise ImportError("pip install lightkurve") from exc
 
 
 def download_and_flatten(tic_id: int, sector: int):
@@ -222,7 +223,7 @@ def main():
         axes,
         [sig_full, sig_first, sig_second],
         ["Full LC", f"First Half (n={n_first})", f"Second Half (n={n_second})"],
-        ["blue", "green", "orange"],
+        ["blue", "green", "orange"], strict=False,
     ):
         ax.plot(centers, sig, color=color, lw=1.2, label=label)
         ax.axvline(0, color="black", ls="--", lw=0.8)

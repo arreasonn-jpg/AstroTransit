@@ -91,6 +91,14 @@ exclude = [
 target-version = "py311"
 line-length = 100
 
+# scripts/archive/ ve scripts/patches/ donmus legacy koddur; aktif
+# gelistirmede kullanilmaz. Ruff kapsami disinda tutulur ki
+# mevcut hatalarini temizlemek icin zaman harcamayalim.
+extend-exclude = [
+    "scripts/archive",
+    "scripts/patches",
+]
+
 [tool.ruff.lint]
 # Repository-wide gate. Legacy style-only rules are progressively added
 # via dedicated PRs; correctness rules remain mandatory.

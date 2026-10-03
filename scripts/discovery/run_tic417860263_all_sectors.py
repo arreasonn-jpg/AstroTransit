@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import contextlib
 import csv
 import json
 import sys
@@ -94,9 +95,9 @@ def main():
     )
     args = parser.parse_args()
 
-    from astrotransit.settings import load_settings
     from astrotransit.outputs.writers import OutputManager
     from astrotransit.pipelines.tess_pipeline import TESSPipeline
+    from astrotransit.settings import load_settings
 
     if args.output_dir:
         output_dir = args.output_dir
@@ -141,10 +142,8 @@ def main():
         try:
             pipe.close()
         finally:
-            try:
+            with contextlib.suppress(Exception):
                 output_manager.close()
-            except Exception:
-                pass
 
     safe_id = safe_target_id(args.target)
     out_root = Path(output_dir)

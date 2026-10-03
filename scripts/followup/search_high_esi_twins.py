@@ -2,11 +2,12 @@
 Tam Matematiksel ESI (Earth Similarity Index) Tarayıcı ve Filtreleyici
 Referans: Schulze-Makuch et al. (2011) Astrobiology
 """
-import pandas as pd
-import numpy as np
-from pathlib import Path
 import glob
 import json
+from pathlib import Path
+
+import numpy as np
+import pandas as pd
 
 # ESI Parametreleri ve Ağırlıkları (Dünya Referanslı)
 R_EARTH = 1.00     # R_earth
@@ -23,21 +24,21 @@ def calc_esi(r_p, t_eq, rho_p=5.51):
     """2 ve 4 parametreli ESI hesabı"""
     if pd.isna(r_p) or pd.isna(t_eq) or r_p <= 0 or t_eq <= 0:
         return 0.0
-    
+
     # 1. Yarıçap ESI
     esi_r = (1.0 - abs((r_p - R_EARTH) / (r_p + R_EARTH))) ** W_RADIUS
-    
+
     # 2. Sıcaklık ESI
     esi_t = (1.0 - abs((t_eq - T_EARTH) / (t_eq + T_EARTH))) ** W_TEMP
-    
+
     # Kütle & Kaçış Hızı Tahmini (Chen & Kipping 2017)
     m_p = 0.981 * (r_p ** 3.0) if r_p < 1.23 else 1.57 * (r_p ** 1.25)
     v_esc = 11.19 * np.sqrt(m_p / r_p)
     rho = 5.51 * (m_p / (r_p ** 3.0))
-    
+
     esi_rho = (1.0 - abs((rho - RHO_EARTH) / (rho + RHO_EARTH))) ** W_DENSITY
     esi_v = (1.0 - abs((v_esc - V_ESCAPE) / (v_esc + V_ESCAPE))) ** W_ESCAPE
-    
+
     # Toplam Geometrik Ortalama ESI
     esi_total = (esi_r * esi_t * esi_rho * esi_v) ** (1.0 / 4.0)
     return round(float(esi_total), 4)
@@ -60,7 +61,7 @@ for f in files:
         id_col = next((c for c in df.columns if 'tic' in c.lower() or 'target' in c.lower() or 'source' in c.lower()), None)
         snr_col = next((c for c in df.columns if 'snr' in c.lower()), None)
         fpp_col = next((c for c in df.columns if 'fpp' in c.lower()), None)
-        
+
         if r_col and t_col and id_col:
             for _, row in df.iterrows():
                 try:
@@ -72,13 +73,13 @@ for f in files:
                     if not fpp_col or pd.isna(row[fpp_col]):
                         continue
                     fpp = float(row[fpp_col])
-                    
+
                     # Düzenleme: Eğer Rp Earth cinsinden değilse dönüştür
                     if rp > 50: # ppm cinsinden depth geldiyse atla
                         continue
-                    
+
                     esi_score = calc_esi(rp, teq)
-                    
+
                     if esi_score >= 0.70 and fpp < 0.05 and snr >= 6.0:
                         candidate_list.append({
                             "TIC_ID": tic_id,
@@ -107,7 +108,7 @@ for jf in json_files:
             tic_id = data.get("target", {}).get("source_id", "")
             snr = data.get("quality", {}).get("snr_adopted", 10.0)
             fpp = data.get("vetting", {}).get("fpp")
-            
+
             esi_score = calc_esi(rp, teq)
             if fpp is not None and esi_score >= 0.70 and fpp < 0.05:
                 candidate_list.append({

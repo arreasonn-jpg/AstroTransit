@@ -8,16 +8,17 @@ sahte sinyal üretmez.
 """
 
 from __future__ import annotations
+
 import argparse
 import json
 from pathlib import Path
 
+import lightkurve as lk
+import matplotlib
 import numpy as np
 from loguru import logger
-import lightkurve as lk
 from scipy.interpolate import UnivariateSpline
 
-import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
@@ -216,7 +217,7 @@ def main():
     print("=" * 60)
 
     # 8. Figür
-    fig, axes = plt.subplots(2, 1, figsize=(12, 8))
+    _fig, axes = plt.subplots(2, 1, figsize=(12, 8))
 
     # Panel 1: Tam fold
     ax = axes[0]

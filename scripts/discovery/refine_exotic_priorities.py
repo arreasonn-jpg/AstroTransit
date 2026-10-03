@@ -33,9 +33,9 @@ import numpy as np
 import pandas as pd
 from loguru import logger
 
+from astrotransit.quality.architecture_anomalies import ArchitectureAnomalyScorer
 from astrotransit.quality.habitability import HabitabilityScorer
 from astrotransit.quality.moon_potential import MoonHostScorer
-from astrotransit.quality.architecture_anomalies import ArchitectureAnomalyScorer
 
 
 def _first_valid(row: pd.Series, names: list[str], default=None):
@@ -129,9 +129,7 @@ def _theme_and_bucket(
     interest = float(np.clip(interest, 0.0, 100.0))
 
     # Bucket
-    if theme == "UNSTABLE_COORBITAL_REVIEW" and interest >= 55:
-        bucket = "TIER_A_EXOTIC"
-    elif theme in {"EARTHLIKE_TEMPERATE", "POTENTIAL_MOON_HOST"} and interest >= 65:
+    if (theme == "UNSTABLE_COORBITAL_REVIEW" and interest >= 55) or (theme in {"EARTHLIKE_TEMPERATE", "POTENTIAL_MOON_HOST"} and interest >= 65):
         bucket = "TIER_A_EXOTIC"
     elif theme in {"TEMPERATE_SMALL_WORLD", "ARCHITECTURE_ANOMALY"} and interest >= 55:
         bucket = "TIER_B_STRONG"

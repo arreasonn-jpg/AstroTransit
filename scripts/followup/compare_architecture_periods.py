@@ -34,21 +34,20 @@ import argparse
 import json
 from pathlib import Path
 
+import matplotlib
 import numpy as np
 from loguru import logger
 
-import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from matplotlib.gridspec import GridSpec
 
 try:
     import lightkurve as lk
-except ImportError:
-    raise ImportError("pip install lightkurve")
+except ImportError as exc:
+    raise ImportError("pip install lightkurve") from exc
 
 from scipy.interpolate import UnivariateSpline
-
 
 # ─────────────────────────────────────────────────────────────
 # LC yardımcıları
@@ -170,7 +169,7 @@ def architecture_stability(results: dict) -> dict:
     l4_sigs = []
     l5_sigs = []
 
-    for label, r in results.items():
+    for _label, r in results.items():
         sc = r["scores"]
         l4_sigs.append(abs(sc["L4"]["sig"]))
         l5_sigs.append(abs(sc["L5"]["sig"]))
