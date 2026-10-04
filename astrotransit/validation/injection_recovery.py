@@ -156,7 +156,7 @@ def run_injection_recovery(
     recovered_int: int = sum(int(trial.detected) for trial in trials)
     return InjectionRecoveryReport(
         trials=tuple(trials),
-        completeness=float(recovered / len(trials)) if trials else 0.0,
+        completeness=float(recovered_int / len(trials)) if trials else 0.0,
         completeness_by_label=completeness_by_label,
         n_trials=len(trials),
         n_recovered=recovered_int,
