@@ -214,7 +214,7 @@ def test_fit_pymc_error_returns_failed(monkeypatch):
         def __exit__(self, *a):
             return False
 
-    monkeypatch.setattr(mod.pm, "Model", lambda *a, **k: _BrokenModel())
+    monkeypatch.setattr(mod, "pm", MagicMock(Model=lambda *a, **k: _BrokenModel()), raising=False)
 
     detrended = SimpleNamespace(
         target_id="TIC 1", sector=1,
@@ -287,20 +287,20 @@ def test_fit_full_flow_with_mocks(monkeypatch):
         fake_pm.math = _Math()
         return fake_pm
 
-    monkeypatch.setattr(mod, "pm", _make_fake_pm(_Idata()))
+    monkeypatch.setattr(mod, "pm", _make_fake_pm(_Idata()), raising=False)
 
     # ── Fake xo ──
     fake_lc_obj = MagicMock()
     fake_lc_obj.get_light_curve.return_value = np.zeros((10, 1))
     fake_xo = MagicMock()
     fake_xo.LimbDarkLightCurve.return_value = fake_lc_obj
-    monkeypatch.setattr(mod, "xo", fake_xo)
+    monkeypatch.setattr(mod, "xo", fake_xo, raising=False)
 
     # ── Fake arviz ──
     fake_az = MagicMock()
     fake_az.rhat.side_effect = Exception("no rhat")
     fake_az.ess.side_effect = Exception("no ess")
-    monkeypatch.setattr(mod, "az", fake_az)
+    monkeypatch.setattr(mod, "az", fake_az, raising=False)
     monkeypatch.setattr(mod, "_ARVIZ_AVAILABLE", False)
 
     # ── Fake TransitModel ──
@@ -388,16 +388,16 @@ def test_fit_with_map_result_init(monkeypatch):
         fake_pm.math = _Math()
         return fake_pm
 
-    monkeypatch.setattr(mod, "pm", _make_fake_pm(_Idata()))
+    monkeypatch.setattr(mod, "pm", _make_fake_pm(_Idata()), raising=False)
 
     fake_lc_obj = MagicMock()
     fake_lc_obj.get_light_curve.return_value = np.zeros((10, 1))
     fake_xo = MagicMock()
     fake_xo.LimbDarkLightCurve.return_value = fake_lc_obj
-    monkeypatch.setattr(mod, "xo", fake_xo)
+    monkeypatch.setattr(mod, "xo", fake_xo, raising=False)
 
     monkeypatch.setattr(mod, "_ARVIZ_AVAILABLE", False)
-    monkeypatch.setattr(mod, "az", MagicMock())
+    monkeypatch.setattr(mod, "az", MagicMock(), raising=False)
 
     fake_tm_cls = MagicMock()
     fake_tm_cls.compute_a_over_rs.return_value = 10.0
