@@ -26,7 +26,7 @@ from loguru import logger
 try:
     from transitleastsquares import transitleastsquares
     _TLS_AVAILABLE = True
-except ImportError as _tls_import_error:
+except ImportError as _tls_import_error:  # pragma: no cover - opsiyonel bağımlılık
     _TLS_AVAILABLE = False
     # Gerçek hata mesajını kaybetme: sessiz devre-dışı bırakma, ortam
     # sorunlarını (eksik/başarısız kurulum, sürüm uyumsuzluğu) gizler.
