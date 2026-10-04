@@ -279,7 +279,8 @@ class CandidateScorer:
 
         # ── Bileşen 2: Veri tamlığı skoru ──
         completeness = metrics.photometric.data_completeness
-        comp_score = self._normalize_linear(completeness, 0.7, 1.0) * 100
+        # _normalize_linear zaten 0-100 dondurur; ek * 100 cift carpmaydi.
+        comp_score = self._normalize_linear(completeness, 0.7, 1.0)
         components.append(ScoreComponent(
             name="completeness",
             raw_value=completeness,
@@ -464,9 +465,9 @@ class CandidateScorer:
             oe_score = self._normalize_linear_inverse(oe, 0.0, 3.0) * 100
             scores.append(oe_score)
 
-        # Transit sayısı
+        # Transit sayısı (normalize zaten 0-100 dondurur)
         n = metrics.transit.n_transits
-        n_score = self._normalize_linear(float(n), 2.0, 10.0) * 100
+        n_score = self._normalize_linear(float(n), 2.0, 10.0)
         scores.append(n_score)
 
         if not scores:
