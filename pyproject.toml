@@ -169,12 +169,14 @@ omit = [
 ]
 
 [tool.coverage.report]
-# Kademeli artis: 48 -> 52 -> 55 -> 60 -> 70 (mevcut %72.25 uzerinde tampon).
+# Kademeli artis: 48 -> 52 -> 55 -> 60 -> 70 -> 72 (mevcut %73.74).
 # test/coverage-boost-1: 4 quality modulu %0 -> %98.
 # test/coverage-boost-2: 7 visualization modulu %10-40 -> %93-100.
 # test/coverage-boost-3: logging_config, quality/pipeline, quality/metrics,
 #                        transit_consistency; ayrıca timing_analysis ep_obs bug fix.
-fail_under = 70
+# test/coverage-boost-4: validation/plots, data/temp_cache,
+#                        preprocessing/pipeline, pipelines/orchestrator.
+fail_under = 72
 precision = 2
 show_missing = true
 skip_covered = false
