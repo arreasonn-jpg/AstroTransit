@@ -571,12 +571,12 @@ class TimingAnalyzer:
             ep_obs = np.rint((obs - base_t0) / period).astype(float)
 
         # t0 yoksa robust tahmin
-        t0_used = float(np.median(obs - ep * period)) if t0 is None else float(t0)
+        t0_used = float(np.median(obs - ep_obs * period)) if t0 is None else float(t0)
 
-        expected = t0_used + ep * period
+        expected = t0_used + ep_obs * period
         oc_days = obs - expected
 
-        sorter = np.argsort(ep)
+        sorter = np.argsort(ep_obs)
         ep_obs = ep_obs[sorter]
         obs = obs[sorter]
         expected = expected[sorter]
@@ -584,7 +584,7 @@ class TimingAnalyzer:
 
         return {
             "oc_days": oc_days,
-            "epochs": ep,
+            "epochs": ep_obs,
             "expected_midtimes": expected,
             "observed_midtimes": obs,
             "t0_used": t0_used,
