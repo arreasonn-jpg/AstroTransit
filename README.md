@@ -223,9 +223,35 @@ Veri modeli ve alan açıklamaları için [`docs/output_schema.md`](docs/output_
 python -m pytest -q
 ```
 
+**Mevcut durum:**
+
+| Metrik | Değer |
+|--------|-------|
+| Test sayısı | **2409 geçen** (0 skip, 0 xfail) |
+| Satır coverage | **%94.66** |
+| Branch coverage | %90+ |
+| Test süresi | ~8 dk (tam suite) |
+| Python matrix | 3.11, 3.12, 3.13 (CI) |
+
+Sadece dosya bazlı hızlı test:
+
+```bash
+python -m pytest tests/test_quality_vetting.py -q
+python -m pytest -k "residual" -q
+```
+
+Coverage raporu:
+
+```bash
+python -m pytest --cov=astrotransit --cov-report=term-missing -q
+```
+
 Ağdan veri indiren entegrasyon akışları yerine testler sentetik light curve
 kullanır. MAST erişiminin olmadığı ortamlarda istemci hatayı açıkça raporlar;
 önbellek yalnızca `.cache/` altında tutulur.
+
+Test stratejisi, mock'lama kuralları ve coverage politikası için
+[`docs/testing.md`](docs/testing.md) dosyasına bakın.
 
 ## Tekrarlanabilirlik
 
