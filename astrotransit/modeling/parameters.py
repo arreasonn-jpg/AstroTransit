@@ -500,7 +500,7 @@ def compute_derived_parameters(
     try:
         a_m = (CONST.G * m_star_kg * period_s ** 2 / (4 * np.pi ** 2)) ** (1.0 / 3.0)
         derived.semi_major_axis_au = float(a_m / CONST.AU)
-    except (ValueError, ZeroDivisionError):
+    except (ValueError, ZeroDivisionError):  # pragma: no cover - defansif
         derived.semi_major_axis_au = 0.0
 
     # Yıldız ortalama yoğunluğu (Seager & Mallén-Ornelas 2003)
@@ -512,7 +512,7 @@ def compute_derived_parameters(
             a_over_rs = (a_m / r_star_m_val)
             rho_star = (3 * np.pi / (CONST.G * period_s ** 2)) * a_over_rs ** 3
             derived.stellar_density_gcm3 = float(rho_star / 1000.0)  # kg/m³ → g/cm³
-    except (ValueError, ZeroDivisionError):
+    except (ValueError, ZeroDivisionError):  # pragma: no cover - defansif
         derived.stellar_density_gcm3 = 0.0
 
     # Yörünge eğimi
@@ -522,7 +522,7 @@ def compute_derived_parameters(
             cos_i = impact_parameter * r_star_m_val / a_m
             cos_i_clipped = float(np.clip(cos_i, -1.0, 1.0))
             derived.inclination_deg = float(np.degrees(np.arccos(cos_i_clipped)))
-    except (ValueError, ZeroDivisionError):
+    except (ValueError, ZeroDivisionError):  # pragma: no cover - defansif
         derived.inclination_deg = 90.0
 
     # Denge sıcaklığı
@@ -535,7 +535,7 @@ def compute_derived_parameters(
                 * (1.0 - albedo) ** 0.25
             )
             derived.equilibrium_temperature_k = float(t_eq)
-    except (ValueError, ZeroDivisionError):
+    except (ValueError, ZeroDivisionError):  # pragma: no cover - defansif
         derived.equilibrium_temperature_k = 0.0
 
     # Güneş'e göre ışınım akısı (insolation flux)
@@ -546,7 +546,7 @@ def compute_derived_parameters(
             derived.insolation_flux = float(
                 luminosity_lsun / (derived.semi_major_axis_au ** 2)
             )
-    except (ValueError, ZeroDivisionError):
+    except (ValueError, ZeroDivisionError):  # pragma: no cover - defansif
         derived.insolation_flux = 0.0
 
     return derived
