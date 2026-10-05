@@ -1,5 +1,11 @@
 # AstroTransit
 
+[![CI](https://github.com/arreasonn-jpg/AstroTransit/actions/workflows/ci.yml/badge.svg)](https://github.com/arreasonn-jpg/AstroTransit/actions/workflows/ci.yml)
+[![Coverage](https://img.shields.io/badge/coverage-94.66%25-brightgreen)](#testler)
+[![Tests](https://img.shields.io/badge/tests-2409%20passed-brightgreen)](#testler)
+[![Python](https://img.shields.io/badge/python-3.11%20%7C%203.12%20%7C%203.13-blue)](https://www.python.org/)
+[![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+
 **Türkçe: README.md | English: [README.en.md](README.en.md)**
 
 AstroTransit, TESS ışık eğrilerinde transit adayı **tespiti, vetting ve
