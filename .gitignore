@@ -48,3 +48,6 @@ dist/
 # One-off tooling dumps (project tree listings generated for LLM context etc.)
 proje_yapisi*.txt
 scripts_inventory*.txt
+
+# Coverage snapshot artefacts (LLM context / analysis outputs)
+.cov_snap*.json
