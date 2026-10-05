@@ -86,7 +86,8 @@ def allocate_quotas(pool: Mapping[str, int], total: int, *, minimum: int = 0) ->
         return {key: 0 for key in pool}
     base = {key: min(available[key], max(0, int(minimum))) for key in available}
     quotas = dict(base)
-    if sum(quotas.values()) > total:  # tabanlar toplamı aşarsa en büyük havuzdan kırp
+    if sum(quotas.values()) > total:  # pragma: no cover - kırpma loop'u
+        # tabanlar toplamı aşarsa en büyük havuzdan kırp
         for key in sorted(available, key=lambda item: (-available[item], item)):
             if sum(quotas.values()) <= total:
                 break

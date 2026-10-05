@@ -18,7 +18,7 @@ from pydantic import BaseModel, Field, field_validator, model_validator
 # ──────────────────────────────────────
 if sys.version_info >= (3, 11):
     import tomllib
-else:
+else:  # pragma: no cover - Python <3.11 fallback
     try:
         import tomli as tomllib
     except ImportError as exc:
