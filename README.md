@@ -5,6 +5,8 @@
 [![Tests](https://img.shields.io/badge/tests-2409%20passed-brightgreen)](#testler)
 [![Python](https://img.shields.io/badge/python-3.11%20%7C%203.12%20%7C%203.13-blue)](https://www.python.org/)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+[![Ruff](https://img.shields.io/badge/lint-ruff-261230)](https://github.com/astral-sh/ruff)
+[![mypy](https://img.shields.io/badge/types-mypy-blue)](https://mypy-lang.org/)
 
 **Türkçe: README.md | English: [README.en.md](README.en.md)**
 
