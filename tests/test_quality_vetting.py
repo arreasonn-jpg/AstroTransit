@@ -26,6 +26,7 @@ def _candidate(
 def _metrics(
     odd_even=0.0, secondary=0.0, variable=False, amplitude=0.0,
     depth_var=0.0, n_transits=5, symmetry=0.5, completeness=0.95,
+    ls_peak=0.0,
 ):
     return SimpleNamespace(
         transit=SimpleNamespace(
@@ -38,6 +39,7 @@ def _metrics(
             secondary_eclipse_depth=secondary,
             is_variable_star=variable,
             variability_amplitude=amplitude,
+            lomb_scargle_peak=ls_peak,
         ),
         photometric=SimpleNamespace(data_completeness=completeness),
     )
@@ -217,16 +219,19 @@ def test_variability_not_variable():
 
 def test_variability_fail_high_amplitude():
     v = FalsePositiveVetter(variability_amplitude_threshold=5000.0)
+    # Yeni mantik: ls_peak > 0.5 ve amplitude > 3000 ppm birlikte FAIL.
     t = v._test_stellar_variability(
-        _metrics(variable=True, amplitude=10000.0),
+        _metrics(variable=True, amplitude=10000.0, ls_peak=0.7),
     )
     assert t.verdict == VettingVerdict.FAIL
 
 
 def test_variability_warn_low_amplitude():
     v = FalsePositiveVetter(variability_amplitude_threshold=5000.0)
+    # Yeni mantik: ls_peak 0.35-0.5 arasi ve amplitude 2000-3000
+    # arasi WARN.
     t = v._test_stellar_variability(
-        _metrics(variable=True, amplitude=1000.0),
+        _metrics(variable=True, amplitude=2500.0, ls_peak=0.4),
     )
     assert t.verdict == VettingVerdict.WARN
 

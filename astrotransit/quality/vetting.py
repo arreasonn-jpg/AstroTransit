@@ -66,6 +66,7 @@ HARD_FAIL_TESTS = frozenset({
     "depth_limit",
     "duration_period_ratio",
     "transit_shape",
+    "stellar_variability",
 })
 
 # İki tanesi birlikte FAIL → FP kararı (orta güvenilirlik)
@@ -537,21 +538,32 @@ class FalsePositiveVetter:
         """Yıldız değişkenliği testi."""
 
         amplitude = metrics.stellar.variability_amplitude
+        ls_peak = float(getattr(metrics.stellar, "lomb_scargle_peak", 0.0) or 0.0)
         threshold = self.variability_amplitude_threshold
 
-        if metrics.stellar.is_variable_star:
-            if amplitude > threshold:
-                verdict = VettingVerdict.FAIL
-                desc = (
-                    f"Yıldız değişkeni tespit edildi: "
-                    f"genlik={amplitude:.0f}ppm > {threshold:.0f}ppm"
-                )
-            else:
-                verdict = VettingVerdict.WARN
-                desc = f"Yıldız değişken uyarı: genlik={amplitude:.0f}ppm"
+        # LS periodogram tepe gucu + anlamli genlik kombinasyonu.
+        # Sadece genlik yaniltici: transit dipi de amplitude'a katki yapar
+        # (planetary_control amplitude ~5000 ppm cikiyor). LS tepe gucu
+        # transit-disi degiskenlik oldugunda yuksek, transit sinyalinde
+        # dusuk.
+        if ls_peak > 0.5 and amplitude > 3000.0:
+            verdict = VettingVerdict.FAIL
+            desc = (
+                f"Yildiz degiskenligi: LS_peak={ls_peak:.3f} > 0.5, "
+                f"genlik={amplitude:.0f}ppm > 3000ppm"
+            )
+        elif ls_peak > 0.35 and amplitude > 2000.0:
+            verdict = VettingVerdict.WARN
+            desc = (
+                f"Yildiz degiskenlik uyarisi: LS_peak={ls_peak:.3f}, "
+                f"genlik={amplitude:.0f}ppm"
+            )
         else:
             verdict = VettingVerdict.PASS
-            desc = f"Yıldız sabit: genlik={amplitude:.0f}ppm"
+            desc = (
+                f"Yildiz sabit: LS_peak={ls_peak:.3f}, "
+                f"genlik={amplitude:.0f}ppm"
+            )
 
         return VettingTest(
             name="stellar_variability",
