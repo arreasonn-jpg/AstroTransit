@@ -47,6 +47,35 @@ from astrotransit.quality.metrics import QualityMetrics
 # Heuristik vetting ağırlıklı oy; kalibre edilmiş Bayesyen FPP değildir.
 FPP_METHOD = "heuristic_vetting_weighted_v1"
 
+# Bu testlerden herhangi biri FAIL ederse, FPP eşiğine bakılmadan FP kararı verilir.
+# Gerekçe: bu testler doğrudan EB morfolojisini hedefler ve tek başına yeterlidir.
+CRITICAL_FP_TESTS = frozenset({
+    "odd_even_mismatch",
+    "odd_even_harmonic",
+    "secondary_eclipse",
+    "secondary_eclipse_snr",
+    "transit_shape",
+    "transit_symmetry",
+    "depth_limit",
+    "duration_period_ratio",
+})
+
+# Tek başına FAIL → FP kararı (yüksek güvenilirlik, fiziksel kesinlik)
+HARD_FAIL_TESTS = frozenset({
+    "secondary_eclipse_snr",
+    "depth_limit",
+    "duration_period_ratio",
+    "transit_shape",
+})
+
+# İki tanesi birlikte FAIL → FP kararı (orta güvenilirlik)
+SOFT_FAIL_TESTS = frozenset({
+    "odd_even_harmonic",
+    "odd_even_mismatch",
+    "transit_symmetry",
+    "secondary_eclipse",
+})
+
 
 # ──────────────────────────────────────
 # Test sonuç tipleri
@@ -257,9 +286,13 @@ class FalsePositiveVetter:
 
         # ── Test 1: Odd-Even Mismatch ──
         tests.append(self._test_odd_even(candidate, metrics))
+        tests.append(self._test_odd_even_harmonic(metrics))
 
         # ── Test 2: İkincil Tutulma ──
         tests.append(self._test_secondary_eclipse(candidate, metrics))
+
+        # ── Test 2b: İkincil Tutulma SNR (EB / odd-even) ──
+        tests.append(self._test_secondary_eclipse_snr(metrics))
 
         # ── Test 3: Transit Derinliği Sınırı ──
         tests.append(self._test_depth_limit(candidate))
@@ -275,6 +308,9 @@ class FalsePositiveVetter:
 
         # ── Test 7: Transit Simetri ──
         tests.append(self._test_transit_symmetry(metrics))
+
+        # ── Test 7b: Transit Şekli (V-şekli EB) ──
+        tests.append(self._test_transit_shape(metrics))
 
         # ── Test 8: Veri Tamlığı ──
         tests.append(self._test_data_completeness(metrics))
@@ -292,7 +328,14 @@ class FalsePositiveVetter:
             t.name for t in tests
             if t.verdict == VettingVerdict.FAIL
         ]
-        is_fp = n_fail >= 2 or (fpp is not None and fpp > 0.5)
+        hard_fails = [name for name in fp_flags if name in HARD_FAIL_TESTS]
+        soft_fails = [name for name in fp_flags if name in SOFT_FAIL_TESTS]
+        is_fp = (
+            bool(hard_fails)
+            or len(soft_fails) >= 2
+            or n_fail >= 2
+            or (fpp is not None and fpp > 0.5)
+        )
 
         report = VettingReport(
             target_id=target_id,
@@ -359,6 +402,37 @@ class FalsePositiveVetter:
             fp_weight=0.25,
         )
 
+    def _test_odd_even_harmonic(
+        self,
+        metrics: QualityMetrics,
+    ) -> VettingTest:
+        """Ham veriden harmonik odd/even farki testi."""
+
+        value = float(getattr(metrics.transit, "odd_even_harmonic", 0.0) or 0.0)
+        threshold = 0.30
+
+        if value > threshold:
+            verdict = VettingVerdict.FAIL
+            desc = (
+                f"Harmonik odd/even farki yuksek: {value:.3f} > {threshold} "
+                f"(EB suphesi)"
+            )
+        elif value > threshold * 0.6:
+            verdict = VettingVerdict.WARN
+            desc = f"Harmonik odd/even sinirda: {value:.3f}"
+        else:
+            verdict = VettingVerdict.PASS
+            desc = f"Harmonik odd/even normal: {value:.3f}"
+
+        return VettingTest(
+            name="odd_even_harmonic",
+            verdict=verdict,
+            value=value,
+            threshold=threshold,
+            description=desc,
+            fp_weight=0.25,
+        )
+
     def _test_secondary_eclipse(
         self,
         candidate: CascadeCandidate,
@@ -392,6 +466,37 @@ class FalsePositiveVetter:
             threshold=float(threshold_depth),
             description=desc,
             fp_weight=0.25,
+        )
+
+    def _test_secondary_eclipse_snr(
+        self,
+        metrics: QualityMetrics,
+    ) -> VettingTest:
+        """İkincil tutulmanın SNR tabanlı anlamlılık testi."""
+
+        snr = float(getattr(metrics.stellar, "secondary_eclipse_snr", 0.0) or 0.0)
+        threshold = 5.0
+
+        if snr > threshold:
+            verdict = VettingVerdict.FAIL
+            desc = (
+                f"İkincil tutulma anlamlı: SNR={snr:.1f} > {threshold} "
+                f"(EB / odd-even alternation şüphesi)"
+            )
+        elif snr > threshold * 0.6:
+            verdict = VettingVerdict.WARN
+            desc = f"İkincil tutulma sınırda: SNR={snr:.1f}"
+        else:
+            verdict = VettingVerdict.PASS
+            desc = f"İkincil tutulma yok: SNR={snr:.1f}"
+
+        return VettingTest(
+            name="secondary_eclipse_snr",
+            verdict=verdict,
+            value=snr,
+            threshold=threshold,
+            description=desc,
+            fp_weight=0.30,
         )
 
     def _test_depth_limit(
@@ -569,6 +674,37 @@ class FalsePositiveVetter:
             threshold=float(threshold),
             description=desc,
             fp_weight=0.05,
+        )
+
+    def _test_transit_shape(
+        self,
+        metrics: QualityMetrics,
+    ) -> VettingTest:
+        """Faz-derinlik korelasyonu ile V-şekli EB testi."""
+
+        r = float(getattr(metrics.transit, "shape_correlation", 0.0) or 0.0)
+        threshold = -0.75
+
+        if r < threshold:
+            verdict = VettingVerdict.FAIL
+            desc = (
+                f"V-şekilli profil: r={r:.3f} < {threshold} "
+                f"(eclipsing binary şüphesi)"
+            )
+        elif r < threshold + 0.15:
+            verdict = VettingVerdict.WARN
+            desc = f"Şekil V'ye yakın: r={r:.3f}"
+        else:
+            verdict = VettingVerdict.PASS
+            desc = f"Şekil kutu ile uyumlu: r={r:.3f}"
+
+        return VettingTest(
+            name="transit_shape",
+            verdict=verdict,
+            value=r,
+            threshold=threshold,
+            description=desc,
+            fp_weight=0.30,
         )
 
     def _test_data_completeness(

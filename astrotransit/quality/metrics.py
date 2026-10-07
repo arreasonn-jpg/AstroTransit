@@ -130,6 +130,8 @@ class TransitMetrics:
     timing_rms: float = 0.0
     odd_even_mismatch: float = 0.0
     residual_rms: float = 0.0
+    shape_correlation: float = 0.0
+    odd_even_harmonic: float = 0.0
 
     def to_dict(self) -> dict:
         return {
@@ -145,8 +147,9 @@ class TransitMetrics:
             "timing_rms_min": round(self.timing_rms * 1440, 4),
             "odd_even_mismatch": round(self.odd_even_mismatch, 4),
             "residual_rms_ppm": round(self.residual_rms * 1e6, 2),
+            "shape_correlation": round(self.shape_correlation, 4),
+            "odd_even_harmonic": round(self.odd_even_harmonic, 4),
         }
-
 
 @dataclass
 class StellarMetrics:
@@ -180,6 +183,7 @@ class StellarMetrics:
     lomb_scargle_period: float = 0.0
     is_binary_suspect: bool = False
     secondary_eclipse_depth: float = 0.0
+    secondary_eclipse_snr: float = 0.0
     centroid_shift: float = 0.0
 
     def to_dict(self) -> dict:
@@ -191,6 +195,7 @@ class StellarMetrics:
             "lomb_scargle_period_days": round(self.lomb_scargle_period, 4),
             "is_binary_suspect": self.is_binary_suspect,
             "secondary_eclipse_depth_ppm": round(self.secondary_eclipse_depth * 1e6, 2),
+            "secondary_eclipse_snr": round(self.secondary_eclipse_snr, 4),
             "centroid_shift": round(self.centroid_shift, 4),
         }
 
@@ -355,6 +360,21 @@ class QualityMetricsCalculator:
                 tls.folded_phase, tls.folded_flux
             )
 
+        # Faz-derinlik korelasyonu (V-şekli EB göstergesi, adaptif pencere)
+        shape_correlation = 0.0
+        if tls is not None and len(tls.folded_flux) > 10:
+            shape_correlation = self._compute_shape_correlation(
+                tls.folded_phase, tls.folded_flux,
+                duration=duration, period=period,
+            )
+
+        # Harmonik odd/even (ham veriden, EB göstergesi)
+        odd_even_harmonic = 0.0
+        if duration > 0 and period > 0:
+            odd_even_harmonic = self._compute_harmonic_odd_even(
+                detrended.time, detrended.flux, period, candidate.t0, duration
+            )
+
         # Bireysel transit derinlikleri arasındaki varyans
         depth_variance = 0.0
         if tls is not None and len(tls.transit_depths) > 1:
@@ -390,6 +410,8 @@ class QualityMetricsCalculator:
             timing_rms=float(timing_rms),
             odd_even_mismatch=float(odd_even),
             residual_rms=float(residual_rms),
+            shape_correlation=float(shape_correlation),
+            odd_even_harmonic=float(odd_even_harmonic),
         )
 
     def compute_stellar(
@@ -442,6 +464,11 @@ class QualityMetricsCalculator:
             time, flux, candidate.period, candidate.t0
         )
 
+        # İkincil tutulma SNR (EB / odd-even alternation göstergesi)
+        secondary_snr = self._compute_secondary_eclipse_snr(
+            time, flux, candidate.period, candidate.t0, candidate.duration
+        )
+
         return StellarMetrics(
             is_variable_star=is_variable,
             variability_amplitude=variability_amplitude,
@@ -450,7 +477,8 @@ class QualityMetricsCalculator:
             lomb_scargle_period=float(ls_period),
             is_binary_suspect=is_binary_suspect,
             secondary_eclipse_depth=float(secondary_depth),
-            centroid_shift=0.0,  # TPF gerektiriyor, ileride eklenecek
+            secondary_eclipse_snr=float(secondary_snr),
+            centroid_shift=0.0,
         )
 
     def compute_all(
@@ -577,6 +605,214 @@ class QualityMetricsCalculator:
 
         probs = counts / counts.sum()
         return float(-np.sum(probs * np.log(probs + 1e-10)))
+
+    @staticmethod
+    def _compute_shape_correlation(
+        phase: np.ndarray,
+        flux: np.ndarray,
+        duration: float = 0.0,
+        period: float = 0.0,
+    ) -> float:
+        """
+        Faz mesafesi ile derinlik arasındaki Pearson korelasyonu (adaptif pencere).
+
+        V-şekilli EB'de derinlik faz merkezinden uzaklaştıkça doğrusal
+        azalır -> güçlü negatif korelasyon (r < -0.7).
+        Kutu (gezegen) profilinde derinlik sabit -> r ~ 0.
+
+        Pencere transit süresine göre adapte edilir; aksi halde uzun
+        periyotlu EB'lerde baseline noktaları korelasyonu sulandırır.
+
+        Returns
+        -------
+        float
+            Pearson r; hesaplanamıyorsa 0.0.
+        """
+
+        if len(phase) < 20 or len(flux) < 20:
+            return 0.0
+
+        phase = np.asarray(phase, dtype=float)
+        flux = np.asarray(flux, dtype=float)
+        if np.isnan(flux).all() or np.isnan(phase).all():
+            return 0.0
+
+        try:
+            center = float(phase[np.nanargmin(flux)])
+        except (ValueError, IndexError):
+            return 0.0
+
+        dist = np.abs(phase - center)
+        dist = np.minimum(dist, np.abs(dist - 1.0))
+
+        if duration > 0 and period > 0:
+            half_dur_phase = 0.5 * duration / period
+            window = max(0.012, min(1.3 * half_dur_phase, 0.10))
+        else:
+            window = 0.06
+
+        in_transit = dist < window
+        out_transit = (dist > 2.5 * window) & (dist < 0.4)
+
+        if in_transit.sum() < 6 or out_transit.sum() < 20:
+            return 0.0
+
+        baseline = float(np.median(flux[out_transit]))
+        depth = baseline - flux[in_transit]
+        d_dist = dist[in_transit]
+
+        if depth.std() < 1e-9 or d_dist.std() < 1e-9:
+            return 0.0
+
+        try:
+            r, _ = scipy_stats.pearsonr(d_dist, depth)
+        except Exception:
+            return 0.0
+
+        if not np.isfinite(r):
+            return 0.0
+        return float(r)
+
+    @staticmethod
+    def _compute_harmonic_odd_even(
+        time: np.ndarray,
+        flux: np.ndarray,
+        period: float,
+        t0: float,
+        duration: float,
+    ) -> float:
+        """
+        P, P/2, 2P periyotlarında ham veriden tek/çift derinlik farkını ölçer.
+
+        Cascade harmonik periyodu seçtiğinde odd/even sinyali silinebilir;
+        bu metot üç katlamada en yüksek farkı döndürerek sinyali kurtarır.
+
+        Returns
+        -------
+        float
+            Maksimum bağıl tek/çift farkı (0-1); hesaplanamıyorsa 0.0.
+        """
+
+        if period <= 0 or duration <= 0 or len(time) < 20:
+            return 0.0
+
+        best = 0.0
+        for factor in (0.5, 1.0, 2.0):
+            P_test = period * factor
+            v = QualityMetricsCalculator._raw_odd_even_at(
+                time, flux, P_test, t0, duration
+            )
+            if v > best:
+                best = v
+        return best
+
+    @staticmethod
+    def _raw_odd_even_at(
+        time: np.ndarray,
+        flux: np.ndarray,
+        P_test: float,
+        t0: float,
+        duration: float,
+    ) -> float:
+        """Belirli bir P_test periyodunda ham veriden odd/even farkı."""
+
+        if P_test <= 0 or duration <= 0:
+            return 0.0
+
+        n_expected = int((time.max() - time.min()) / P_test) + 1
+        if n_expected < 4:
+            return 0.0
+
+        t_grid = t0 + np.arange(n_expected) * P_test
+        t_grid = t_grid[
+            (t_grid > time.min() + duration)
+            & (t_grid < time.max() - duration)
+        ]
+        if len(t_grid) < 4:
+            return 0.0
+
+        # Her pozisyon icin transit dip SNR hesapla. Anlamsiz (SNR<3)
+        # pozisyonlar "sahte transit" olarak atilir; boylece P/2 katlamasinda
+        # yarisi gercek transit yarisi gurultu olan senaryo elenir.
+        valid_dips: list[tuple[int, float]] = []
+        for idx, t in enumerate(t_grid):
+            m = np.abs(time - t) < duration
+            o = (np.abs(time - t) > 2 * duration) & (
+                np.abs(time - t) < 0.4 * P_test
+            )
+            if m.sum() < 3 or o.sum() < 5:
+                continue
+            oot_med = float(np.median(flux[o]))
+            oot_std = float(np.std(flux[o]))
+            it_med = float(np.median(flux[m]))
+            dip = oot_med - it_med
+            se = oot_std * np.sqrt(1.0 / m.sum() + 1.0 / o.sum())
+            if se <= 0:
+                continue
+            snr = dip / se
+            if snr > 3.0:
+                valid_dips.append((idx, float(dip)))
+
+        odd_dips = [d for i, d in valid_dips if i % 2 == 0]
+        even_dips = [d for i, d in valid_dips if i % 2 == 1]
+
+        if len(odd_dips) < 2 or len(even_dips) < 2:
+            return 0.0
+
+        odd_mean = float(np.mean(odd_dips))
+        even_mean = float(np.mean(even_dips))
+        mean_all = 0.5 * (odd_mean + even_mean)
+        if mean_all <= 0:
+            return 0.0
+
+        return float(abs(odd_mean - even_mean) / mean_all)
+
+    @staticmethod
+    def _compute_secondary_eclipse_snr(
+        time: np.ndarray,
+        flux: np.ndarray,
+        period: float,
+        t0: float,
+        duration: float,
+    ) -> float:
+        """
+        Faz 0.5'teki (karşı tutulma) dip SNR'i.
+
+        Gezegen sinyalinde faz 0.5'te dip yok → SNR ≈ 0.
+        EB / odd-even alternatif sistemlerde faz 0.5'te anlamlı dip
+        → SNR yüksek.
+
+        Returns
+        -------
+        float
+            SNR; hesaplanamıyorsa 0.0.
+        """
+
+        if period <= 0 or duration <= 0 or len(time) < 20:
+            return 0.0
+
+        phase = ((time - t0 + 0.5 * period) % period) - 0.5 * period
+        hw = duration / 2.0
+
+        dist05 = np.abs(np.abs(phase) - 0.5 * period)
+        in_secondary = dist05 < hw
+        out = (dist05 > 2 * hw) & (dist05 < 0.25 * period)
+
+        if in_secondary.sum() < 5 or out.sum() < 20:
+            return 0.0
+
+        baseline = float(np.median(flux[out]))
+        sigma = float(np.std(flux[out]))
+        if sigma <= 0:
+            return 0.0
+
+        depth = baseline - float(np.median(flux[in_secondary]))
+        # Median'ın standart hatası ~ 1.25 * sigma / sqrt(N)
+        se = 1.25 * sigma / np.sqrt(in_secondary.sum())
+        if se <= 0:
+            return 0.0
+
+        return float(depth / se)
 
     @staticmethod
     def _compute_transit_symmetry(
@@ -734,10 +970,15 @@ class QualityMetricsCalculator:
                 return 0.0
 
             secondary_flux = flux[secondary_mask]
-            out_of_transit_flux = flux[~secondary_mask]
+            # Baseline: primary transit ve secondary dışındaki bölgeler
+            primary_mask = np.abs(phase) < phase_window
+            oot_mask = (~secondary_mask) & (~primary_mask)
+
+            if oot_mask.sum() < 5:
+                return 0.0
 
             secondary_median = float(np.median(secondary_flux))
-            oot_median = float(np.median(out_of_transit_flux))
+            oot_median = float(np.median(flux[oot_mask]))
 
             depth = oot_median - secondary_median
             return max(0.0, float(depth))
