@@ -409,7 +409,7 @@ class FalsePositiveVetter:
         """Ham veriden harmonik odd/even farki testi."""
 
         value = float(getattr(metrics.transit, "odd_even_harmonic", 0.0) or 0.0)
-        threshold = 0.30
+        threshold = 0.45
 
         if value > threshold:
             verdict = VettingVerdict.FAIL
@@ -475,7 +475,7 @@ class FalsePositiveVetter:
         """İkincil tutulmanın SNR tabanlı anlamlılık testi."""
 
         snr = float(getattr(metrics.stellar, "secondary_eclipse_snr", 0.0) or 0.0)
-        threshold = 5.0
+        threshold = 3.0
 
         if snr > threshold:
             verdict = VettingVerdict.FAIL

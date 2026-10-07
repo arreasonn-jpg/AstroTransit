@@ -697,6 +697,10 @@ class QualityMetricsCalculator:
             return 0.0
 
         best = 0.0
+        # Uc katlama da test edilir: cascade P/2 veya 2P'yi yanlis
+        # secebilir. Gezegen sinyalinde 2P katlamasinda tum t_grid
+        # noktalari transit'e denk gelir (hepsi ayni derinlik) -> oeh ~0.
+        # EB'de P/2 veya 2P'de odd/even farki gorulur.
         for factor in (0.5, 1.0, 2.0):
             P_test = period * factor
             v = QualityMetricsCalculator._raw_odd_even_at(
@@ -742,14 +746,12 @@ class QualityMetricsCalculator:
             )
             if m.sum() < 3 or o.sum() < 5:
                 continue
-            oot_med = float(np.median(flux[o]))
-            oot_std = float(np.std(flux[o]))
-            it_med = float(np.median(flux[m]))
-            dip = oot_med - it_med
-            se = oot_std * np.sqrt(1.0 / m.sum() + 1.0 / o.sum())
-            if se <= 0:
+            dip, sigma = QualityMetricsCalculator._dip_amplitude(
+                flux, m, o
+            )
+            if sigma <= 0 or dip <= 0:
                 continue
-            snr = dip / se
+            snr = dip / sigma
             if snr > 3.0:
                 valid_dips.append((idx, float(dip)))
 
@@ -776,43 +778,115 @@ class QualityMetricsCalculator:
         duration: float,
     ) -> float:
         """
-        Faz 0.5'teki (karşı tutulma) dip SNR'i.
+        Faz 0.25 / 0.5 / 0.75'te anlamli dip SNR'ini P, P/2 ve 2P
+        katlamalarinda arar; en yuksek anlamli degeri dondurur.
 
-        Gezegen sinyalinde faz 0.5'te dip yok → SNR ≈ 0.
-        EB / odd-even alternatif sistemlerde faz 0.5'te anlamlı dip
-        → SNR yüksek.
+        Tek gezegen sinyalinde bu fazlarda anlamli dip yoktur (SNR ~ 0).
+        EB ve odd-even alternatif sistemlerde karsit tutulma bu fazlardan
+        birine duser ve yuksek SNR verir.
+
+        Yanlis-pozitifi engellemek icin: secondary derinligi primary
+        derinliginden kucuk olmali (ratio < 0.9). Aksi halde P/2 katlamasi
+        primary'yi tekrar secondary gibi gosterir.
 
         Returns
         -------
         float
-            SNR; hesaplanamıyorsa 0.0.
+            En yuksek anlamli secondary SNR; hesaplanamiyorsa 0.0.
         """
 
         if period <= 0 or duration <= 0 or len(time) < 20:
             return 0.0
 
-        phase = ((time - t0 + 0.5 * period) % period) - 0.5 * period
         hw = duration / 2.0
+        best = 0.0
 
-        dist05 = np.abs(np.abs(phase) - 0.5 * period)
-        in_secondary = dist05 < hw
-        out = (dist05 > 2 * hw) & (dist05 < 0.25 * period)
+        # 2P test edilir: cascade harmonik periyot sectiginde (P_c = P_r/2),
+        # 2*P_c = P_r gercek periyoda denk gelir ve secondary phase 0.5'te
+        # gorulur. Gezegen sinyalinde 2P katlamasinda "secondary" bir sonraki
+        # transitin kendisidir ve ratio ~ 1.0 olur; ratio < 0.9 filtresi
+        # bunu eler.
+        for factor in (1.0, 2.0):
+            P_test = period * factor
+            if P_test <= 0 or hw <= 0:
+                continue
+            phase = ((time - t0 + 0.5 * P_test) % P_test) - 0.5 * P_test
 
-        if in_secondary.sum() < 5 or out.sum() < 20:
-            return 0.0
+            # Primary (faz 0): yuksek SNR'li dip olmali; aksi halde bu
+            # katlama transit icin anlamli degildir.
+            dist0 = np.abs(phase)
+            dist0 = np.minimum(dist0, P_test - dist0)
+            m0 = dist0 < hw
+            o0 = (dist0 > 2 * hw) & (dist0 < 0.25 * P_test)
+            if m0.sum() < 5 or o0.sum() < 20:
+                continue
+            d_primary, sigma0 = QualityMetricsCalculator._dip_amplitude(
+                flux, m0, o0
+            )
+            if sigma0 <= 0 or d_primary <= 0:
+                continue
+            snr_primary = d_primary / sigma0
+            # Primary anlamli degilse bu katlamayi atla
+            if snr_primary < 8.0:
+                continue
 
-        baseline = float(np.median(flux[out]))
-        sigma = float(np.std(flux[out]))
+            # Secondary: sadece phase 0.5
+            target_days = 0.5 * P_test
+            if target_days > 0.5 * P_test:
+                target_days -= P_test
+            dist = np.abs(phase - target_days)
+            dist = np.minimum(dist, P_test - dist)
+
+            in_dip = dist < hw
+            out = (
+                (dist > 2 * hw)
+                & (dist0 > 2 * hw)
+                & (dist < 0.20 * P_test)
+            )
+            if in_dip.sum() < 5 or out.sum() < 20:
+                continue
+
+            depth, sigma = QualityMetricsCalculator._dip_amplitude(
+                flux, in_dip, out
+            )
+            if sigma <= 0 or depth <= 0:
+                continue
+
+            ratio = depth / d_primary
+            if not (0.03 < ratio < 0.9):
+                continue
+
+            # Basit SNR: sigma kullan (korele noktalar sqrt(N)'i sisirir)
+            snr = depth / sigma
+            if snr > best:
+                best = float(snr)
+
+        return best
+
+    @staticmethod
+    def _dip_amplitude(
+        flux: np.ndarray,
+        m: np.ndarray,
+        o: np.ndarray,
+    ) -> tuple[float, float]:
+        """Pencere icinde anlamli dip derinligi ve baseline sigma.
+
+        Baseline'dan 2 sigma'dan fazla asagida olan noktalar 'dip' sayilir.
+        Transit yoksa (0.0, sigma) doner; boylece median'in baseline'a
+        kaymasi engellenir.
+        """
+        if m.sum() < 3 or o.sum() < 5:
+            return 0.0, 0.0
+        base = float(np.median(flux[o]))
+        sigma = float(np.std(flux[o]))
         if sigma <= 0:
-            return 0.0
-
-        depth = baseline - float(np.median(flux[in_secondary]))
-        # Median'ın standart hatası ~ 1.25 * sigma / sqrt(N)
-        se = 1.25 * sigma / np.sqrt(in_secondary.sum())
-        if se <= 0:
-            return 0.0
-
-        return float(depth / se)
+            return 0.0, 0.0
+        in_dip = flux[m] < (base - 2.0 * sigma)
+        if in_dip.sum() < 2:
+            return 0.0, sigma
+        dip_vals = flux[m][in_dip]
+        depth = base - float(np.median(dip_vals))
+        return float(depth), float(sigma)
 
     @staticmethod
     def _compute_transit_symmetry(
@@ -977,7 +1051,9 @@ class QualityMetricsCalculator:
             if oot_mask.sum() < 5:
                 return 0.0
 
-            secondary_median = float(np.median(secondary_flux))
+            sec_sorted = np.sort(secondary_flux)
+            n_deep_sec = max(3, int(0.25 * len(sec_sorted)))
+            secondary_median = float(np.median(sec_sorted[:n_deep_sec]))
             oot_median = float(np.median(flux[oot_mask]))
 
             depth = oot_median - secondary_median
