@@ -59,6 +59,10 @@ dev = [
     "jsonschema>=4.20",
     "ipykernel>=6.0",
     "jupyterlab>=4.0",
+    # CI quality job installs .[dev] only. The residual plot tests in
+    # tests/test_visualization_report_generator.py exercise the transit
+    # model, which requires batman at import time.
+    "batman-package",
 ]
 
 [project.scripts]
