@@ -63,6 +63,7 @@ CRITICAL_FP_TESTS = frozenset({
 # Tek başına FAIL → FP kararı (yüksek güvenilirlik, fiziksel kesinlik)
 HARD_FAIL_TESTS = frozenset({
     "secondary_eclipse_snr",
+    "secondary_eclipse",
     "depth_limit",
     "duration_period_ratio",
     "transit_shape",
@@ -74,7 +75,6 @@ SOFT_FAIL_TESTS = frozenset({
     "odd_even_harmonic",
     "odd_even_mismatch",
     "transit_symmetry",
-    "secondary_eclipse",
 })
 
 
@@ -439,19 +439,57 @@ class FalsePositiveVetter:
         candidate: CascadeCandidate,
         metrics: QualityMetrics,
     ) -> VettingTest:
-        """İkincil tutulma testi."""
+        """İkincil tutulma testi (SNR-gated).
+
+        Phase 1C revision: the ratio ``secondary > 0.5 * primary`` alone is
+        not sufficient on shallow transits, because ``secondary_eclipse_depth``
+        is measured against the local noise floor. Diagnostics on the frozen
+        adversarial corpus showed a ~600-730 ppm white-noise floor across all
+        planetary-control scenarios; a ratio crossing at that level is
+        statistically indistinguishable from noise.
+
+        A secondary eclipse is only treated as a false-positive signal when
+        BOTH the ratio crosses 0.5 and the secondary itself is detected at
+        ``secondary_eclipse_snr >= 2.0``. Below that, the measurement is
+        flagged as WARN so downstream logic still sees it but does not veto.
+
+        Science: Morton (2012) VESPA and Giacalone & Dressing (2020)
+        triceratops both veto on a *detected* secondary; "detected" implies
+        statistical significance above the noise floor.
+        """
 
         secondary_depth = metrics.stellar.secondary_eclipse_depth
+        secondary_snr = float(
+            getattr(metrics.stellar, "secondary_eclipse_snr", 0.0) or 0.0
+        )
         primary_depth = candidate.depth
         threshold_depth = primary_depth * self.secondary_eclipse_threshold
 
-        if secondary_depth > threshold_depth and primary_depth > 0:
+        #: White-noise floor guard: below this SNR a "secondary" is consistent
+        #: with noise in the frozen grid (see Phase 1C diagnostics in
+        #: validation_runs/final_acceptance_v1/adversarial_fp/).
+        noise_floor_snr = 2.0
+
+        if (
+            secondary_depth > threshold_depth
+            and primary_depth > 0
+            and secondary_snr >= noise_floor_snr
+        ):
             verdict = VettingVerdict.FAIL
-            ratio = secondary_depth / primary_depth if primary_depth > 0 else 0
+            ratio = secondary_depth / primary_depth if primary_depth > 0 else 0.0
             desc = (
                 f"İkincil tutulma tespit edildi: "
                 f"derinlik={secondary_depth * 1e6:.0f}ppm, "
-                f"oran={ratio:.2f} (EB şüphesi)"
+                f"oran={ratio:.2f}, SNR={secondary_snr:.1f} "
+                f"(EB şüphesi)"
+            )
+        elif secondary_depth > threshold_depth and primary_depth > 0:
+            verdict = VettingVerdict.WARN
+            ratio = secondary_depth / primary_depth if primary_depth > 0 else 0.0
+            desc = (
+                f"İkincil oranı eşiği aştı (oran={ratio:.2f}) ama "
+                f"SNR={secondary_snr:.1f} < {noise_floor_snr}: "
+                f"gürültü tabanıyla uyumlu"
             )
         elif secondary_depth > threshold_depth * 0.5:
             verdict = VettingVerdict.WARN

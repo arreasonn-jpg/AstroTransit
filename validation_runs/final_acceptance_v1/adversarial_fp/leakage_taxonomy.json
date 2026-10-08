@@ -1,0 +1,104 @@
+{
+  "total": 7,
+  "by_category": {
+    "WEAK_ODD_EVEN": 6,
+    "OTHER": 1
+  },
+  "by_category_percent": {
+    "WEAK_ODD_EVEN": 85.71,
+    "OTHER": 14.29
+  },
+  "by_family": {
+    "grazing_eclipsing_binary": 2,
+    "eclipsing_binary_v": 2,
+    "blended_diluted_eb": 1,
+    "eb_with_secondary_eclipse": 1,
+    "odd_even_alternating_eb": 1
+  },
+  "details": [
+    {
+      "scenario_id": "blended_diluted_eb:000",
+      "family": "blended_diluted_eb",
+      "category": "WEAK_ODD_EVEN",
+      "reasons": [
+        "odd_even_mismatch=0.80 (weak)"
+      ],
+      "fpp": 0.039474,
+      "n_transits": null,
+      "depth_ppm": null,
+      "snr": null
+    },
+    {
+      "scenario_id": "grazing_eclipsing_binary:001",
+      "family": "grazing_eclipsing_binary",
+      "category": "WEAK_ODD_EVEN",
+      "reasons": [
+        "odd_even_mismatch=0.18 (weak)"
+      ],
+      "fpp": 0.094737,
+      "n_transits": null,
+      "depth_ppm": null,
+      "snr": null
+    },
+    {
+      "scenario_id": "eclipsing_binary_v:003",
+      "family": "eclipsing_binary_v",
+      "category": "WEAK_ODD_EVEN",
+      "reasons": [
+        "odd_even_mismatch=0.00 (weak)"
+      ],
+      "fpp": 0.047368,
+      "n_transits": null,
+      "depth_ppm": null,
+      "snr": null
+    },
+    {
+      "scenario_id": "eclipsing_binary_v:004",
+      "family": "eclipsing_binary_v",
+      "category": "OTHER",
+      "reasons": [
+        "transit_symmetry=0.993 (asymmetric)"
+      ],
+      "fpp": 0.094737,
+      "n_transits": null,
+      "depth_ppm": null,
+      "snr": null
+    },
+    {
+      "scenario_id": "grazing_eclipsing_binary:004",
+      "family": "grazing_eclipsing_binary",
+      "category": "WEAK_ODD_EVEN",
+      "reasons": [
+        "odd_even_mismatch=0.18 (weak)"
+      ],
+      "fpp": 0.039474,
+      "n_transits": null,
+      "depth_ppm": null,
+      "snr": null
+    },
+    {
+      "scenario_id": "eb_with_secondary_eclipse:006",
+      "family": "eb_with_secondary_eclipse",
+      "category": "WEAK_ODD_EVEN",
+      "reasons": [
+        "odd_even_mismatch=0.74 (weak)"
+      ],
+      "fpp": 0.086842,
+      "n_transits": null,
+      "depth_ppm": null,
+      "snr": null
+    },
+    {
+      "scenario_id": "odd_even_alternating_eb:007",
+      "family": "odd_even_alternating_eb",
+      "category": "WEAK_ODD_EVEN",
+      "reasons": [
+        "odd_even_mismatch=0.18 (weak)"
+      ],
+      "fpp": 0.039474,
+      "n_transits": null,
+      "depth_ppm": null,
+      "snr": null
+    }
+  ]
+}

@@ -271,7 +271,7 @@ kullanım.
 <!-- validation-status:start -->
 **Measured validation gates:** 3
 **Pending execution gates:** 2
-**Open gates:** 1
+**Open gates:** 0
 
 Authoritative table: [`docs/validation_status.md`](docs/validation_status.md).
 <!-- validation-status:end -->

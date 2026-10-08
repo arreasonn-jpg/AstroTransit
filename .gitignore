@@ -51,3 +51,5 @@ scripts_inventory*.txt
 
 # Coverage snapshot artefacts (LLM context / analysis outputs)
 .cov_snap*.json
+validation_runs/**/frozen_*/
+validation_runs/**/frozen_*

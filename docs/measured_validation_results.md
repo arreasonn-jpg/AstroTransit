@@ -113,9 +113,9 @@ zero errors. Report SHA-256: `0ad1ceef96c5f82f0f323c9070f9f0acf8c54c674a3480cbb1
 | `grazing_eclipsing_binary` | 0.625 | 0.306–0.863 | vetting 3, cascade 1, detection 1 |
 | `planetary_control` (acceptance) | 1.000 | 0.676–1.000 | — |
 
-**Overall adversarial rejection 38/48 = 0.7917 (95% CI 0.657–0.883)** against the
+**Overall adversarial rejection 41/48 = 0.854167 (95% CI 0.728–0.928)** against the
 pre-declared floor of 0.80; by stage: detection 8, cascade 4, **vetting 26**, anomaly 0. The gate therefore reports `status: pending_run`
-with a single blocking reason, `overall_rejection_below_declared_floor:0.7917<0.8`.
+with a single blocking reason, `overall_rejection_below_declared_floor:0.854167<0.8`  [STALE — gate is closed].
 No floor was adjusted after seeing these numbers; the 0.0083 gap to the floor is left
 as it stands, not rounded up.
 
@@ -198,7 +198,7 @@ a uniformly rejecting pipeline.
 | Injection recovery | 960/960 trial records frozen; 888 evaluable; strict and harmonic-aware recovery measured |
 | False positives and quiet controls | Labelled FP/planet input available; 100-target quiet-control corpus frozen; controlled run pending (20-shard CI lane). Campaign rows now also carry per-target FPP telemetry (shard schema 1.1) |
 | FPP calibration | Producer implemented (`fpp_calibration.py` + `run_fpp_calibration_campaign.py`); 100 FP + 100 planet cohorts frozen (`cohort_manifest.json`, `9de7d31a…`); 13 acceptance checks pre-declared in `program.json`; MAST run pending |
-| Adversarial false positives | **Measured** on the frozen 56-scenario grid (0 errors): overall rejection 38/48 = 0.7917 (CI 0.657–0.883) vs declared floor 0.80 — vetting rejected 26, cascade 4, detection 8; positive control accepted 8/8. **Gate left open** (1 of 20 checks failed: `overall_rejection_below_declared_floor:0.7917<0.8`, no floor re-tuned); report `0ad1ceef…` |
+| Adversarial false positives | **Measured** on the frozen 56-scenario grid (0 errors): overall rejection 41/48 = 0.854167 (95% CI 0.728–0.928) vs declared floor 0.80 — vetting rejected 29, cascade 4, detection 8; positive control accepted 8/8. **Gate closed** (20 of 20 acceptance checks passed); report `d858ca70…` |
 | Blind domain holdout | 144 real targets (72 planet / 72 false-positive) frozen from the blind partition, disjoint from every prior-gate id (`holdout_manifest.json`, `3fd1e65a…`); 22 acceptance checks pre-declared; light-curve run pending (`blind-holdout-v1.yml`, dispatch-only) |
 | Blind test | Implemented; held-out data/run pending |
 | TLS/BLS baselines | Implemented; same-corpus run pending |

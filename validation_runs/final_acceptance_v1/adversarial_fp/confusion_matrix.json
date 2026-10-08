@@ -1,0 +1,17 @@
+{
+  "matrix": {
+    "true_fp_predicted_fp": 41,
+    "true_fp_predicted_planet": 7,
+    "true_planet_predicted_planet": 8,
+    "true_planet_predicted_fp": 0,
+    "total": 56
+  },
+  "metrics": {
+    "fp_specificity": 0.8542,
+    "planet_recall": 1.0,
+    "balanced_accuracy": 0.9271,
+    "precision": 1.0,
+    "fpr_on_planets": 0.0,
+    "fnr_on_fp": 0.1458
+  }
+}

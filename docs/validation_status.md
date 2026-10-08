@@ -7,7 +7,7 @@
 |------|---------|-----------|--------|--------|--------|------|
 | Known targets | 50 | predefined | 46/46 | PASS | `26b7531` | `N/A` |
 | Injection | 888 | predefined | 52.48% | MEASURED | `26b7531` | `N/A` |
-| Adversarial FP | 48 | >=80% | 79.17% | FAIL | `26b7531` | `N/A` |
+| Adversarial FP | 48 | >=80% | 85.42% | PASS | `26b7531` | `N/A` |
 | Blind holdout | 144 | predefined | pending | PENDING | `26b7531` | `N/A` |
 | FPP calibration | 200 | predefined | pending | PENDING | `26b7531` | `N/A` |
 
@@ -15,7 +15,7 @@
 
 - **Measured gates:** 3
 - **Pending execution gates:** 2
-- **Open (failed) gates:** 1
+- **Open (failed) gates:** 0
 
 ## Rules
 
