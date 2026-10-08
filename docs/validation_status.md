@@ -5,11 +5,11 @@
 
 | Gate | Dataset | Threshold | Result | Status | Commit | Hash |
 |------|---------|-----------|--------|--------|--------|------|
-| Known targets | 50 | predefined | 46/46 | PASS | `26b7531` | `N/A` |
-| Injection | 888 | predefined | 52.48% | MEASURED | `26b7531` | `N/A` |
-| Adversarial FP | 48 | >=80% | 85.42% | PASS | `26b7531` | `N/A` |
-| Blind holdout | 144 | predefined | pending | PENDING | `26b7531` | `N/A` |
-| FPP calibration | 200 | predefined | pending | PENDING | `26b7531` | `N/A` |
+| Known targets | 50 | predefined | 46/46 | PASS | `6986a2e` | `N/A` |
+| Injection | 888 | predefined | 52.48% | MEASURED | `6986a2e` | `N/A` |
+| Adversarial FP | 48 | >=80% | 85.42% | PASS | `6986a2e` | `N/A` |
+| Blind holdout | 144 | predefined | pending | PENDING | `6986a2e` | `N/A` |
+| FPP calibration | 200 | predefined | pending | PENDING | `6986a2e` | `N/A` |
 
 ## Counts
 
