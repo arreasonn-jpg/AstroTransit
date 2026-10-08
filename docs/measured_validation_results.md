@@ -100,48 +100,52 @@ Grid identity: `2e2b434d5d609883c3f3803dd24950f595a1482e523e8bf71d04d214bd4ace20
 The harness runs the production wiring — MAP fit, then
 `evaluate(detrended, candidate, fit_result)` exactly as
 `astrotransit/pipelines/tess_pipeline.py` does — and the report pins the code it
-ran from (`provenance.git_commit = 79e06e16…`). All 56 scenarios produced a row;
-zero errors. Report SHA-256: `8536412586cf2bdbc0bb651c4ed7e11520d1fb394b3798f4b10d97dd3a39af6e`.
+ran from (`provenance.git_commit = d881081…`). All 56 scenarios produced a row;
+zero errors. Report SHA-256: `0ad1ceef96c5f82f0f323c9070f9f0acf8c54c674a3480cbb1f392c3a11cd3e6`.
 
 | Family (8 scenarios each) | Rejection rate | 95% CI | Rejected at |
 |---|---|---|---|
 | `blended_diluted_eb` | 0.875 | 0.529–0.978 | detection 7 |
-| `spot_modulated_dip` | 0.500 | 0.215–0.785 | cascade 3, vetting 1 |
-| `grazing_eclipsing_binary` | 0.250 | 0.071–0.591 | cascade 2 |
-| `eclipsing_binary_v` | 0.000 | 0.000–0.324 | — |
-| `eb_with_secondary_eclipse` | 0.000 | 0.000–0.324 | — |
-| `odd_even_alternating_eb` | 0.000 | 0.000–0.324 | — |
+| `odd_even_alternating_eb` | 0.875 | 0.529–0.978 | vetting 7 |
+| `spot_modulated_dip` | 1.000 | 0.676–1.000 | vetting 5, cascade 3 |
+| `eb_with_secondary_eclipse` | 0.750 | 0.409–0.929 | vetting 6 |
+| `eclipsing_binary_v` | 0.625 | 0.306–0.863 | vetting 5 |
+| `grazing_eclipsing_binary` | 0.625 | 0.306–0.863 | vetting 3, cascade 1, detection 1 |
 | `planetary_control` (acceptance) | 1.000 | 0.676–1.000 | — |
 
-**Overall adversarial rejection 13/48 = 0.271 (95% CI 0.166–0.410)** against the
-pre-declared floor of 0.80; by stage: detection 7, cascade 5, **vetting 1**,
-anomaly 0. The gate therefore reports `status: pending_run`, lists five blocking
-reasons, `aggregate`/`run` exit 3, and `final_acceptance_audit` marks 6 of the 20
-checks failed. No floor was adjusted after seeing these numbers.
+**Overall adversarial rejection 38/48 = 0.7917 (95% CI 0.657–0.883)** against the
+pre-declared floor of 0.80; by stage: detection 8, cascade 4, **vetting 26**, anomaly 0. The gate therefore reports `status: pending_run`
+with a single blocking reason, `overall_rejection_below_declared_floor:0.7917<0.8`.
+No floor was adjusted after seeing these numbers; the 0.0083 gap to the floor is left
+as it stands, not rounded up.
 
 What the measurement does and does not say:
 
-- The pipeline's rejection of these morphologies is overwhelmingly a
-  **sensitivity** effect, not adjudication: the only family that clears its floor
-  (`blended_diluted_eb`) is rejected because BLS finds no peak at 750–1800 ppm
-  under 600 ppm noise, not because vetting recognised an EB. Reading 0.875 as
-  vetting quality would be wrong, which is why the report attributes every
-  rejection to a stage.
-- Vetting essentially never fires here: 53 of 56 rows have zero failing vetting
-  tests, and `false_positive_probability > 0` in 11 rows. Median injected-secondary
-  measurement is 8.7 ppm (max 1792 ppm) against a test threshold of
-  `0.5 × primary depth`, so the secondary-eclipse test cannot trigger on these
-  shapes; `odd_even_mismatch` does respond directionally (alternating family
-  median 0.84, max 2.65, vs control median 0.17) but stays below the 3σ
-  threshold; `depth_limit` compares against `max_depth_ratio = 0.5`, i.e. 50%,
-  so realistic 1–5% eclipses pass by construction.
-- **Limitation of this wiring, recorded in the report:** the anomaly stage emitted
-  no report for any scenario, so `rejected_at_anomaly` was structurally
-  unreachable. The measured number covers detection + cascade + vetting; the
-  repo's `quality/eb_coorbital_discriminator.py` and anomaly scorer are not part
-  of the per-target quality path and are therefore not credited or blamed.
-- 32 of 56 scenarios recovered the injected period within 2%; the rest are
-  detector-side outcomes that the rejection attribution already accounts for.
+- **Vetting now does the work it was built for.** Of the 38 rejections,
+  26 come from the vetting layer (previously 1), through three
+  signals added on 2026-10-08 (commits `29b0761`, `70348ed`, `d881081`):
+  `transit_shape` (phase–depth Pearson correlation with a duration-adaptive
+  window), `odd_even_harmonic` (odd/even depth mismatch measured on the raw
+  light curve at P, P/2 and 2P with a per-position SNR filter), and
+  `secondary_eclipse_snr` (significance of the phase-0.5 dip against a
+  primary-transit-free baseline). The `stellar_variability` gate was retied
+  to the Lomb–Scargle peak power, which separates spot modulation from a
+  transit-driven amplitude bump that the previous rule read as variability.
+- **The positive control still passes 8/8.** The new vetoes did not
+  cost the `planetary_control` family a single failing test; its FPP proxy
+  stays at 0.00 across all eight scenarios.
+- **The remaining 10 leaks share one physical cause.** Every leaked scenario has an
+  injected period above 3.5 d. With the 27 d baseline the folded profile
+  holds only 3–5 transits, and both the shape and harmonic statistics lose
+  the SNR to fire. `grazing_eclipsing_binary:004` (P = 5.5 d) and
+  `blended_diluted_eb:000` (dilution = 0.02) sit at the same edge.
+  Recovering them needs either a longer baseline or a metric that does not
+  depend on transit count. Diagnostic work on 2026-10-08 tried half-max
+  width and edge/centre flatness on the folded profile and found them
+  non-discriminating at this SNR; TTV and ingress/egress steepness remain
+  the two candidates that were left open.
+- **The anomaly stage remains out of the wiring** for this gate, as recorded
+  in the report; the numbers cover detection + cascade + vetting.
 
 Candidate follow-ups (owner decision, none applied here): add a morphology test
 that measures ingress steepness / V-shape directly, compute the secondary-eclipse
@@ -194,7 +198,7 @@ a uniformly rejecting pipeline.
 | Injection recovery | 960/960 trial records frozen; 888 evaluable; strict and harmonic-aware recovery measured |
 | False positives and quiet controls | Labelled FP/planet input available; 100-target quiet-control corpus frozen; controlled run pending (20-shard CI lane). Campaign rows now also carry per-target FPP telemetry (shard schema 1.1) |
 | FPP calibration | Producer implemented (`fpp_calibration.py` + `run_fpp_calibration_campaign.py`); 100 FP + 100 planet cohorts frozen (`cohort_manifest.json`, `9de7d31a…`); 13 acceptance checks pre-declared in `program.json`; MAST run pending |
-| Adversarial false positives | **Measured** on the frozen 56-scenario grid (0 errors): overall rejection 13/48 = 0.271 (CI 0.166–0.410) vs declared floor 0.80 — vetting rejected 1, cascade 5, detection 7; positive control accepted 8/8. **Gate left open** (6 of 20 checks failed, no floor re-tuned); report `85364125…` |
+| Adversarial false positives | **Measured** on the frozen 56-scenario grid (0 errors): overall rejection 38/48 = 0.7917 (CI 0.657–0.883) vs declared floor 0.80 — vetting rejected 26, cascade 4, detection 8; positive control accepted 8/8. **Gate left open** (1 of 20 checks failed: `overall_rejection_below_declared_floor:0.7917<0.8`, no floor re-tuned); report `0ad1ceef…` |
 | Blind domain holdout | 144 real targets (72 planet / 72 false-positive) frozen from the blind partition, disjoint from every prior-gate id (`holdout_manifest.json`, `3fd1e65a…`); 22 acceptance checks pre-declared; light-curve run pending (`blind-holdout-v1.yml`, dispatch-only) |
 | Blind test | Implemented; held-out data/run pending |
 | TLS/BLS baselines | Implemented; same-corpus run pending |
