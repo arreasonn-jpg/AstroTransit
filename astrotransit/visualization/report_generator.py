@@ -58,6 +58,7 @@ class VisualizationReport:
     periodogram: Optional[Path] = None
     folded: Optional[Path] = None
     residuals: Optional[Path] = None
+    residuals_error: Optional[str] = None
     timing: Optional[Path] = None
     scorecard: Optional[Path] = None
 
@@ -261,6 +262,7 @@ class VisualizationReportGenerator:
                 )
         except Exception as e:
             logger.warning(f"Residual grafiği başarısız: {e}")
+            report.residuals_error = f"{type(e).__name__}: {e}"
 
         # ── 4: Timing ──
         try:
