@@ -164,6 +164,7 @@ exclude = [
 # Bu taban yapılandırma, CI'da bilgilendirici olarak çalışır.
 
 [tool.coverage.run]
+
 branch = true
 source = ["astrotransit", "cli", "dashboard"]
 omit = [
@@ -180,7 +181,7 @@ omit = [
 #                        transit_consistency; ayrıca timing_analysis ep_obs bug fix.
 # test/coverage-boost-4: validation/plots, data/temp_cache,
 #                        preprocessing/pipeline, pipelines/orchestrator.
-fail_under = 72
+fail_under = 90
 precision = 2
 show_missing = true
 skip_covered = false

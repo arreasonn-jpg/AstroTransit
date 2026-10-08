@@ -267,3 +267,11 @@ Her çalışma için önerilen provenance seti:
 
 [MIT](LICENSE) — bilimsel işbirliği ve bağımsız yeniden üretim amaçlı serbest
 kullanım.
+
+<!-- validation-status:start -->
+**Measured validation gates:** 3
+**Pending execution gates:** 2
+**Open gates:** 1
+
+Authoritative table: [`docs/validation_status.md`](docs/validation_status.md).
+<!-- validation-status:end -->
