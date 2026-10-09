@@ -8,7 +8,7 @@
 | Known targets | 50 | predefined | 46/46 | PASS | `6986a2e` | `N/A` |
 | Injection | 888 | predefined | 52.48% | MEASURED | `6986a2e` | `N/A` |
 | Adversarial FP | 48 | >=80% | 85.42% | PASS | `6986a2e` | `N/A` |
-| Blind holdout | 144 | predefined | 135 eval, recall 0.7042, FPR 0.7188, errors=9 | MEASURED_OPEN | `<TBD>` | `<TBD>` |
+| Blind holdout | 144 | predefined | 135 eval, recall 0.7042, FPR 0.7188, errors=9 | MEASURED_OPEN | `<TBD>` | `4c298f1` | `57e60255` |
 | FPP calibration | 200 | predefined | pending | PENDING | `6986a2e` | `N/A` |
 
 ## Counts
