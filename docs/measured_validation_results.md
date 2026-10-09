@@ -207,3 +207,54 @@ a uniformly rejecting pipeline.
 The next step is deterministic recovered-parameter analysis from the frozen injection trial table. It must preserve the measured detection results and report unavailable parameter values as `not_evaluated`, never as zero.
 
 Four pending gates are executable today without new code: the false-positive/quiet-control and FPP-calibration campaigns fan out to 20 shards in GitHub Actions (`.github/workflows/fp-quiet-controls-v1.yml`, `.github/workflows/fpp-calibration-v1.yml`), the adversarial FP gate runs its synthetic grid in 8 shards (`.github/workflows/adversarial-fp-v1.yml`), and the blind-domain holdout fans out to 12 shards on dispatch (`.github/workflows/blind-holdout-v1.yml`). All of them aggregate offline, and every corpus identity is frozen by SHA-256, so a re-run cannot silently reselect targets.
+
+
+## Blind domain holdout v1 — first measurement (gate remains open)
+
+144 real TESS targets, frozen from the blind partition (`split=blind_test`,
+disjoint from every earlier gate id). Detector was not consulted during
+selection (`detector_used_for_selection: false`). 12-shard run, cached SPOC
+120s sectors.
+
+**Result: MEASURED, gate open.** Two blockers:
+
+- `false_positive_rate_above_declared_ceiling: 0.7188 > 0.6`
+- `error_rows:9` (9 targets with no SPOC 120s sector)
+
+| Metric | Value | 95% CI |
+|---|---:|---|
+| Recall (planets) | 0.7042 | 0.590 – 0.798 |
+| False-positive rate | 0.7188 | 0.599 – 0.814 |
+| Precision | 0.5208 | — |
+| Evaluated targets | 135 / 144 | — |
+
+**Per-stratum acceptance rates:**
+
+| Stratum | n | accept rate | recall / FPR |
+|---|---:|---:|---:|
+| false_positive:APC | 19 | 0.947 | FPR = 0.947 |
+| false_positive:FP  | 35 | 0.714 | FPR = 0.714 |
+| false_positive:FA  | 10 | 0.300 | FPR = 0.300 |
+| planet:CP          | 36 | 0.722 | recall = 0.722 |
+| planet:KP          | 35 | 0.686 | recall = 0.686 |
+
+**Interpretation.** The synthetic adversarial gate (FAZ 1) measured an
+85.4% false-positive rejection rate on 48 fabricated eclipsing-binary
+morphologies. On 54 real, disposition-labelled false positives drawn from
+TFOP, the same pipeline rejects only 26.9%. The gap is not a threshold
+issue: the accepted false positives and the accepted planets occupy the
+same `quality_score` range (both median ≈ 75), so no single score cut
+separates them.
+
+The dominant leak family is **FP:APC** (ambiguous planet candidate,
+18/19 accepted) and **FP:FP** (25/35 accepted) — real diluted eclipsing
+binaries and blended signals. The synthetic adversarial corpus does not
+represent their morphology, so the `secondary_eclipse_snr` and
+`transit_shape` tests, calibrated on the synthetic grid, do not fire.
+
+**No tuning on this set.** Per the frozen programme, thresholds are not
+re-tuned against the blind holdout. The next algorithm iteration is
+developed on the non-blind partitions and re-frozen before a second
+blind run.
+
+Report SHA-256: `57e60255b2c7bb229e9ea7d54941a7683b3e8bbe95cb5c5567727b204a446d61`.

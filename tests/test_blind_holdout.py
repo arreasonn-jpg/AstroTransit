@@ -421,7 +421,16 @@ def test_report_paths_exist_in_the_schema_so_checks_cannot_vacuously_pass() -> N
 
 
 def test_offline_shard_rows_are_errors_and_the_gate_refuses_to_close(tmp_path: Path) -> None:
-    """Korpus var ama ölçüm yoksa: raporda 'measured' iddiası kurulamaz."""
+    """Korpus var ama ölçüm yoksa: raporda 'measured' iddiası kurulamaz.
+
+    The canonical gate output may already exist (a real measurement run
+    published it). This test does not assert its absence; it asserts that
+    this offline contract-only run does **not overwrite** it.
+    """
+
+    canonical = ROOT / REQUIRED_OUTPUT
+    existed_before = canonical.exists()
+    mtime_before = canonical.stat().st_mtime if existed_before else None
 
     manifest = json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
     small = dict(manifest, cases=manifest["cases"][:4], holdout_sha256=holdout_sha256(manifest["cases"][:4]))
@@ -476,8 +485,14 @@ def test_offline_shard_rows_are_errors_and_the_gate_refuses_to_close(tmp_path: P
     assert report["data"]["n_evaluated"] == 0
     assert report["data"]["errors"] == 4
     assert any(reason.startswith("error_rows:") for reason in report["blocking_reasons"])
-    # Kanonik kapı yolu bu kosumda asla yazilmaz.
-    assert not (ROOT / REQUIRED_OUTPUT).exists()
+    # Kanonik kapı yolu bu kosumda asla yazılmaz / üzerine yazılmaz.
+    if existed_before:
+        assert canonical.exists()
+        assert canonical.stat().st_mtime == mtime_before, (
+            "the offline contract test must not overwrite the canonical gate output"
+        )
+    else:
+        assert not canonical.exists()
 
 
 def test_run_refuses_a_missing_or_drifted_manifest(tmp_path: Path) -> None:
