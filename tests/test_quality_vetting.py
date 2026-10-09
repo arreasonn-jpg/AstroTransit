@@ -5,6 +5,12 @@ from types import SimpleNamespace
 
 import pytest
 
+from astrotransit.quality.metrics import (
+    PhotometricMetrics,
+    QualityMetrics,
+    StellarMetrics,
+    TransitMetrics,
+)
 from astrotransit.quality.vetting import (
     FPP_METHOD,
     FalsePositiveVetter,
@@ -24,30 +30,46 @@ def _candidate(
 
 
 def _metrics(
-    odd_even=0.0, secondary=0.0, variable=False, amplitude=0.0,
-    depth_var=0.0, n_transits=5, symmetry=0.5, completeness=0.95,
-    ls_peak=0.0,
-):
-    return SimpleNamespace(
-        transit=SimpleNamespace(
+    odd_even: float = 0.0,
+    secondary: float = 0.0,
+    secondary_snr: float = 0.0,
+    variable: bool = False,
+    amplitude: float = 0.0,
+    depth_var: float = 0.0,
+    n_transits: int = 10,
+    symmetry: float = 1.0,
+    completeness: float = 1.0,
+    ls_peak: float = 0.0,
+    harmonic: float = 0.0,
+    shape: float = 0.0,
+) -> QualityMetrics:
+    """Build a QualityMetrics fixture.
+
+    FAZ 2b.3a.2: added ``secondary_snr`` and ``ls_peak`` so that tests can
+    exercise the FAZ 1 SNR-gated ``secondary_eclipse`` and LS-gated
+    ``stellar_variability`` paths. Defaults keep the previous behaviour
+    (0.0 → gates fall through to WARN / PASS).
+    """
+    return QualityMetrics(
+        target_id="TIC 1",
+        sector=1,
+        photometric=PhotometricMetrics(data_completeness=completeness),
+        transit=TransitMetrics(
             odd_even_mismatch=odd_even,
             depth_variance=depth_var,
             n_transits=n_transits,
             transit_symmetry=symmetry,
+            odd_even_harmonic=harmonic,
+            shape_correlation=shape,
         ),
-        stellar=SimpleNamespace(
-            secondary_eclipse_depth=secondary,
+        stellar=StellarMetrics(
             is_variable_star=variable,
             variability_amplitude=amplitude,
             lomb_scargle_peak=ls_peak,
+            secondary_eclipse_depth=secondary,
+            secondary_eclipse_snr=secondary_snr,
         ),
-        photometric=SimpleNamespace(data_completeness=completeness),
     )
-
-
-# ═══════════════════════════════════════════════════════
-# VettingVerdict + VettingTest + VettingReport
-# ═══════════════════════════════════════════════════════
 
 def test_verdict_enum():
     assert VettingVerdict.PASS.value == "pass"
@@ -160,11 +182,26 @@ def test_odd_even_pass():
 
 def test_secondary_fail():
     v = FalsePositiveVetter(secondary_eclipse_threshold=0.5)
-    # depth=0.01, secondary=0.006 → ratio 0.6 > 0.5 → FAIL
+    # depth=0.01, secondary=0.006 → ratio 0.6 > 0.5
+    # FAZ 1 also requires secondary_snr >= 2.0 to promote WARN → FAIL,
+    # because the ratio alone misfires on shallow transits where the
+    # secondary depth sits on the noise floor.
     t = v._test_secondary_eclipse(
-        _candidate(depth=0.01), _metrics(secondary=0.006),
+        _candidate(depth=0.01),
+        _metrics(secondary=0.006, secondary_snr=5.0),
     )
     assert t.verdict == VettingVerdict.FAIL
+
+
+def test_secondary_warn_when_ratio_crossed_but_snr_low():
+    """FAZ 1 gate: a ratio-only crossing must be WARN, not FAIL."""
+    v = FalsePositiveVetter(secondary_eclipse_threshold=0.5)
+    t = v._test_secondary_eclipse(
+        _candidate(depth=0.01),
+        _metrics(secondary=0.006, secondary_snr=0.0),
+    )
+    assert t.verdict == VettingVerdict.WARN
+    assert "SNR" in t.description
 
 
 def test_secondary_warn():
@@ -407,9 +444,9 @@ def test_vet_eb_candidate():
     v = FalsePositiveVetter()
     c = _candidate(depth=0.001, period=3.5, duration=0.1)
     m = _metrics(
-        odd_even=10.0,  # FAIL
-        secondary=0.005,  # FAIL (depth 0.001)
-        variable=True, amplitude=20000.0,  # FAIL
+        odd_even=10.0,  # FAIL (threshold 3.0)
+        secondary=0.005, secondary_snr=5.0,  # FAIL (depth 0.001)
+        variable=True, amplitude=20000.0, ls_peak=0.7,  # FAIL (FAZ 1 gate)
         depth_var=0.0001, n_transits=5, symmetry=0.5, completeness=0.95,
     )
     r = v.vet(c, m)

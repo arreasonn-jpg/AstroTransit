@@ -827,7 +827,9 @@ class QualityMetricsCalculator:
                 continue
             snr_primary = d_primary / sigma0
             # Primary anlamli degilse bu katlamayi atla
-            if snr_primary < 8.0:
+            # FAZ 2b.3a: 8.0 -> 4.0. z-score artık standart hata
+            # tabanlı; 4σ altındaki primary katkı yapmaz.
+            if snr_primary < 4.0:
                 continue
 
             # Secondary: sadece phase 0.5
@@ -869,11 +871,31 @@ class QualityMetricsCalculator:
         m: np.ndarray,
         o: np.ndarray,
     ) -> tuple[float, float]:
-        """Pencere icinde anlamli dip derinligi ve baseline sigma.
+        """Dip derinliği ve **derinlik belirsizliği** (standart hata).
 
-        Baseline'dan 2 sigma'dan fazla asagida olan noktalar 'dip' sayilir.
-        Transit yoksa (0.0, sigma) doner; boylece median'in baseline'a
-        kaymasi engellenir.
+        FAZ 2b.3a revizyonu: dönen ikinci değer artık *per-point sigma*
+        değil, pencere ortalamasının **standart hatası × red-noise
+        şişmesi**dir. Gerekçe:
+
+        Eski formül (depth / per-point sigma) yalnızca tek noktaların
+        baseline medyanının 2σ altına indiği transitlerde çalışıyordu.
+        Sentetik korpusta (derinlik 10 000-50 000 ppm, gürültü 600 ppm)
+        her nokta > 16σ altında olduğu için bu şart sağlanıyordu. Gerçek
+        TESS verisinde (derinlik 200-20 000 ppm, gürültü 2 000-5 000 ppm)
+        tek nokta bile -2σ altına inmediğinden fonksiyon daima 0.0
+        döndürüyor, ardışık tüm metrikler ve testler sıfırlanıyordu.
+
+        Yeni formül::
+
+            depth = median(out-of-dip) - mean(in-window)
+            n_eff = max(1, n_in / 3)      # red-noise cezası
+            SE    = sigma_out / sqrt(n_eff)
+
+        Burada ``depth / SE`` doğrudan bir z-skorudur. ``3.0`` eşiği
+        "3σ anlamlı dip" anlamına gelir; literatürdeki standart
+        (Morton 2012 VESPA; Kepler Robovetter) ile uyumludur. Red-noise
+        cezası olarak sabit sqrt(3) faktörü kullanılır (Pont 2006,
+        correlated photometric noise).
         """
         if m.sum() < 3 or o.sum() < 5:
             return 0.0, 0.0
@@ -881,12 +903,14 @@ class QualityMetricsCalculator:
         sigma = float(np.std(flux[o]))
         if sigma <= 0:
             return 0.0, 0.0
-        in_dip = flux[m] < (base - 2.0 * sigma)
-        if in_dip.sum() < 2:
+        depth = base - float(np.mean(flux[m]))
+        if depth <= 0.0:
+            # No dip: return per-point sigma so callers comparing
+            # `depth <= 0` see a finite noise value.
             return 0.0, sigma
-        dip_vals = flux[m][in_dip]
-        depth = base - float(np.median(dip_vals))
-        return float(depth), float(sigma)
+        n_eff = max(1.0, float(m.sum()) / 3.0)
+        se_mean = sigma / float(np.sqrt(n_eff))
+        return float(depth), float(se_mean)
 
     @staticmethod
     def _compute_transit_symmetry(
