@@ -1,0 +1,1362 @@
+{
+  "cases": [
+    {
+      "label": "false_positive",
+      "notes": "TOI 5409.01",
+      "reference": "TESS FOP Working Group disposition 'APC' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "061bf1d32dbf8879b3ee6dd9aaca3714b59ba20147ec083b254e2e5a0a6e86fa",
+      "stratum": "false_positive:APC",
+      "target_id": "115628210"
+    },
+    {
+      "label": "false_positive",
+      "notes": "TOI 7599.01",
+      "reference": "TESS FOP Working Group disposition 'APC' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "09fcf6c8d4adb7a7d414d2a0a7873f9b4ecc16b646977e9813fe5497bc468022",
+      "stratum": "false_positive:APC",
+      "target_id": "142757891"
+    },
+    {
+      "label": "false_positive",
+      "notes": "TOI 2377.01",
+      "reference": "TESS FOP Working Group disposition 'APC' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "0b4ea2b610e216485526590e500780c33288ab0ec9b9e71f6682cf53d9009521",
+      "stratum": "false_positive:APC",
+      "target_id": "146165619"
+    },
+    {
+      "label": "false_positive",
+      "notes": "TOI 948.01",
+      "reference": "TESS FOP Working Group disposition 'APC' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "0cce0bb4c13753745da8ecad1f58d5c086fceb93008936afc05c073821bad412",
+      "stratum": "false_positive:APC",
+      "target_id": "146438872"
+    },
+    {
+      "label": "false_positive",
+      "notes": "TOI 2756.01",
+      "reference": "TESS FOP Working Group disposition 'APC' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "0c56e16aa4da4a42dc1ae6cf68d650c246de5a83e624e1c490a896049232c9ad",
+      "stratum": "false_positive:APC",
+      "target_id": "147437399"
+    },
+    {
+      "label": "false_positive",
+      "notes": "TOI 527.01",
+      "reference": "TESS FOP Working Group disposition 'APC' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "06f8d09aa8ca910c513efb1c37bf8be8cf3f13bebf36fa53f5603a66c3b0ddbe",
+      "stratum": "false_positive:APC",
+      "target_id": "148228019"
+    },
+    {
+      "label": "false_positive",
+      "notes": "TOI 809.01",
+      "reference": "TESS FOP Working Group disposition 'APC' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "03c91cf0deee518fd33a664ae13587420524315f6cefca67cd2f562c4224ac0a",
+      "stratum": "false_positive:APC",
+      "target_id": "149301575"
+    },
+    {
+      "label": "false_positive",
+      "notes": "TOI 6975.01",
+      "reference": "TESS FOP Working Group disposition 'APC' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "0a394c8de7d412c4cf91af8e0ae3d8fa619be08cc6c02986a3587482833f4c32",
+      "stratum": "false_positive:APC",
+      "target_id": "158381418"
+    },
+    {
+      "label": "false_positive",
+      "notes": "TOI 3695.01",
+      "reference": "TESS FOP Working Group disposition 'APC' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "0ae70dde6ce10f8acdd5247bba9155643a42198a0ee4503b799d6ed8e6ccadae",
+      "stratum": "false_positive:APC",
+      "target_id": "203096531"
+    },
+    {
+      "label": "false_positive",
+      "notes": "TOI 153.01",
+      "reference": "TESS FOP Working Group disposition 'APC' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "109ced2e4e57b6ac2986967e18dfbbcf090496260358ef7fe1bd0265b9f4c63a",
+      "stratum": "false_positive:APC",
+      "target_id": "231081369"
+    },
+    {
+      "label": "false_positive",
+      "notes": "TOI 1379.01",
+      "reference": "TESS FOP Working Group disposition 'APC' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "0e833a0143bf18c42cde6660c8befbd377c6b12ff2d4893124508c4e698319bd",
+      "stratum": "false_positive:APC",
+      "target_id": "252490659"
+    },
+    {
+      "label": "false_positive",
+      "notes": "TOI 6637.01",
+      "reference": "TESS FOP Working Group disposition 'APC' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "11c200bf08b62754027d72e73934d99d6789fa1ab263cb6ec1cef93fbf770809",
+      "stratum": "false_positive:APC",
+      "target_id": "256124756"
+    },
+    {
+      "label": "false_positive",
+      "notes": "TOI 2516.01",
+      "reference": "TESS FOP Working Group disposition 'APC' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "0a10adbeeb80475993f8d7931957817be209f1e86b4c29f0f120313bb1a2653a",
+      "stratum": "false_positive:APC",
+      "target_id": "295947393"
+    },
+    {
+      "label": "false_positive",
+      "notes": "TOI 573.01",
+      "reference": "TESS FOP Working Group disposition 'APC' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "0f7dab044da26cd7bdd09d946d52e0616688b666a2acface3180beaf0bfc6952",
+      "stratum": "false_positive:APC",
+      "target_id": "296780789"
+    },
+    {
+      "label": "false_positive",
+      "notes": "TOI 621.01",
+      "reference": "TESS FOP Working Group disposition 'APC' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "06f9a2fb361f099c4a5d13842d6c34d056f0e3341185b228383948abac972660",
+      "stratum": "false_positive:APC",
+      "target_id": "30828562"
+    },
+    {
+      "label": "false_positive",
+      "notes": "TOI 516.01",
+      "reference": "TESS FOP Working Group disposition 'APC' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "0c6b12e019a9a953e485bd751a64a832ddd277e00dae45a5221ac5d1722002ac",
+      "stratum": "false_positive:APC",
+      "target_id": "318937509"
+    },
+    {
+      "label": "false_positive",
+      "notes": "TOI 6747.01",
+      "reference": "TESS FOP Working Group disposition 'APC' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "01e8b1e0ae85b49bd8e3c168e987c085216ecf3c160b097c747b3db58451a86b",
+      "stratum": "false_positive:APC",
+      "target_id": "343717397"
+    },
+    {
+      "label": "false_positive",
+      "notes": "TOI 1755.01",
+      "reference": "TESS FOP Working Group disposition 'APC' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "0295e9239ad3aedcee58225405ce4724b41db6497235c3bb9560044053ccb629",
+      "stratum": "false_positive:APC",
+      "target_id": "356978132"
+    },
+    {
+      "label": "false_positive",
+      "notes": "TOI 2857.01",
+      "reference": "TESS FOP Working Group disposition 'APC' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "02c2f997939f6e0e5b1dcb55581f23b5e0a86921793236ea6eee8a7c4ae9a1dd",
+      "stratum": "false_positive:APC",
+      "target_id": "419148828"
+    },
+    {
+      "label": "false_positive",
+      "notes": "TOI 311.01",
+      "reference": "TESS FOP Working Group disposition 'APC' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "0aaed0b4f27581e00790c65fb1669ab99590419f99ce43d0797fcaba3f52d16f",
+      "stratum": "false_positive:APC",
+      "target_id": "434105231"
+    },
+    {
+      "label": "false_positive",
+      "notes": "TOI 2521.01",
+      "reference": "TESS FOP Working Group disposition 'APC' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "107880e3803e334cf9c5f9dc37d6e2a1d8e696f22be9a36075f1dfe53c2d368a",
+      "stratum": "false_positive:APC",
+      "target_id": "72556406"
+    },
+    {
+      "label": "false_positive",
+      "notes": "TOI 1609.01",
+      "reference": "TESS FOP Working Group disposition 'FA' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "0e50078bda54bf0a5aae5ef2c97442d50de042774762a4cec3623e735aad92f8",
+      "stratum": "false_positive:FA",
+      "target_id": "229951289"
+    },
+    {
+      "label": "false_positive",
+      "notes": "TOI 1791.01",
+      "reference": "TESS FOP Working Group disposition 'FA' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "229a387efa70ea11ee8f128c5abe6b21f4869c0039fb1df9e77f08dac4846146",
+      "stratum": "false_positive:FA",
+      "target_id": "233684293"
+    },
+    {
+      "label": "false_positive",
+      "notes": "TOI 635.01",
+      "reference": "TESS FOP Working Group disposition 'FA' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "2b5499acd0ccc8dca1ee69e1318a6b1cb623ca145d064e734163335024040ee0",
+      "stratum": "false_positive:FA",
+      "target_id": "286132427"
+    },
+    {
+      "label": "false_positive",
+      "notes": "TOI 1819.01",
+      "reference": "TESS FOP Working Group disposition 'FA' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "222cae5372845f7b0aa6b3526f3475f26e199cc4da5503fc9dc652887c84d7a3",
+      "stratum": "false_positive:FA",
+      "target_id": "341815767"
+    },
+    {
+      "label": "false_positive",
+      "notes": "TOI 1088.01",
+      "reference": "TESS FOP Working Group disposition 'FA' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "154dec9790365227a6292dd2eb217472f3384e141fc1299649999a45a549dba1",
+      "stratum": "false_positive:FA",
+      "target_id": "343648136"
+    },
+    {
+      "label": "false_positive",
+      "notes": "TOI 2247.01",
+      "reference": "TESS FOP Working Group disposition 'FA' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "416394e0237dbf6c69997294e8900f8d6823c383fe1ecca95b06308f6de7031d",
+      "stratum": "false_positive:FA",
+      "target_id": "376168473"
+    },
+    {
+      "label": "false_positive",
+      "notes": "TOI 3987.01",
+      "reference": "TESS FOP Working Group disposition 'FA' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "00d8a6b6e29eba997237dcb9e532e2492080856efdf7a38d2abfff0357aea64a",
+      "stratum": "false_positive:FA",
+      "target_id": "452972453"
+    },
+    {
+      "label": "false_positive",
+      "notes": "TOI 1671.01",
+      "reference": "TESS FOP Working Group disposition 'FA' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "18e32a170f80c0a994fe1561a7d4dac8feba4044a337638c0049010cb9f6cd55",
+      "stratum": "false_positive:FA",
+      "target_id": "459903429"
+    },
+    {
+      "label": "false_positive",
+      "notes": "TOI 254.01",
+      "reference": "TESS FOP Working Group disposition 'FA' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "12500eba4cf84fa7649d1ca14d1c488bf201b7c70656b7c47ee3ea4cccffc258",
+      "stratum": "false_positive:FA",
+      "target_id": "49687222"
+    },
+    {
+      "label": "false_positive",
+      "notes": "TOI 728.01",
+      "reference": "TESS FOP Working Group disposition 'FA' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "3c556fbb760bf1cf23a047b8445775562b43109ea624433a297a63dee8237b87",
+      "stratum": "false_positive:FA",
+      "target_id": "96097215"
+    },
+    {
+      "label": "false_positive",
+      "notes": "TOI 6696.01",
+      "reference": "TESS FOP Working Group disposition 'FP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "0be1f97c934e5568823fb9ab01f638ecdf126205f11c090c9582b17db59ea32d",
+      "stratum": "false_positive:FP",
+      "target_id": "104195270"
+    },
+    {
+      "label": "false_positive",
+      "notes": "TOI 5791.01",
+      "reference": "TESS FOP Working Group disposition 'FP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "078429e5b5c3a0da814a4a489595afe134439cdf0a7c775ecd35b0e28ea46800",
+      "stratum": "false_positive:FP",
+      "target_id": "110936761"
+    },
+    {
+      "label": "false_positive",
+      "notes": "TOI 4219.01",
+      "reference": "TESS FOP Working Group disposition 'FP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "0416dd1d11f36e278a469e15ae0b28496df23195084a62816659060c6479d625",
+      "stratum": "false_positive:FP",
+      "target_id": "114103136"
+    },
+    {
+      "label": "false_positive",
+      "notes": "TOI 5418.01",
+      "reference": "TESS FOP Working Group disposition 'FP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "0345e0336e795f924496421119eb680a0e22fdaf2ad72942287b5b6081a09707",
+      "stratum": "false_positive:FP",
+      "target_id": "115564354"
+    },
+    {
+      "label": "false_positive",
+      "notes": "TOI 2760.01",
+      "reference": "TESS FOP Working Group disposition 'FP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "09607298bb38182d744166ee705ccd6d159d2c49f67c1a486005da32471dfc55",
+      "stratum": "false_positive:FP",
+      "target_id": "130611752"
+    },
+    {
+      "label": "false_positive",
+      "notes": "TOI 1608.01",
+      "reference": "TESS FOP Working Group disposition 'FP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "042a719058b17261da96e208ac31773f6c13cae344a63025d7f0af5926f13f1c",
+      "stratum": "false_positive:FP",
+      "target_id": "138017750"
+    },
+    {
+      "label": "false_positive",
+      "notes": "TOI 3914.01",
+      "reference": "TESS FOP Working Group disposition 'FP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "01f1ac4eb7b6c9663342f3d4ab881b0ecd4d649483747626ef2296641c5ae400",
+      "stratum": "false_positive:FP",
+      "target_id": "139118482"
+    },
+    {
+      "label": "false_positive",
+      "notes": "TOI 377.01",
+      "reference": "TESS FOP Working Group disposition 'FP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "0b23a2d0b2bc88795365537d7d97256cf91bb2862282fb2772eac2d3f6ff0e9c",
+      "stratum": "false_positive:FP",
+      "target_id": "139285736"
+    },
+    {
+      "label": "false_positive",
+      "notes": "TOI 1024.01",
+      "reference": "TESS FOP Working Group disposition 'FP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "07ddd149b61eea19597854daeafb0e137d8c8f1af22b3a843d497e8c8f3d1b95",
+      "stratum": "false_positive:FP",
+      "target_id": "141482386"
+    },
+    {
+      "label": "false_positive",
+      "notes": "TOI 803.01",
+      "reference": "TESS FOP Working Group disposition 'FP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "0c72762c7f7c6a57c68ed9e4e79ed6ef5a07d9212afcc4aa45c7219d4e5514e4",
+      "stratum": "false_positive:FP",
+      "target_id": "143526444"
+    },
+    {
+      "label": "false_positive",
+      "notes": "TOI 955.01",
+      "reference": "TESS FOP Working Group disposition 'FP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "002de7030dac32389451518f2317294f6285475172d175be35b7021949fb17a3",
+      "stratum": "false_positive:FP",
+      "target_id": "146467675"
+    },
+    {
+      "label": "false_positive",
+      "notes": "TOI 3369.01",
+      "reference": "TESS FOP Working Group disposition 'FP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "051f4d57c5e199cc6faea2e0763ab657c30e449925c5457602eae686342be84b",
+      "stratum": "false_positive:FP",
+      "target_id": "190981760"
+    },
+    {
+      "label": "false_positive",
+      "notes": "TOI 3332.01",
+      "reference": "TESS FOP Working Group disposition 'FP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "09842b776023d626e5cc3b26581ecbcb4cb18aaf67a7040cfbe4c134a3b81fc0",
+      "stratum": "false_positive:FP",
+      "target_id": "194179013"
+    },
+    {
+      "label": "false_positive",
+      "notes": "TOI 5447.01",
+      "reference": "TESS FOP Working Group disposition 'FP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "09754b817c3976e728e4051e85ed15dfbf3787e897f624b0f5447c6be67dd9c4",
+      "stratum": "false_positive:FP",
+      "target_id": "239722954"
+    },
+    {
+      "label": "false_positive",
+      "notes": "TOI 3236.01",
+      "reference": "TESS FOP Working Group disposition 'FP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "0ed9099aca8484e103434a0ed5ea3c06181f3969358bf9063ea49510128eb7a9",
+      "stratum": "false_positive:FP",
+      "target_id": "242460075"
+    },
+    {
+      "label": "false_positive",
+      "notes": "TOI 7332.01",
+      "reference": "TESS FOP Working Group disposition 'FP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "05a4aefd0c32eff8234345684d3002ac7a77699feb4c4f55161f9dfb48e3366b",
+      "stratum": "false_positive:FP",
+      "target_id": "273069412"
+    },
+    {
+      "label": "false_positive",
+      "notes": "TOI 922.01",
+      "reference": "TESS FOP Working Group disposition 'FP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "028c7e26a948bb23cc47743f3b39bf42eff7f042e23a7ecf8ce1eee77f5c2e2b",
+      "stratum": "false_positive:FP",
+      "target_id": "278199349"
+    },
+    {
+      "label": "false_positive",
+      "notes": "TOI 3746.01",
+      "reference": "TESS FOP Working Group disposition 'FP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "0a4c1b183b6a2f59a48dce0a67f510ea9770c0484f4ab339610875238ee2e78d",
+      "stratum": "false_positive:FP",
+      "target_id": "284747017"
+    },
+    {
+      "label": "false_positive",
+      "notes": "TOI 595.01",
+      "reference": "TESS FOP Working Group disposition 'FP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "01f0af3bf92c5ae1eecac5c532b6f29c4d7d83dbee9c7bf68c7ba6e979c15bb8",
+      "stratum": "false_positive:FP",
+      "target_id": "287329267"
+    },
+    {
+      "label": "false_positive",
+      "notes": "TOI 1186.01",
+      "reference": "TESS FOP Working Group disposition 'FP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "048c246589b2f9d23a779c0b2e9e23b96307bea321d02b913d621432b926c1df",
+      "stratum": "false_positive:FP",
+      "target_id": "289539327"
+    },
+    {
+      "label": "false_positive",
+      "notes": "TOI 2651.01",
+      "reference": "TESS FOP Working Group disposition 'FP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "073a76137992d1bc9db348cd9b663bb78d898d6995dfb18ac7850f65ce002452",
+      "stratum": "false_positive:FP",
+      "target_id": "29830212"
+    },
+    {
+      "label": "false_positive",
+      "notes": "TOI 2157.01",
+      "reference": "TESS FOP Working Group disposition 'FP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "0ec4d6550ba72bec99b52931ea33e1de6a6368d124d70c2160ab54f9454026b5",
+      "stratum": "false_positive:FP",
+      "target_id": "298495970"
+    },
+    {
+      "label": "false_positive",
+      "notes": "TOI 5804.01",
+      "reference": "TESS FOP Working Group disposition 'FP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "067ccb28ab2f2e3d00499ba462bc583ea11b402d9a2adf1b309830ab454a19db",
+      "stratum": "false_positive:FP",
+      "target_id": "303055194"
+    },
+    {
+      "label": "false_positive",
+      "notes": "TOI 1918.01",
+      "reference": "TESS FOP Working Group disposition 'FP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "0d92bbaeda08bf5415fa37e25f09a73753b4d93e0b506991adb229f92f36bb39",
+      "stratum": "false_positive:FP",
+      "target_id": "308425348"
+    },
+    {
+      "label": "false_positive",
+      "notes": "TOI 5133.01",
+      "reference": "TESS FOP Working Group disposition 'FP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "0b3d701f3aa98754adb046eacf325ff15c742ce8c03a36f4f479f72c6e7ea153",
+      "stratum": "false_positive:FP",
+      "target_id": "312221462"
+    },
+    {
+      "label": "false_positive",
+      "notes": "TOI 1948.01",
+      "reference": "TESS FOP Working Group disposition 'FP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "04b72faac41dec946c6f22ae20ddc6e536363a9e908291b05e3931fb6130317a",
+      "stratum": "false_positive:FP",
+      "target_id": "31268146"
+    },
+    {
+      "label": "false_positive",
+      "notes": "TOI 2053.01",
+      "reference": "TESS FOP Working Group disposition 'FP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "053c72f2ab102d6440316c247b70a3f9a1d88ec9de4abf8f6f418d5d695bc85a",
+      "stratum": "false_positive:FP",
+      "target_id": "315755496"
+    },
+    {
+      "label": "false_positive",
+      "notes": "TOI 1385.01",
+      "reference": "TESS FOP Working Group disposition 'FP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "05b237fbaaebd1e7f651b5b1482dfcc665f441e6fee4edb7f2b57d2450cd36b8",
+      "stratum": "false_positive:FP",
+      "target_id": "329864959"
+    },
+    {
+      "label": "false_positive",
+      "notes": "TOI 1497.01",
+      "reference": "TESS FOP Working Group disposition 'FP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "002d0a8fe744287c3faee17e5fc81e16f482998d060af59faed55c8cbad91c7e",
+      "stratum": "false_positive:FP",
+      "target_id": "371673488"
+    },
+    {
+      "label": "false_positive",
+      "notes": "TOI 2237.01",
+      "reference": "TESS FOP Working Group disposition 'FP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "08b5b2f67b558e5a622033137daa41373eaf0ea35170cf04012465c303a4f44d",
+      "stratum": "false_positive:FP",
+      "target_id": "389238529"
+    },
+    {
+      "label": "false_positive",
+      "notes": "TOI 2623.01",
+      "reference": "TESS FOP Working Group disposition 'FP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "05ed98c93ac69195a21018ae279a905ef4965c7f906e57cc73f688ecda68a010",
+      "stratum": "false_positive:FP",
+      "target_id": "403288821"
+    },
+    {
+      "label": "false_positive",
+      "notes": "TOI 973.01",
+      "reference": "TESS FOP Working Group disposition 'FP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "02b13cec36a229139be29669c8188e461bc0cbd67e6eb640809a9cb3734548f4",
+      "stratum": "false_positive:FP",
+      "target_id": "409459226"
+    },
+    {
+      "label": "false_positive",
+      "notes": "TOI 335.01",
+      "reference": "TESS FOP Working Group disposition 'FP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "0e2b2d0b565ab10fc85346b02c4ee5f352f9e3a91e47e4c5facb4706079b2004",
+      "stratum": "false_positive:FP",
+      "target_id": "41865539"
+    },
+    {
+      "label": "false_positive",
+      "notes": "TOI 4846.01",
+      "reference": "TESS FOP Working Group disposition 'FP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "036e6c9136f9e715aa39e249746dabce203cbc0ad3cfccf1eb624644f793f44b",
+      "stratum": "false_positive:FP",
+      "target_id": "418971787"
+    },
+    {
+      "label": "false_positive",
+      "notes": "TOI 1760.01",
+      "reference": "TESS FOP Working Group disposition 'FP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "0a3b86636746566d95db9ccd93c3af4a23b76d6fd0c216028ed33de313685ce1",
+      "stratum": "false_positive:FP",
+      "target_id": "420112587"
+    },
+    {
+      "label": "false_positive",
+      "notes": "TOI 3990.01",
+      "reference": "TESS FOP Working Group disposition 'FP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "0c2bb827edf367ae1c235ad622ddcab3e38d7e85e34dbf3bb0057c5c6d1f162b",
+      "stratum": "false_positive:FP",
+      "target_id": "420446142"
+    },
+    {
+      "label": "false_positive",
+      "notes": "TOI 3989.01",
+      "reference": "TESS FOP Working Group disposition 'FP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "0d2e5d6a0557520b6dcbe4d0034c4d1a6f0f38931e9fbe98097d2e0a12654719",
+      "stratum": "false_positive:FP",
+      "target_id": "444413256"
+    },
+    {
+      "label": "false_positive",
+      "notes": "TOI 3986.01",
+      "reference": "TESS FOP Working Group disposition 'FP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "0252bab9f9f829428d8f919d48d18664120be40bf656ee03adcdb153760b251c",
+      "stratum": "false_positive:FP",
+      "target_id": "470911286"
+    },
+    {
+      "label": "false_positive",
+      "notes": "TOI 2418.01",
+      "reference": "TESS FOP Working Group disposition 'FP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "056caf25448469c042a6e59abaee01248f2a275836f3ead577d19212d6ccb48d",
+      "stratum": "false_positive:FP",
+      "target_id": "65347776"
+    },
+    {
+      "label": "false_positive",
+      "notes": "TOI 6355.01",
+      "reference": "TESS FOP Working Group disposition 'FP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "08d7d1c561afa35dd7034a1d6ee99d0bfed3a7c3d0d85998c9eb85a1c13ec4f1",
+      "stratum": "false_positive:FP",
+      "target_id": "98613492"
+    },
+    {
+      "label": "false_positive",
+      "notes": "TOI 3883.01",
+      "reference": "TESS FOP Working Group disposition 'FP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "0b0d87d30288b30582a81260a99b3dd0df1fdce2620068e336ea7b102b2ce046",
+      "stratum": "false_positive:FP",
+      "target_id": "99330090"
+    },
+    {
+      "label": "planet",
+      "notes": "TOI 6002.01",
+      "reference": "TESS FOP Working Group disposition 'CP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "00d2207c1c3aecfd1ce81eca534e62b9cebb0ce168843835b917eb589aa045f9",
+      "stratum": "planet:CP",
+      "target_id": "102734241"
+    },
+    {
+      "label": "planet",
+      "notes": "TOI 669.01",
+      "reference": "TESS FOP Working Group disposition 'CP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "179fda4c9160a4af03f9d4246f1731c02b1285ed0246711b7a8a3f8c0c57f999",
+      "stratum": "planet:CP",
+      "target_id": "124573851"
+    },
+    {
+      "label": "planet",
+      "notes": "TOI 2545.01",
+      "reference": "TESS FOP Working Group disposition 'CP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "06cc49e5cc734ecb1185c98947613c3020f934bdf3b99990ad18d173943f3edb",
+      "stratum": "planet:CP",
+      "target_id": "149845414"
+    },
+    {
+      "label": "planet",
+      "notes": "TOI 286.01, 286.02",
+      "reference": "TESS FOP Working Group disposition 'CP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "035d4b4e1c6f32999fc5464612f98901f5f4c8e596c37e07261664bb759cbcac",
+      "stratum": "planet:CP",
+      "target_id": "150030205"
+    },
+    {
+      "label": "planet",
+      "notes": "TOI 1782.01, 1782.02",
+      "reference": "TESS FOP Working Group disposition 'CP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "137552bcc053d83a68bcaeea4ed41d0c2e20637acd5f514fb5c31aec23dcac22",
+      "stratum": "planet:CP",
+      "target_id": "160045097"
+    },
+    {
+      "label": "planet",
+      "notes": "TOI 1278.01",
+      "reference": "TESS FOP Working Group disposition 'CP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "0930fd645f30c26d095d14fe30a2ad1f36115649eb49cb0bee37870d3bb8c1e9",
+      "stratum": "planet:CP",
+      "target_id": "163539739"
+    },
+    {
+      "label": "planet",
+      "notes": "TOI 2449.01",
+      "reference": "TESS FOP Working Group disposition 'CP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "0f5a6901345cc7486e0055a44b99114864dcb1f3ce835f7ac59a8857d8fbeec5",
+      "stratum": "planet:CP",
+      "target_id": "170729775"
+    },
+    {
+      "label": "planet",
+      "notes": "TOI 163.01",
+      "reference": "TESS FOP Working Group disposition 'CP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "06516bbeec9e6d25a6822f64e0bce62fce841ca8c4e5c7af2e570f8a326da758",
+      "stratum": "planet:CP",
+      "target_id": "179317684"
+    },
+    {
+      "label": "planet",
+      "notes": "TOI 193.01",
+      "reference": "TESS FOP Working Group disposition 'CP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "1457603649da20022607b36d63ff1ab314a1c1d1ea81f4aa8c6a19db343fe38c",
+      "stratum": "planet:CP",
+      "target_id": "183985250"
+    },
+    {
+      "label": "planet",
+      "notes": "TOI 179.01",
+      "reference": "TESS FOP Working Group disposition 'CP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "012b5bf5709fc9bfebebc73fe0a865ec56dcc9a741d292eed94f9a1cf6b1dac1",
+      "stratum": "planet:CP",
+      "target_id": "207141131"
+    },
+    {
+      "label": "planet",
+      "notes": "TOI 871.01",
+      "reference": "TESS FOP Working Group disposition 'CP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "1036b331e7883004180b2800fa9bc8feea35eb4337b9912b826d355e2b00e52a",
+      "stratum": "planet:CP",
+      "target_id": "219344917"
+    },
+    {
+      "label": "planet",
+      "notes": "TOI 1296.01",
+      "reference": "TESS FOP Working Group disposition 'CP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "0a4e2153c99703b0c4faf186d028e8c22d08a2c329386b68c9071848101d7a87",
+      "stratum": "planet:CP",
+      "target_id": "219854185"
+    },
+    {
+      "label": "planet",
+      "notes": "TOI 134.01",
+      "reference": "TESS FOP Working Group disposition 'CP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "0076676add4d3dbef21c5b7f311cdeb9289675c998c8347c5da1dd78b60ef365",
+      "stratum": "planet:CP",
+      "target_id": "234994474"
+    },
+    {
+      "label": "planet",
+      "notes": "TOI 2119.01",
+      "reference": "TESS FOP Working Group disposition 'CP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "069e35abc07ea344dbe904187707f0552efb86514d9e82e559692640a5d382a1",
+      "stratum": "planet:CP",
+      "target_id": "236387002"
+    },
+    {
+      "label": "planet",
+      "notes": "TOI 5110.01",
+      "reference": "TESS FOP Working Group disposition 'CP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "0cd402376fd5ef784b80b5c824b84f88db6826faa8d3ee25f63258448e4c3574",
+      "stratum": "planet:CP",
+      "target_id": "239977528"
+    },
+    {
+      "label": "planet",
+      "notes": "TOI 3688.01",
+      "reference": "TESS FOP Working Group disposition 'CP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "134a66c95b8c37d360601117f331b1faf2461c0f9c5337d49fc1208a01295c45",
+      "stratum": "planet:CP",
+      "target_id": "245509452"
+    },
+    {
+      "label": "planet",
+      "notes": "TOI 4552.01",
+      "reference": "TESS FOP Working Group disposition 'CP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "05fb1b071cf13eff23993d544a799ee3c7288fc2e20ffc58b81610b3887c1e59",
+      "stratum": "planet:CP",
+      "target_id": "248250955"
+    },
+    {
+      "label": "planet",
+      "notes": "TOI 4616.01",
+      "reference": "TESS FOP Working Group disposition 'CP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "11e5f09469a34d7f146f0a47d2e6f7ee6dd87cffcf1c431ca29f3a824bd6d094",
+      "stratum": "planet:CP",
+      "target_id": "258796169"
+    },
+    {
+      "label": "planet",
+      "notes": "TOI 2498.01",
+      "reference": "TESS FOP Working Group disposition 'CP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "05752fa9edb1709c6fed32a6a16966a6cea07bf8f2e5b6abde607a53672f6fc2",
+      "stratum": "planet:CP",
+      "target_id": "263179590"
+    },
+    {
+      "label": "planet",
+      "notes": "TOI 2141.01",
+      "reference": "TESS FOP Working Group disposition 'CP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "121ad6a0210f76ffe07c9a6c67451c23ddd308432762c2521b1759dcf2c60348",
+      "stratum": "planet:CP",
+      "target_id": "287256467"
+    },
+    {
+      "label": "planet",
+      "notes": "TOI 1753.01",
+      "reference": "TESS FOP Working Group disposition 'CP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "08f431d12497c45c3db4c1309581fb65023aa3848d7f015b94d04d0539d5bd07",
+      "stratum": "planet:CP",
+      "target_id": "289580577"
+    },
+    {
+      "label": "planet",
+      "notes": "TOI 5916.01",
+      "reference": "TESS FOP Working Group disposition 'CP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "0812ddba30ef8d54a8ecc598fd81b511433286929815ce27a1c60ca5a7704ca1",
+      "stratum": "planet:CP",
+      "target_id": "305506996"
+    },
+    {
+      "label": "planet",
+      "notes": "TOI 1055.01",
+      "reference": "TESS FOP Working Group disposition 'CP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "089e280104a25b59f22bfa82379a4486e751438de082b8f02d827982530b76b4",
+      "stratum": "planet:CP",
+      "target_id": "320004517"
+    },
+    {
+      "label": "planet",
+      "notes": "TOI 1386.01",
+      "reference": "TESS FOP Working Group disposition 'CP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "0e1f61854ae0e8a09a49c22276fe0fec5aac8ff90df214b894c7b98bf66be955",
+      "stratum": "planet:CP",
+      "target_id": "343019899"
+    },
+    {
+      "label": "planet",
+      "notes": "TOI 4342.01, 4342.02",
+      "reference": "TESS FOP Working Group disposition 'CP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "005d93a5d3495bf2faa1846a6a496d358b2783a66690d6bc8d6f118a1eb8b7a8",
+      "stratum": "planet:CP",
+      "target_id": "354944123"
+    },
+    {
+      "label": "planet",
+      "notes": "TOI 1408.01, 1408.02",
+      "reference": "TESS FOP Working Group disposition 'CP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08); TESS FOP Working Group disposition 'KP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "052bb9d17134511e5d6b46281ba19dcd0f0f0e00e49f1835366b14524571b34f",
+      "stratum": "planet:CP",
+      "target_id": "364186197"
+    },
+    {
+      "label": "planet",
+      "notes": "TOI 7154.01",
+      "reference": "TESS FOP Working Group disposition 'CP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "0dd1f77cf14f435c400801c92ab9af56396ddbfe323bdb628d253f714ed6d012",
+      "stratum": "planet:CP",
+      "target_id": "377622130"
+    },
+    {
+      "label": "planet",
+      "notes": "TOI 3353.01",
+      "reference": "TESS FOP Working Group disposition 'CP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "0ffa1a45f0d184553f1cf307a10ead7ee747c35b877f2dda2108963629274f42",
+      "stratum": "planet:CP",
+      "target_id": "391903064"
+    },
+    {
+      "label": "planet",
+      "notes": "TOI 1478.01",
+      "reference": "TESS FOP Working Group disposition 'CP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "0c4b252c3aa430472e4c1456d63fed80fbf930addeeddbe18813e3ba727ef9a6",
+      "stratum": "planet:CP",
+      "target_id": "409794137"
+    },
+    {
+      "label": "planet",
+      "notes": "TOI 136.01",
+      "reference": "TESS FOP Working Group disposition 'CP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "09003eea0908e06657de4be247148257642b8a18aaf411320fcc851de29bdcb1",
+      "stratum": "planet:CP",
+      "target_id": "410153553"
+    },
+    {
+      "label": "planet",
+      "notes": "TOI 2458.01",
+      "reference": "TESS FOP Working Group disposition 'CP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "0f418731a0d66bf98e36ac93cb063db85721875202882859bc2f88858fe572db",
+      "stratum": "planet:CP",
+      "target_id": "449197831"
+    },
+    {
+      "label": "planet",
+      "notes": "TOI 509.01, 509.02",
+      "reference": "TESS FOP Working Group disposition 'CP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "03232819879989aed80b14f5b94bc173d9a2f1563d0e99948516b34ed239a313",
+      "stratum": "planet:CP",
+      "target_id": "453211454"
+    },
+    {
+      "label": "planet",
+      "notes": "TOI 4602.01",
+      "reference": "TESS FOP Working Group disposition 'CP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "10cd15d875a96d456455b73c47ddc82ea1a33720dd16a4d14bc459b569bf9fc1",
+      "stratum": "planet:CP",
+      "target_id": "467651916"
+    },
+    {
+      "label": "planet",
+      "notes": "TOI 2046.01",
+      "reference": "TESS FOP Working Group disposition 'CP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "175bd38f76b5fc3751381f0c177c6238bacd0b8f38b8b99b453065a8d5de0f3c",
+      "stratum": "planet:CP",
+      "target_id": "468574941"
+    },
+    {
+      "label": "planet",
+      "notes": "TOI 1696.01",
+      "reference": "TESS FOP Working Group disposition 'CP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "039b3ef8ffe46efc8159635b44a41f2c081de6a76056db863e76087727b16125",
+      "stratum": "planet:CP",
+      "target_id": "470381900"
+    },
+    {
+      "label": "planet",
+      "notes": "TOI 755.01, 755.02",
+      "reference": "TESS FOP Working Group disposition 'CP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08); TESS FOP Working Group disposition 'KP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "0862607cb333a0a012d731fd3828e696bd1ab86e832f8c39b2f59acd186a2a84",
+      "stratum": "planet:CP",
+      "target_id": "73228647"
+    },
+    {
+      "label": "planet",
+      "notes": "TOI 4201.01",
+      "reference": "TESS FOP Working Group disposition 'CP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "1893ef43bbac27e7fb0e732bd57054d957a119c89dbe159e59f3044a5b670d79",
+      "stratum": "planet:CP",
+      "target_id": "95057860"
+    },
+    {
+      "label": "planet",
+      "notes": "TOI 2129.01",
+      "reference": "TESS FOP Working Group disposition 'KP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "10c9e6c1833254f67c67dd8fb9ece7a8ef068204d4de85341ef370e2ae9f2584",
+      "stratum": "planet:KP",
+      "target_id": "101721385"
+    },
+    {
+      "label": "planet",
+      "notes": "TOI 4539.01",
+      "reference": "TESS FOP Working Group disposition 'KP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "09ae7e8664ac00efce6c7dee26ff304e8788d33a239052e6a35f429eaecf2d70",
+      "stratum": "planet:KP",
+      "target_id": "102264230"
+    },
+    {
+      "label": "planet",
+      "notes": "TOI 2579.01",
+      "reference": "TESS FOP Working Group disposition 'KP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "0a5841eab13f09f632557325d366ffd62c42b1449000c3e0eddac5bbfcddca8e",
+      "stratum": "planet:KP",
+      "target_id": "103751498"
+    },
+    {
+      "label": "planet",
+      "notes": "TOI 2176.01",
+      "reference": "TESS FOP Working Group disposition 'KP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "0b566c1514de14c3f19b5d294b7799fcac50ca1538d7f51751ecb93d66685935",
+      "stratum": "planet:KP",
+      "target_id": "123495874"
+    },
+    {
+      "label": "planet",
+      "notes": "TOI 2011.01, 2011.02, 2011.03",
+      "reference": "TESS FOP Working Group disposition 'KP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "01f28ed636b390e323a7ae6dfadc758375fa0595b3fd04fd67eba759c73def95",
+      "stratum": "planet:KP",
+      "target_id": "136916387"
+    },
+    {
+      "label": "planet",
+      "notes": "TOI 3846.01",
+      "reference": "TESS FOP Working Group disposition 'KP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "12958e6b87d7019877c5e37ec00aeaeb1f5f1115ab68b33ea0639dd0b7215a10",
+      "stratum": "planet:KP",
+      "target_id": "149918151"
+    },
+    {
+      "label": "planet",
+      "notes": "TOI 1929.01",
+      "reference": "TESS FOP Working Group disposition 'KP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "1164c45990e6c6f69ac8b2e92b5014f4035e2582498fed7d1c3efc936fcd8ac8",
+      "stratum": "planet:KP",
+      "target_id": "157266693"
+    },
+    {
+      "label": "planet",
+      "notes": "TOI 4595.01",
+      "reference": "TESS FOP Working Group disposition 'KP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "07534ae0e2ffbc6fafca555112d877662aa2d1a04b820366650866521f62723a",
+      "stratum": "planet:KP",
+      "target_id": "159725995"
+    },
+    {
+      "label": "planet",
+      "notes": "TOI 2178.01",
+      "reference": "TESS FOP Working Group disposition 'KP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "12af8aa3b7dad5e06b5b9711ad4d961b54d452fe0b9150d8a352c553c2a06a1a",
+      "stratum": "planet:KP",
+      "target_id": "164892194"
+    },
+    {
+      "label": "planet",
+      "notes": "TOI 190.01",
+      "reference": "TESS FOP Working Group disposition 'KP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "006c1ebe1c1ff9d9b5e3b7aa63cc6adbdf8e2292896525459356f1171fac0c73",
+      "stratum": "planet:KP",
+      "target_id": "166739520"
+    },
+    {
+      "label": "planet",
+      "notes": "TOI 5673.01",
+      "reference": "TESS FOP Working Group disposition 'KP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "0b6cb6069cf85ae312ffab48eb9e07a5fb4a0b32b7f59f89f6bc333a8a19c2bc",
+      "stratum": "planet:KP",
+      "target_id": "175772482"
+    },
+    {
+      "label": "planet",
+      "notes": "TOI 1373.01",
+      "reference": "TESS FOP Working Group disposition 'KP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "0726d893d7e1d3cbeb267d06be767a0f1ba226b7653e389ee1568b98b5371c43",
+      "stratum": "planet:KP",
+      "target_id": "176899385"
+    },
+    {
+      "label": "planet",
+      "notes": "TOI 1844.01",
+      "reference": "TESS FOP Working Group disposition 'KP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "0d0fde873380de1b48045c0eaf99a7add35253b06db5830da099a765ab37b9c6",
+      "stratum": "planet:KP",
+      "target_id": "198108326"
+    },
+    {
+      "label": "planet",
+      "notes": "TOI 766.01",
+      "reference": "TESS FOP Working Group disposition 'KP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "096d77681a7438dc0d57a322b428635fdb0dfa475fb4a385bd0269d494a73f60",
+      "stratum": "planet:KP",
+      "target_id": "219698950"
+    },
+    {
+      "label": "planet",
+      "notes": "TOI 7490.01",
+      "reference": "TESS FOP Working Group disposition 'KP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "0c08f020ad5091ac179ca464d1a220d7fe7e7b96b695884decea67801b7cfb0d",
+      "stratum": "planet:KP",
+      "target_id": "250977648"
+    },
+    {
+      "label": "planet",
+      "notes": "TOI 4470.01",
+      "reference": "TESS FOP Working Group disposition 'KP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "1340043a782b739ac3fe102b3a08cee1c4e98b59aad96561b2d6c6cede526d1f",
+      "stratum": "planet:KP",
+      "target_id": "256364928"
+    },
+    {
+      "label": "planet",
+      "notes": "TOI 403.01",
+      "reference": "TESS FOP Working Group disposition 'KP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "08fa331f78af70f477eabc45e8b47d6733a57cf57f5322851f8a63c8641d2e5e",
+      "stratum": "planet:KP",
+      "target_id": "257567854"
+    },
+    {
+      "label": "planet",
+      "notes": "TOI 6073.01",
+      "reference": "TESS FOP Working Group disposition 'KP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "08cf127094cf94d5e2f54bb46530508de516284fcd00c9d4c62907115dcaf99c",
+      "stratum": "planet:KP",
+      "target_id": "271424111"
+    },
+    {
+      "label": "planet",
+      "notes": "TOI 1554.01",
+      "reference": "TESS FOP Working Group disposition 'KP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "0b5cdfb5a0abae09825e022429224a8e402c3f26188fa6540f51be9ce5c7a603",
+      "stratum": "planet:KP",
+      "target_id": "299158887"
+    },
+    {
+      "label": "planet",
+      "notes": "TOI 6835.01",
+      "reference": "TESS FOP Working Group disposition 'KP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "039c986fb911fbb1578519690f9bf7bce0d3157b14274fd13d63a71d15174338",
+      "stratum": "planet:KP",
+      "target_id": "301235044"
+    },
+    {
+      "label": "planet",
+      "notes": "TOI 117.01",
+      "reference": "TESS FOP Working Group disposition 'KP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "0ed57b519a59142fe4564d0ae970dc274fd9078c2f4270f9b8c9bf12d73fe956",
+      "stratum": "planet:KP",
+      "target_id": "322307342"
+    },
+    {
+      "label": "planet",
+      "notes": "TOI 2464.01",
+      "reference": "TESS FOP Working Group disposition 'KP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "092916d04c9665609748bc21e7d8b7709ce8a1e13cc7205560431ad6e967347e",
+      "stratum": "planet:KP",
+      "target_id": "32949762"
+    },
+    {
+      "label": "planet",
+      "notes": "TOI 5141.01",
+      "reference": "TESS FOP Working Group disposition 'KP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "07978607aa955d516916d38659287915b2090ce85b8cb5201eb658f877cbe3ba",
+      "stratum": "planet:KP",
+      "target_id": "350020859"
+    },
+    {
+      "label": "planet",
+      "notes": "TOI 111.01",
+      "reference": "TESS FOP Working Group disposition 'KP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "0a72480c11de4724fc80d998e74e80256455411859d28fde348840ad02efe05a",
+      "stratum": "planet:KP",
+      "target_id": "355703913"
+    },
+    {
+      "label": "planet",
+      "notes": "TOI 1076.01",
+      "reference": "TESS FOP Working Group disposition 'KP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "08148b81f8f25a05b2ab2af14134df4f2f7fd038a635fd3d7affde8d39457d00",
+      "stratum": "planet:KP",
+      "target_id": "360742636"
+    },
+    {
+      "label": "planet",
+      "notes": "TOI 547.01",
+      "reference": "TESS FOP Working Group disposition 'KP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "14cb51bb42b27f2e3f7ac4b67f9a87e8d1dc206fb150e9078111efd6aed2c9aa",
+      "stratum": "planet:KP",
+      "target_id": "36352297"
+    },
+    {
+      "label": "planet",
+      "notes": "TOI 5555.01",
+      "reference": "TESS FOP Working Group disposition 'KP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "01f8c3ac158b05e9e61d110fe02194f3600d55ec2523ecc626d1423ced15b6f0",
+      "stratum": "planet:KP",
+      "target_id": "388804061"
+    },
+    {
+      "label": "planet",
+      "notes": "TOI 4520.01",
+      "reference": "TESS FOP Working Group disposition 'KP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "1183be551d4241fb3c384a8e0ae1a9fa5ef9cba08495fe4a448fbeffb1b61c75",
+      "stratum": "planet:KP",
+      "target_id": "404243877"
+    },
+    {
+      "label": "planet",
+      "notes": "TOI 5535.01",
+      "reference": "TESS FOP Working Group disposition 'KP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "11454a6808ac141aaf241f90e5339315baeb0a0e975bd4e5c02d932d4ae6df57",
+      "stratum": "planet:KP",
+      "target_id": "411697517"
+    },
+    {
+      "label": "planet",
+      "notes": "TOI 5632.01",
+      "reference": "TESS FOP Working Group disposition 'KP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "0122ba6f8aff55768eef2158fc20b99158a2a82b67f2bf4b0b84c70128ab57cf",
+      "stratum": "planet:KP",
+      "target_id": "420779000"
+    },
+    {
+      "label": "planet",
+      "notes": "TOI 4916.01",
+      "reference": "TESS FOP Working Group disposition 'KP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "00f1dcdd870daec782a949b10fbfe8a505eae05e2189f7da1693e9e744c1fa79",
+      "stratum": "planet:KP",
+      "target_id": "454069765"
+    },
+    {
+      "label": "planet",
+      "notes": "TOI 1603.01",
+      "reference": "TESS FOP Working Group disposition 'KP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "00375310a3d369ec56026a08b8ed2df55d2ab7688c1ebf2081a0b35dd84d5eb2",
+      "stratum": "planet:KP",
+      "target_id": "73448352"
+    },
+    {
+      "label": "planet",
+      "notes": "TOI 819.01",
+      "reference": "TESS FOP Working Group disposition 'KP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "0f70dfcb652ce7dc71200be70703542316849dcfd3f44f2f860621a819e9b641",
+      "stratum": "planet:KP",
+      "target_id": "73717937"
+    },
+    {
+      "label": "planet",
+      "notes": "TOI 1903.01",
+      "reference": "TESS FOP Working Group disposition 'KP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "0a33ed71f9873d5acddd3e6402f4caa4547daa49254a39cb1f1dfd7548b0dcb1",
+      "stratum": "planet:KP",
+      "target_id": "77156657"
+    },
+    {
+      "label": "planet",
+      "notes": "TOI 107.01",
+      "reference": "TESS FOP Working Group disposition 'KP' via NASA Exoplanet Archive TESS FOP WG catalog snapshot (benchmarks/toi_catalog.csv, accessed 2026-09-08)",
+      "sectors": [],
+      "selection_rank": "15c7fdba9792692cd17204691016ee87ea39d2ebbac6a234347dca815a7a7d8c",
+      "stratum": "planet:KP",
+      "target_id": "92352620"
+    }
+  ],
+  "claim_boundary": "Development corpus for algorithm iteration. Same selection method as the blind holdout (sha256 seeded rank, detector-blind), drawn from a disjoint partition of the same frozen split. Not a validation gate; results here guide revision before a second blind run.",
+  "corpus": "blind_domain_holdout_v1",
+  "counts": {
+    "false_positive": 72,
+    "planet": 72
+  },
+  "floors": {
+    "false_positive_rate_ceiling": 0.6,
+    "minimum_cases_per_stratum": 8,
+    "minimum_evaluated_cases": 120,
+    "recall": 0.5
+  },
+  "holdout_sha256": "868cf12bdb6528d60d8bdb73061cc57393f9c99576629c31b9f203cc28512c71",
+  "materialization": "development_partition_for_algorithm_development",
+  "pool_sizes": {
+    "false_positive": 1058,
+    "planet": 693
+  },
+  "quotas": {
+    "false_positive:APC": 21,
+    "false_positive:FA": 10,
+    "false_positive:FP": 41,
+    "planet:CP": 37,
+    "planet:KP": 35
+  },
+  "rejection_counts": {
+    "not_in_development_split": 1168,
+    "used_by_prior_gate": 89
+  },
+  "schema_version": "1.0",
+  "selection": {
+    "detector_used_for_selection": false,
+    "label_groups": {
+      "false_positive": [
+        "FP",
+        "APC",
+        "FA"
+      ],
+      "planet": [
+        "CP",
+        "KP"
+      ]
+    },
+    "method": "sha256_seeded_rank_within_label_and_disposition_stratum_v1",
+    "minimum_per_stratum": 8,
+    "per_label_quota": 72,
+    "seed": 20260919,
+    "split_seed": 13
+  },
+  "sources": {
+    "blind_manifest": "validation_runs/final_acceptance_v1/blind_holdout/holdout_manifest.json",
+    "labelled_corpus": "benchmarks/corpora/tfop_disposition_corpus_v1.json"
+  },
+  "split": "development",
+  "status": "frozen",
+  "stratum_counts": {
+    "false_positive:APC": 21,
+    "false_positive:FA": 10,
+    "false_positive:FP": 41,
+    "planet:CP": 37,
+    "planet:KP": 35
+  }
+}

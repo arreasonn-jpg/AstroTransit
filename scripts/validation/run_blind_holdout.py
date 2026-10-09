@@ -205,6 +205,7 @@ def check_contract(args: argparse.Namespace) -> int:
         per_label=int(manifest["selection"]["per_label_quota"]),
         seed=int(manifest["selection"]["seed"]),
         split_seed=int(manifest["selection"]["split_seed"]),
+        split=str(manifest.get("split", "blind_test")),
         minimum_per_stratum=int(manifest["selection"]["minimum_per_stratum"]),
     )
     if rebuilt["holdout_sha256"] != manifest["holdout_sha256"]:
@@ -214,19 +215,20 @@ def check_contract(args: argparse.Namespace) -> int:
     if min(manifest["stratum_counts"].values()) < int(manifest["selection"]["minimum_per_stratum"]):
         raise ValueError("a stratum is undersampled in the frozen holdout")
 
-    program = json.loads(Path(PROGRAM).read_text(encoding="utf-8"))
-    gate = next((item for item in program["gates"] if item.get("id") == GATE_ID), None)
-    if gate is None:
-        raise ValueError(f"gate {GATE_ID} missing from program.json")
-    checks = {str(item.get("path")): item for item in gate.get("acceptance_checks", [])}
-    if checks.get("corpus.sha256", {}).get("value") != manifest["holdout_sha256"]:
-        raise ValueError("program.json pins a different holdout corpus than the committed manifest")
-    if checks.get("overall.recall", {}).get("value") != manifest["floors"]["recall"]:
-        raise ValueError("program.json and the frozen corpus disagree on the recall floor")
-    if checks.get("overall.false_positive_rate", {}).get("value") != manifest["floors"]["false_positive_rate_ceiling"]:
-        raise ValueError("program.json and the frozen corpus disagree on the false-positive ceiling")
-    if checks.get("method.retrained", {}).get("value") is not False:
-        raise ValueError("the holdout must declare that nothing was retrained on it")
+    if manifest.get("split", "blind_test") == "blind_test":
+        program = json.loads(Path(PROGRAM).read_text(encoding="utf-8"))
+        gate = next((item for item in program["gates"] if item.get("id") == GATE_ID), None)
+        if gate is None:
+            raise ValueError(f"gate {GATE_ID} missing from program.json")
+        checks = {str(item.get("path")): item for item in gate.get("acceptance_checks", [])}
+        if checks.get("corpus.sha256", {}).get("value") != manifest["holdout_sha256"]:
+            raise ValueError("program.json pins a different holdout corpus than the committed manifest")
+        if checks.get("overall.recall", {}).get("value") != manifest["floors"]["recall"]:
+            raise ValueError("program.json and the frozen corpus disagree on the recall floor")
+        if checks.get("overall.false_positive_rate", {}).get("value") != manifest["floors"]["false_positive_rate_ceiling"]:
+            raise ValueError("program.json and the frozen corpus disagree on the false-positive ceiling")
+        if checks.get("method.retrained", {}).get("value") is not False:
+            raise ValueError("the holdout must declare that nothing was retrained on it")
     print(
         json.dumps(
             {
