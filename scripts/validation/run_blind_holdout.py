@@ -324,10 +324,20 @@ def _evaluate_case(case: dict[str, Any], orchestrator: Any, sector_client: Any) 
         with _time_limit(PER_TARGET_TIMEOUT_SECONDS):
             result = orchestrator.run_single(row["target_id"], sectors=requested)
         sectors = list(getattr(result, "sector_results", []) or [])
-        confirmed = [item for item in sectors if getattr(item, "candidate_confirmed", False)]
         row["successful_sector_count"] = sum(1 for item in sectors if getattr(item, "success", False))
         row["candidate_count"] = len(sectors)
-        row["accepted_candidate"] = bool(confirmed)
+        # FAZ 2b.3c: a candidate is accepted only if any sector's score
+        # survives both vetting (is_false_positive) and the class gate
+        # (rejected_by_class). Fall back to cascade-confirmed when the
+        # score object is missing (e.g., pre-fit failures).
+        def _sector_accepted(sector_obj):
+            quality = getattr(sector_obj, "quality", None)
+            score = getattr(quality, "score", None) if quality else None
+            if score is not None and hasattr(score, "accepted_for_gate"):
+                return bool(score.accepted_for_gate())
+            return bool(getattr(sector_obj, "candidate_confirmed", False))
+
+        row["accepted_candidate"] = any(_sector_accepted(s) for s in sectors)
 
         per_sector: list[dict[str, Any]] = []
         for item in sectors:

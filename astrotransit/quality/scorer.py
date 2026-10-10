@@ -136,6 +136,20 @@ class QualityScore:
     fpp: Optional[float] = None
     fpp_method: str = FPP_METHOD
     is_false_positive: bool = False
+    #: FAZ 2b.3c: True when the candidate class is C or D. These are
+    #: 'suspicious' and 'low-quality' candidates; the automated pipeline
+    #: treats them as false positives so that only Class A/B survive.
+    rejected_by_class: bool = False
+
+
+    def accepted_for_gate(self) -> bool:
+        """FAZ 2b.3c: gate-level acceptance decision.
+
+        Returns True iff this candidate survives both the vetting
+        false-positive verdict and the class-based rejection
+        (Class C and D are treated as false positives).
+        """
+        return not (self.is_false_positive or self.rejected_by_class)
 
     def to_dict(self) -> dict:
         return {
@@ -147,6 +161,7 @@ class QualityScore:
             "fpp": None if self.fpp is None else round(self.fpp, 4),
             "fpp_method": self.fpp_method,
             "is_false_positive": self.is_false_positive,
+            "rejected_by_class": self.rejected_by_class,
             "is_anomalous": self.is_anomalous,
             "anomaly_flags": self.anomaly_flags,
             "components": [c.to_dict() for c in self.components],
@@ -408,6 +423,8 @@ class CandidateScorer:
             fpp=vetting.false_positive_probability,
             fpp_method=vetting.fpp_method,
             is_false_positive=vetting.is_false_positive,
+            # FAZ 2b.3c: reject Class C and D automatically.
+            rejected_by_class=(candidate_class in (CandidateClass.C, CandidateClass.D)),
         )
 
         logger.info(
