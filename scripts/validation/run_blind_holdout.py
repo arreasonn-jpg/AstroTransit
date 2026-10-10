@@ -18,11 +18,39 @@ import hashlib
 import json
 import os
 import platform
+import signal
 import sys
 from collections import Counter
+from contextlib import contextmanager
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Optional
+
+
+@contextmanager
+def _time_limit(seconds: int):
+    """Signal-based timeout around a single operation.
+
+    FAZ 2b.3a.4: MAST TIC catalog queries occasionally hang for many
+    minutes, blocking an entire shard. We bound each target's pipeline
+    call to ``seconds`` so a single slow target cannot starve the shard.
+    """
+    def _handler(signum, frame):
+        raise TimeoutError(f"per-target timeout after {seconds}s")
+
+    old = signal.signal(signal.SIGALRM, _handler)
+    signal.alarm(int(seconds))
+    try:
+        yield
+    finally:
+        signal.alarm(0)
+        signal.signal(signal.SIGALRM, old)
+
+
+#: FAZ 2b.3a.4: per-target wall-clock bound. Realistic targets
+#: take 3-7 min; 6 min is generous without letting a hung MAST
+#: query block the entire shard.
+PER_TARGET_TIMEOUT_SECONDS = 360
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
@@ -293,7 +321,8 @@ def _evaluate_case(case: dict[str, Any], orchestrator: Any, sector_client: Any) 
         row["error"] = error or "no_available_spoc_120s_sector"
         return row
     try:
-        result = orchestrator.run_single(row["target_id"], sectors=requested)
+        with _time_limit(PER_TARGET_TIMEOUT_SECONDS):
+            result = orchestrator.run_single(row["target_id"], sectors=requested)
         sectors = list(getattr(result, "sector_results", []) or [])
         confirmed = [item for item in sectors if getattr(item, "candidate_confirmed", False)]
         row["successful_sector_count"] = sum(1 for item in sectors if getattr(item, "success", False))
@@ -393,7 +422,40 @@ def run_shard(args: argparse.Namespace) -> int:
             skip_visualization=True,
             log_level="INFO",
         ) as orchestrator:
-            rows = [_evaluate_case(case, orchestrator, sector_client) for case in selected]
+            output = Path(args.output)
+            output.parent.mkdir(parents=True, exist_ok=True)
+
+            def _save_partial(rows_so_far):
+                payload_partial = {
+                    "schema_version": ROW_VERSION,
+                    "campaign": CAMPAIGN,
+                    "shard_index": args.shard_index,
+                    "shard_count": args.shard_count,
+                    "case_count": len(rows_so_far),
+                    "holdout_sha256": manifest["holdout_sha256"],
+                    "partial": True,
+                    "rows": rows_so_far,
+                }
+                try:
+                    output.write_bytes(canonical_json(payload_partial))
+                except Exception as exc:
+                    print(f"  checkpoint write failed: {exc}")
+
+            # FAZ 2b.3a.4: process one target at a time and save after each,
+            # so a later timeout cannot destroy already-evaluated rows.
+            rows = []
+            for idx, case in enumerate(selected, 1):
+                row = _evaluate_case(case, orchestrator, sector_client)
+                rows.append(row)
+                tid = row.get("target_id", "?")
+                if row.get("error"):
+                    status = f"error({row['error'][:60]})"
+                elif row.get("accepted_candidate"):
+                    status = "accepted"
+                else:
+                    status = "rejected"
+                print(f"  [{idx}/{len(selected)}] {tid}: {status}", flush=True)
+                _save_partial(rows)
 
     payload = {
         "schema_version": ROW_VERSION,
