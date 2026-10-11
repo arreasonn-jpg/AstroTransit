@@ -1,0 +1,230 @@
+{
+  "blocking_reasons": [
+    "error_rows:9",
+    "false_positive_rate_above_declared_ceiling:0.71875>0.6"
+  ],
+  "campaign": "blind_domain_holdout_v1",
+  "claim_boundary": "Real TESS targets with external FOP WG dispositions, drawn only from the blind partition and from targets no prior gate has touched. Because sectors are chosen at run time and no model was fitted on these targets, the measured recall/false-positive rate describes this label domain and cadence regime; it is not a survey-wide performance estimate and not a statement about any individual target.",
+  "claim_policy": "A gate closes only when its declared status and immutable evidence are measured/pass and every predeclared acceptance check passes; pending work is never a score.",
+  "corpus": {
+    "counts": {
+      "false_positive": 64,
+      "planet": 71
+    },
+    "n_cases": 144,
+    "n_missing_rows": 0,
+    "n_rows": 144,
+    "n_rows_not_in_corpus": 0,
+    "recomputed_sha256": "3fd1e65a2ddc15d37c624571a5f39d7bdeae724609d427d7dfbc2e1320a0b1d2",
+    "sha256": "3fd1e65a2ddc15d37c624571a5f39d7bdeae724609d427d7dfbc2e1320a0b1d2",
+    "stratum_counts": {
+      "false_positive:APC": 20,
+      "false_positive:FA": 10,
+      "false_positive:FP": 42,
+      "planet:CP": 37,
+      "planet:KP": 35
+    }
+  },
+  "data": {
+    "errors": 9,
+    "n_evaluated": 135,
+    "n_rows": 144,
+    "sector_fetch_failures": 9
+  },
+  "disjointness": {
+    "excluded_id_count": 170,
+    "exclusion_sources": [
+      "fp_run_subset",
+      "fpp_calibration_cohort",
+      "prior_gate_row_files",
+      "prior_injection_quiet_hosts"
+    ],
+    "non_blind_rows": 0,
+    "split": "blind_test"
+  },
+  "environment": {
+    "generated_at_utc": "2026-10-09T07:05:43.526239+00:00",
+    "github_run_id": null,
+    "github_sha": null,
+    "platform": "Linux-6.18.40.1-microsoft-standard-WSL2-x86_64-with-glibc2.39",
+    "python": "3.12.3 (main, Aug 31 2026, 10:18:26) [GCC 13.3.0]",
+    "row_sources": [
+      "outputs/blind-holdout-v1-20261008_210621/shards/shard-00.json",
+      "outputs/blind-holdout-v1-20261008_210621/shards/shard-01.json",
+      "outputs/blind-holdout-v1-20261008_210621/shards/shard-02.json",
+      "outputs/blind-holdout-v1-20261008_210621/shards/shard-03.json",
+      "outputs/blind-holdout-v1-20261008_210621/shards/shard-04.json",
+      "outputs/blind-holdout-v1-20261008_210621/shards/shard-05.json",
+      "outputs/blind-holdout-v1-20261008_210621/shards/shard-06.json",
+      "outputs/blind-holdout-v1-20261008_210621/shards/shard-07.json",
+      "outputs/blind-holdout-v1-20261008_210621/shards/shard-08.json",
+      "outputs/blind-holdout-v1-20261008_210621/shards/shard-09.json",
+      "outputs/blind-holdout-v1-20261008_210621/shards/shard-10.json",
+      "outputs/blind-holdout-v1-20261008_210621/shards/shard-11.json"
+    ]
+  },
+  "method": {
+    "data": "real_light_curves",
+    "declared_ceiling_false_positive_rate": 0.6,
+    "declared_floor_recall": 0.5,
+    "declared_minimum_cases_per_stratum": 8,
+    "declared_minimum_evaluated_cases": 120,
+    "detector_stage": "AstroTransitOrchestrator.run_single (detrend -> BLS -> TLS -> vetting)",
+    "detector_used_for_selection": false,
+    "false_positive_definition": "a false_positive-labelled target with a confirmed candidate",
+    "label_source": "benchmarks/corpora/tfop_disposition_corpus_v1.json",
+    "positive_definition": "a planet-labelled target with at least one confirmed candidate",
+    "retrained": false,
+    "sector_choice": "lowest available SPOC 120s sector at run time (recorded per row)",
+    "seed": 20260918,
+    "selection_method": "sha256_seeded_rank_within_label_and_disposition_stratum_v1",
+    "split": "blind_test",
+    "split_seed": 13
+  },
+  "overall": {
+    "false_negatives": 21,
+    "false_positive_rate": 0.71875,
+    "false_positives": 46,
+    "precision": 0.520833,
+    "recall": 0.704225,
+    "true_negatives": 18,
+    "true_positives": 50,
+    "wilson_false_positive_rate_95": [
+      0.598661,
+      0.814066
+    ],
+    "wilson_recall_95": [
+      0.589815,
+      0.797671
+    ]
+  },
+  "provenance": {
+    "cadence": null,
+    "config_hash": "d9777ef6068ac9e0e8165ced88c655335c6483a1b6010adcf0d0c41378e039d2",
+    "data_product": null,
+    "environment_manifest_hash": null,
+    "git_commit": "3a4b06d4d9533ed351e60cc41ada942e6ec3113b",
+    "holdout_manifest_sha256": "6a7e2951e4876b2f779365e5f9c2e4ee83123f9bb1414031ade02a44650a90d3",
+    "host_platform": "Linux-6.18.40.1-microsoft-standard-WSL2-x86_64-with-glibc2.39",
+    "input_hash": "6a7e2951e4876b2f779365e5f9c2e4ee83123f9bb1414031ade02a44650a90d3",
+    "model_version": null,
+    "output_hash": null,
+    "package_versions": {
+      "astropy": "8.0.1",
+      "astrotransit": "0.3.0",
+      "lightkurve": "2.4.2",
+      "numpy": "2.5.3",
+      "pandas": "3.0.5",
+      "pydantic": "2.13.5",
+      "scipy": "1.18.1",
+      "transitleastsquares": "1.32",
+      "wotan": "1.10"
+    },
+    "pipeline_version": "",
+    "python_version": "3.12.3",
+    "random_seed": 20260918,
+    "run_timestamp_utc": "2026-10-09T07:05:43.309295Z",
+    "schema_version": null,
+    "sector": null,
+    "shard_files": [
+      "shard-00.json",
+      "shard-01.json",
+      "shard-02.json",
+      "shard-03.json",
+      "shard-04.json",
+      "shard-05.json",
+      "shard-06.json",
+      "shard-07.json",
+      "shard-08.json",
+      "shard-09.json",
+      "shard-10.json",
+      "shard-11.json"
+    ],
+    "target_id": null
+  },
+  "rows_sha256": "1f94c8272453e6464d0a72f518dc82bd26b262fc3a6de286e14d3308a57f3424",
+  "schema_version": "1.0",
+  "status": "pending_run",
+  "strata": {
+    "false_positive:APC": {
+      "false_negatives": 0,
+      "false_positive_rate": 0.947368,
+      "false_positives": 18,
+      "n_cases": 20,
+      "n_evaluated": 19,
+      "precision": 0.0,
+      "recall": null,
+      "true_negatives": 1,
+      "true_positives": 0,
+      "wilson_false_positive_rate_95": [
+        0.753613,
+        0.990648
+      ],
+      "wilson_recall_95": null
+    },
+    "false_positive:FA": {
+      "false_negatives": 0,
+      "false_positive_rate": 0.3,
+      "false_positives": 3,
+      "n_cases": 10,
+      "n_evaluated": 10,
+      "precision": 0.0,
+      "recall": null,
+      "true_negatives": 7,
+      "true_positives": 0,
+      "wilson_false_positive_rate_95": [
+        0.107791,
+        0.603222
+      ],
+      "wilson_recall_95": null
+    },
+    "false_positive:FP": {
+      "false_negatives": 0,
+      "false_positive_rate": 0.714286,
+      "false_positives": 25,
+      "n_cases": 42,
+      "n_evaluated": 35,
+      "precision": 0.0,
+      "recall": null,
+      "true_negatives": 10,
+      "true_positives": 0,
+      "wilson_false_positive_rate_95": [
+        0.549451,
+        0.836735
+      ],
+      "wilson_recall_95": null
+    },
+    "planet:CP": {
+      "false_negatives": 10,
+      "false_positive_rate": null,
+      "false_positives": 0,
+      "n_cases": 37,
+      "n_evaluated": 36,
+      "precision": 1.0,
+      "recall": 0.722222,
+      "true_negatives": 0,
+      "true_positives": 26,
+      "wilson_false_positive_rate_95": null,
+      "wilson_recall_95": [
+        0.560075,
+        0.841517
+      ]
+    },
+    "planet:KP": {
+      "false_negatives": 11,
+      "false_positive_rate": null,
+      "false_positives": 0,
+      "n_cases": 35,
+      "n_evaluated": 35,
+      "precision": 1.0,
+      "recall": 0.685714,
+      "true_negatives": 0,
+      "true_positives": 24,
+      "wilson_false_positive_rate_95": null,
+      "wilson_recall_95": [
+        0.520202,
+        0.814492
+      ]
+    }
+  }
+}

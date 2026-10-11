@@ -1,19 +1,21 @@
 {
   "blocking_reasons": [
     "error_rows:9",
-    "false_positive_rate_above_declared_ceiling:0.71875>0.6"
+    "evaluated_cases_below_declared_minimum:108<120",
+    "recall_below_declared_floor:0.264151<0.5",
+    "corpus_rows_missing:27"
   ],
   "campaign": "blind_domain_holdout_v1",
   "claim_boundary": "Real TESS targets with external FOP WG dispositions, drawn only from the blind partition and from targets no prior gate has touched. Because sectors are chosen at run time and no model was fitted on these targets, the measured recall/false-positive rate describes this label domain and cadence regime; it is not a survey-wide performance estimate and not a statement about any individual target.",
   "claim_policy": "A gate closes only when its declared status and immutable evidence are measured/pass and every predeclared acceptance check passes; pending work is never a score.",
   "corpus": {
     "counts": {
-      "false_positive": 64,
-      "planet": 71
+      "false_positive": 55,
+      "planet": 53
     },
     "n_cases": 144,
-    "n_missing_rows": 0,
-    "n_rows": 144,
+    "n_missing_rows": 27,
+    "n_rows": 117,
     "n_rows_not_in_corpus": 0,
     "recomputed_sha256": "3fd1e65a2ddc15d37c624571a5f39d7bdeae724609d427d7dfbc2e1320a0b1d2",
     "sha256": "3fd1e65a2ddc15d37c624571a5f39d7bdeae724609d427d7dfbc2e1320a0b1d2",
@@ -27,8 +29,8 @@
   },
   "data": {
     "errors": 9,
-    "n_evaluated": 135,
-    "n_rows": 144,
+    "n_evaluated": 108,
+    "n_rows": 117,
     "sector_fetch_failures": 9
   },
   "disjointness": {
@@ -43,24 +45,24 @@
     "split": "blind_test"
   },
   "environment": {
-    "generated_at_utc": "2026-10-09T07:05:43.526239+00:00",
+    "generated_at_utc": "2026-10-11T10:00:12.025956+00:00",
     "github_run_id": null,
     "github_sha": null,
     "platform": "Linux-6.18.40.1-microsoft-standard-WSL2-x86_64-with-glibc2.39",
     "python": "3.12.3 (main, Aug 31 2026, 10:18:26) [GCC 13.3.0]",
     "row_sources": [
-      "outputs/blind-holdout-v1-20261008_210621/shards/shard-00.json",
-      "outputs/blind-holdout-v1-20261008_210621/shards/shard-01.json",
-      "outputs/blind-holdout-v1-20261008_210621/shards/shard-02.json",
-      "outputs/blind-holdout-v1-20261008_210621/shards/shard-03.json",
-      "outputs/blind-holdout-v1-20261008_210621/shards/shard-04.json",
-      "outputs/blind-holdout-v1-20261008_210621/shards/shard-05.json",
-      "outputs/blind-holdout-v1-20261008_210621/shards/shard-06.json",
-      "outputs/blind-holdout-v1-20261008_210621/shards/shard-07.json",
-      "outputs/blind-holdout-v1-20261008_210621/shards/shard-08.json",
-      "outputs/blind-holdout-v1-20261008_210621/shards/shard-09.json",
-      "outputs/blind-holdout-v1-20261008_210621/shards/shard-10.json",
-      "outputs/blind-holdout-v1-20261008_210621/shards/shard-11.json"
+      "outputs/blind-holdout-v2-20261011_085204/shards/shard-00.json",
+      "outputs/blind-holdout-v2-20261011_085204/shards/shard-01.json",
+      "outputs/blind-holdout-v2-20261011_085204/shards/shard-02.json",
+      "outputs/blind-holdout-v2-20261011_085204/shards/shard-03.json",
+      "outputs/blind-holdout-v2-20261011_085204/shards/shard-04.json",
+      "outputs/blind-holdout-v2-20261011_085204/shards/shard-05.json",
+      "outputs/blind-holdout-v2-20261011_085204/shards/shard-06.json",
+      "outputs/blind-holdout-v2-20261011_085204/shards/shard-07.json",
+      "outputs/blind-holdout-v2-20261011_085204/shards/shard-08.json",
+      "outputs/blind-holdout-v2-20261011_085204/shards/shard-09.json",
+      "outputs/blind-holdout-v2-20261011_085204/shards/shard-10.json",
+      "outputs/blind-holdout-v2-20261011_085204/shards/shard-11.json"
     ]
   },
   "method": {
@@ -82,28 +84,28 @@
     "split_seed": 13
   },
   "overall": {
-    "false_negatives": 21,
-    "false_positive_rate": 0.71875,
-    "false_positives": 46,
-    "precision": 0.520833,
-    "recall": 0.704225,
-    "true_negatives": 18,
-    "true_positives": 50,
+    "false_negatives": 39,
+    "false_positive_rate": 0.236364,
+    "false_positives": 13,
+    "precision": 0.518519,
+    "recall": 0.264151,
+    "true_negatives": 42,
+    "true_positives": 14,
     "wilson_false_positive_rate_95": [
-      0.598661,
-      0.814066
+      0.143667,
+      0.363484
     ],
     "wilson_recall_95": [
-      0.589815,
-      0.797671
+      0.164374,
+      0.395807
     ]
   },
   "provenance": {
     "cadence": null,
-    "config_hash": "d9777ef6068ac9e0e8165ced88c655335c6483a1b6010adcf0d0c41378e039d2",
+    "config_hash": "a6e2b0236ec3828c6856a0fc6e3398f90b80ef23644b6bafe28235f9e14d7d8a",
     "data_product": null,
     "environment_manifest_hash": null,
-    "git_commit": "3a4b06d4d9533ed351e60cc41ada942e6ec3113b",
+    "git_commit": "19175fd7dbb348190046a9afa5f6999823162e1f",
     "holdout_manifest_sha256": "6a7e2951e4876b2f779365e5f9c2e4ee83123f9bb1414031ade02a44650a90d3",
     "host_platform": "Linux-6.18.40.1-microsoft-standard-WSL2-x86_64-with-glibc2.39",
     "input_hash": "6a7e2951e4876b2f779365e5f9c2e4ee83123f9bb1414031ade02a44650a90d3",
@@ -123,7 +125,7 @@
     "pipeline_version": "",
     "python_version": "3.12.3",
     "random_seed": 20260918,
-    "run_timestamp_utc": "2026-10-09T07:05:43.309295Z",
+    "run_timestamp_utc": "2026-10-11T10:00:11.874147Z",
     "schema_version": null,
     "sector": null,
     "shard_files": [
@@ -142,88 +144,88 @@
     ],
     "target_id": null
   },
-  "rows_sha256": "1f94c8272453e6464d0a72f518dc82bd26b262fc3a6de286e14d3308a57f3424",
+  "rows_sha256": "3e8007d5d8989327dc22a3aadec2935003ea2b5d3374116af71167f0921f8c20",
   "schema_version": "1.0",
   "status": "pending_run",
   "strata": {
     "false_positive:APC": {
       "false_negatives": 0,
-      "false_positive_rate": 0.947368,
-      "false_positives": 18,
-      "n_cases": 20,
-      "n_evaluated": 19,
+      "false_positive_rate": 0.235294,
+      "false_positives": 4,
+      "n_cases": 19,
+      "n_evaluated": 17,
       "precision": 0.0,
       "recall": null,
-      "true_negatives": 1,
+      "true_negatives": 13,
       "true_positives": 0,
       "wilson_false_positive_rate_95": [
-        0.753613,
-        0.990648
+        0.09555,
+        0.472618
       ],
       "wilson_recall_95": null
     },
     "false_positive:FA": {
       "false_negatives": 0,
-      "false_positive_rate": 0.3,
-      "false_positives": 3,
-      "n_cases": 10,
-      "n_evaluated": 10,
-      "precision": 0.0,
+      "false_positive_rate": 0.0,
+      "false_positives": 0,
+      "n_cases": 9,
+      "n_evaluated": 9,
+      "precision": null,
       "recall": null,
-      "true_negatives": 7,
+      "true_negatives": 9,
       "true_positives": 0,
       "wilson_false_positive_rate_95": [
-        0.107791,
-        0.603222
+        0.0,
+        0.299145
       ],
       "wilson_recall_95": null
     },
     "false_positive:FP": {
       "false_negatives": 0,
-      "false_positive_rate": 0.714286,
-      "false_positives": 25,
-      "n_cases": 42,
-      "n_evaluated": 35,
+      "false_positive_rate": 0.310345,
+      "false_positives": 9,
+      "n_cases": 35,
+      "n_evaluated": 29,
       "precision": 0.0,
       "recall": null,
-      "true_negatives": 10,
+      "true_negatives": 20,
       "true_positives": 0,
       "wilson_false_positive_rate_95": [
-        0.549451,
-        0.836735
+        0.172756,
+        0.492301
       ],
       "wilson_recall_95": null
     },
     "planet:CP": {
-      "false_negatives": 10,
+      "false_negatives": 21,
       "false_positive_rate": null,
       "false_positives": 0,
-      "n_cases": 37,
-      "n_evaluated": 36,
+      "n_cases": 28,
+      "n_evaluated": 27,
       "precision": 1.0,
-      "recall": 0.722222,
+      "recall": 0.222222,
       "true_negatives": 0,
-      "true_positives": 26,
+      "true_positives": 6,
       "wilson_false_positive_rate_95": null,
       "wilson_recall_95": [
-        0.560075,
-        0.841517
+        0.106072,
+        0.407569
       ]
     },
     "planet:KP": {
-      "false_negatives": 11,
+      "false_negatives": 18,
       "false_positive_rate": null,
       "false_positives": 0,
-      "n_cases": 35,
-      "n_evaluated": 35,
+      "n_cases": 26,
+      "n_evaluated": 26,
       "precision": 1.0,
-      "recall": 0.685714,
+      "recall": 0.307692,
       "true_negatives": 0,
-      "true_positives": 24,
+      "true_positives": 8,
       "wilson_false_positive_rate_95": null,
       "wilson_recall_95": [
-        0.520202,
-        0.814492
+        0.165013,
+        0.499883
       ]
     }
   }
