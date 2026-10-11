@@ -50,7 +50,7 @@ def _time_limit(seconds: int):
 #: FAZ 2b.3a.4: per-target wall-clock bound. Realistic targets
 #: take 3-7 min; 6 min is generous without letting a hung MAST
 #: query block the entire shard.
-PER_TARGET_TIMEOUT_SECONDS = 360
+PER_TARGET_TIMEOUT_SECONDS = 480
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
