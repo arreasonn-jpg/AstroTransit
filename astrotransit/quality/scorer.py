@@ -143,13 +143,20 @@ class QualityScore:
 
 
     def accepted_for_gate(self) -> bool:
-        """FAZ 2b.3c: gate-level acceptance decision.
+        """Gate-level acceptance decision (vetting-only).
 
-        Returns True iff this candidate survives both the vetting
-        false-positive verdict and the class-based rejection
-        (Class C and D are treated as false positives).
+        FAZ 2b.4: the class-only gate (C/D) did not transfer to the
+        blind partition (recall 0.264 vs 0.532 on development), so the
+        gate is now vetting-only. The class field is kept for future
+        feature engineering but is not part of the decision.
         """
-        return not (self.is_false_positive or self.rejected_by_class)
+        # FAZ 2b.4: the class-only gate (C/D) did not transfer to the
+        # blind partition (recall 0.264 vs 0.532 on development). The
+        # finding is that the scorer does not separate planets from FPs
+        # -- within every class the score distributions overlap. So the
+        # gate is now vetting-only; the class field is kept for future
+        # feature engineering but is not part of the decision.
+        return not self.is_false_positive
 
     def to_dict(self) -> dict:
         return {
