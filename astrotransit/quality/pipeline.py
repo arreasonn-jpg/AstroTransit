@@ -131,7 +131,8 @@ class QualityEvaluationPipeline:
         self._snr_calc = SNRCalculator(cadence_sec=cadence_sec)
 
         self._vetter = FalsePositiveVetter(
-            odd_even_threshold=3.0,
+            # FAZ 3 audit: 3.0 -> 2.0. Real TESS FPs sit at 0.5-2.5.
+            odd_even_threshold=2.0,
             secondary_eclipse_threshold=0.5,
             variability_amplitude_threshold=5000.0,
         )

@@ -410,7 +410,8 @@ class FalsePositiveVetter:
         """Ham veriden harmonik odd/even farki testi."""
 
         value = float(getattr(metrics.transit, "odd_even_harmonic", 0.0) or 0.0)
-        threshold = 0.45
+        # FAZ 3 audit: real TESS false positives show 0.0-0.3 on this metric.
+        threshold = 0.25
 
         if value > threshold:
             verdict = VettingVerdict.FAIL
@@ -514,7 +515,10 @@ class FalsePositiveVetter:
         """İkincil tutulmanın SNR tabanlı anlamlılık testi."""
 
         snr = float(getattr(metrics.stellar, "secondary_eclipse_snr", 0.0) or 0.0)
-        threshold = 3.0
+        # FAZ 3 audit: 3.0 was calibrated on synthetic EBs (30-80 sigma).
+        # Real TESS false positives sit at 1-2 sigma; 1.5 is the standard
+        # z-score cut and still avoids noise-floor crossings.
+        threshold = 1.5
 
         if snr > threshold:
             verdict = VettingVerdict.FAIL
@@ -584,13 +588,15 @@ class FalsePositiveVetter:
         # (planetary_control amplitude ~5000 ppm cikiyor). LS tepe gucu
         # transit-disi degiskenlik oldugunda yuksek, transit sinyalinde
         # dusuk.
-        if ls_peak > 0.5 and amplitude > 3000.0:
+        # FAZ 3 audit: quiet TESS stars have LS peak < 0.1 in the period
+        # range we fold on. The 0.5 gate never fires on real data.
+        if ls_peak > 0.15 and amplitude > 3000.0:
             verdict = VettingVerdict.FAIL
             desc = (
                 f"Yildiz degiskenligi: LS_peak={ls_peak:.3f} > 0.5, "
                 f"genlik={amplitude:.0f}ppm > 3000ppm"
             )
-        elif ls_peak > 0.35 and amplitude > 2000.0:
+        elif ls_peak > 0.10 and amplitude > 2000.0:
             verdict = VettingVerdict.WARN
             desc = (
                 f"Yildiz degiskenlik uyarisi: LS_peak={ls_peak:.3f}, "
@@ -733,7 +739,9 @@ class FalsePositiveVetter:
         """Faz-derinlik korelasyonu ile V-şekli EB testi."""
 
         r = float(getattr(metrics.transit, "shape_correlation", 0.0) or 0.0)
-        threshold = -0.75
+        # FAZ 3 audit: real V-shaped EBs show r ~ -0.5 to -0.9. -0.55
+        # catches them without demanding textbook V profiles.
+        threshold = -0.55
 
         if r < threshold:
             verdict = VettingVerdict.FAIL

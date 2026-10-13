@@ -167,6 +167,32 @@ def _evaluate_case(
     return attach_row_fpp(_evaluate_case_raw(case, orchestrator, sector_client))
 
 
+def _target_passes_gate(result: Any, sectors: list[dict[str, Any]]) -> bool:
+    """True iff any successful sector passes the vetting gate.
+
+    FAZ 3 audit: accepted_candidate must reflect the classifier, not the
+    detector. Uses QualityScore.accepted_for_gate() from each sector;
+    falls back to cascade-confirmed when the score object is missing
+    (e.g., pre-fit failures).
+    """
+    try:
+        raw_sectors = list(getattr(result, "sector_results", []) or [])
+    except Exception:
+        return bool(getattr(result, "candidates_confirmed", 0) > 0)
+    for item in raw_sectors:
+        if not getattr(item, "success", False):
+            continue
+        quality = getattr(item, "quality", None)
+        score = getattr(quality, "score", None) if quality else None
+        if score is not None and hasattr(score, "accepted_for_gate"):
+            if bool(score.accepted_for_gate()):
+                return True
+        else:
+            if bool(getattr(item, "candidate_confirmed", False)):
+                return True
+    return False
+
+
 def _evaluate_case_raw(
     case: CorpusCase,
     orchestrator: Any,
@@ -226,8 +252,13 @@ def _evaluate_case_raw(
             "processed_sectors": [row["sector"] for row in sectors],
             "successful_sector_count": successful,
             "evaluated": evaluated,
+            # FAZ 3 audit fix: the acceptance decision uses the vetting
+            # gate (QualityScore.accepted_for_gate()) per successful sector,
+            # not the cascade-confirmed count. Same rule as the blind
+            # runner (commit 3c8f...). Falls back to cascade-confirmed when
+            # the score object is missing.
             "accepted_candidate": (
-                bool(result.candidates_confirmed > 0) if evaluated else None
+                _target_passes_gate(result, sectors) if evaluated else None
             ),
             "candidate_count": int(result.candidates_confirmed) if evaluated else None,
             "error": "; ".join(error_parts),
