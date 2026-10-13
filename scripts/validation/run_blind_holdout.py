@@ -47,6 +47,12 @@ def _time_limit(seconds: int):
         signal.signal(signal.SIGALRM, old)
 
 
+import socket  # noqa: E402
+
+# FAZ 3: hard cap on any socket operation. Complements astroquery's
+# own timeout; no library can stall the runner for more than this long.
+socket.setdefaulttimeout(40)
+
 #: FAZ 2b.3a.4: per-target wall-clock bound. Realistic targets
 #: take 3-7 min; 6 min is generous without letting a hung MAST
 #: query block the entire shard.

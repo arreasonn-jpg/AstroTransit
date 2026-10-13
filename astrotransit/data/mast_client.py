@@ -15,6 +15,16 @@ except ImportError:  # pragma: no cover - depends on the local installation
     Observations = None
     Catalogs = None
 from astropy.table import Table
+
+# FAZ 3: bound astroquery MAST query timeout. The library default is
+# 60 s * its own internal retry policy, which together let a single
+# catalog query hang for tens of minutes on some TIC IDs. 30 s is
+# generous for MAST and short enough that a stuck query is recoverable.
+try:
+    from astroquery import conf as _astroquery_conf
+    _astroquery_conf.timeout = 30
+except Exception:  # pragma: no cover - astroquery optional at import
+    pass
 from loguru import logger
 
 

@@ -13,6 +13,10 @@ import json
 import os
 import platform
 import sys
+
+# FAZ 3: hard cap on any socket operation. Complements astroquery's
+# own timeout by guaranteeing that even a library ignoring conf.timeout
+# cannot stall the runner for more than this many seconds.
 from collections import Counter
 from datetime import datetime, timezone
 from pathlib import Path
@@ -21,12 +25,18 @@ from typing import Any
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 import signal
+import socket
 from contextlib import contextmanager
 
 from astrotransit.validation.benchmark_report import normalize_target_id
 from astrotransit.validation.corpus import CorpusCase, load_corpus
 from astrotransit.validation.fpp_telemetry import FPP_TELEMETRY_VERSION, attach_row_fpp
 from scripts.validation.build_quiet_controls import build as build_quiet_controls
+
+# FAZ 3: hard cap on any socket operation. Complements astroquery's
+# own timeout by guaranteeing that even a library ignoring conf.timeout
+# cannot stall the runner for more than this many seconds.
+socket.setdefaulttimeout(40)
 
 PER_TARGET_TIMEOUT_SECONDS = 480  # 8 min, matches blind runner
 
@@ -265,7 +275,33 @@ def run_shard(args: argparse.Namespace) -> int:
         skip_visualization=True,
         log_level="INFO",
     ) as orchestrator:
-        rows = [_evaluate_case(case, orchestrator, sector_client) for case in selected]
+        output = Path(args.output)
+        output.parent.mkdir(parents=True, exist_ok=True)
+
+        def _save_partial(rows_so_far):
+            payload_partial = {
+                "shard_index": args.shard_index,
+                "shard_count": args.shard_count,
+                "case_count": len(rows_so_far),
+                "partial": True,
+                "rows": rows_so_far,
+            }
+            try:
+                output.write_text(json.dumps(payload_partial, indent=2, sort_keys=True))
+            except Exception as exc:
+                print(f"  checkpoint write failed: {exc}", flush=True)
+
+        rows = []
+        for idx, case in enumerate(selected, 1):
+            row = _evaluate_case(case, orchestrator, sector_client)
+            rows.append(row)
+            tid = row.get("target_id", "?")
+            if row.get("error"):
+                status = f"error({str(row['error'])[:60]})"
+            else:
+                status = str(row.get("outcome", "?"))
+            print(f"  [{idx}/{len(selected)}] {tid}: {status}", flush=True)
+            _save_partial(rows)
     payload = {
         "schema_version": "1.1",
         "campaign": "labelled_fp_quiet_controls_v1",
