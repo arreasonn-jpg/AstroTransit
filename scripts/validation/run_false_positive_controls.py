@@ -20,10 +20,35 @@ from typing import Any
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
+import signal
+from contextlib import contextmanager
+
 from astrotransit.validation.benchmark_report import normalize_target_id
 from astrotransit.validation.corpus import CorpusCase, load_corpus
 from astrotransit.validation.fpp_telemetry import FPP_TELEMETRY_VERSION, attach_row_fpp
 from scripts.validation.build_quiet_controls import build as build_quiet_controls
+
+PER_TARGET_TIMEOUT_SECONDS = 480  # 8 min, matches blind runner
+
+
+@contextmanager
+def _time_limit(seconds: int):
+    """Per-target wall-clock bound (FAZ 3).
+
+    MAST catalog queries hang for many minutes on some TIC IDs. Bound
+    every target's pipeline call so one slow target cannot starve the
+    whole shard.
+    """
+    def _handler(signum, frame):
+        raise TimeoutError(f"per-target timeout after {seconds}s")
+
+    old = signal.signal(signal.SIGALRM, _handler)
+    signal.alarm(int(seconds))
+    try:
+        yield
+    finally:
+        signal.alarm(0)
+        signal.signal(signal.SIGALRM, old)
 
 QUIET_CORPUS_SHA256 = "a59e245487fc80e440fb9481734cf1f95e8778433de2b2ab9abe58f258974aea"
 QUIET_SEED = 20260912
@@ -163,7 +188,8 @@ def _evaluate_case_raw(
             "sector_results": [],
         }
     try:
-        result = orchestrator.run_single(case.target_id, sectors=requested)
+        with _time_limit(PER_TARGET_TIMEOUT_SECONDS):
+            result = orchestrator.run_single(case.target_id, sectors=requested)
         sectors = []
         for item in result.sector_results:
             sectors.append(
