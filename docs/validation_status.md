@@ -9,6 +9,7 @@
 | Injection | 888 | predefined | 52.48% | MEASURED | `6986a2e` | `N/A` |
 | Adversarial FP | 48 | >=80% | 85.42% | PASS | `6986a2e` | `N/A` |
 | Blind holdout v2 | 144 | predefined | 108 eval, recall 0.2642, FPR 0.2364, errors=9 | MEASURED_OPEN | <pending-commit> | `57e60255` (v1) / v2 pending |
+| FP + quiet controls | 200 | predefined | FP rejection 0.5542, quiet FPR 0.4835, errors=17 | MEASURED_PARTIAL | `<pending>` | `<pending>` |
 | FPP calibration | 200 | predefined | pending | PENDING | `6986a2e` | `N/A` |
 
 ## Counts
