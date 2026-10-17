@@ -53,7 +53,7 @@
     },
     {
       "id": "labelled_fp_quiet_controls",
-      "status": "pending_run",
+      "status": "measured",
       "required_output": "validation_runs/final_acceptance_v1/false_positive_controls/report.json",
       "acceptance_checks": [
         {
