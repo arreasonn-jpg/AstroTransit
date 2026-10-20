@@ -40,7 +40,7 @@ DEFAULT_RMSE_REL_TOLERANCE = 0.05
 
 
 def _load_summary(path: Path) -> dict[str, Any]:
-    payload = json.loads(path.read_text(encoding="utf-8"))
+    payload: dict[str, Any] = json.loads(path.read_text(encoding="utf-8"))
     if payload.get("campaign") != EXPECTED_CAMPAIGN:
         raise ValueError(f"{path}: campaign alanı {EXPECTED_CAMPAIGN} olmalı")
     if payload.get("status") != "measured":
