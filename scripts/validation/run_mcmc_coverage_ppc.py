@@ -203,7 +203,7 @@ def summarize(entries: list[dict[str, Any]]) -> dict[str, Any]:
     """Vaka satırından kapsama/PPC/ESS özeti üretir."""
 
     measured = [e for e in entries if e.get("state") == "measured"]
-    per_param = {p: [] for p in ("rp_rs", "t0", "impact_parameter")}
+    per_param: dict[str, list[float]] = {p: [] for p in ("rp_rs", "t0", "impact_parameter")}
     for entry in measured:
         for param, covered in (entry.get("hdi94_coverage") or {}).items():
             if covered is not None:
