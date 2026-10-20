@@ -236,6 +236,7 @@ class PyMCFitter:
         tune: int = 1000,
         target_accept: float = 0.9,
         random_seed: int = 42,
+        fix_jitter: bool = False,
     ):
         if not _PYMC_AVAILABLE:
             raise ImportError("pymc gereklidir: pip install pymc")
@@ -247,11 +248,13 @@ class PyMCFitter:
         self.tune = tune
         self.target_accept = target_accept
         self.random_seed = random_seed
+        self.fix_jitter = fix_jitter
 
         logger.debug(
             f"PyMCFitter — "
             f"chains: {chains}, draws: {draws}, "
-            f"tune: {tune}, target_accept: {target_accept}"
+            f"tune: {tune}, target_accept: {target_accept}, "
+            f"fix_jitter: {fix_jitter}"
         )
 
 
@@ -436,19 +439,30 @@ class PyMCFitter:
                 )
 
                 # Jitter: daha kontrollu prior
-                _noise_est = float(np.nanmedian(np.abs(flux_err)))
-                _log_jitter_init = float(np.clip(
-                    np.log(max(_noise_est * 0.1, 1e-7)),
-                    -12.0, -3.0
-                ))
-                log_jitter = pm.TruncatedNormal(
-                    "log_jitter",
-                    mu=_log_jitter_init,
-                    sigma=2.0,
-                    lower=-15.0,
-                    upper=-1.0,
-                    initval=_log_jitter_init,
-                )
+                if self.fix_jitter:
+                    # fix_jitter=True: log_jitter serbest parametre OLMAZ; flux_err
+                    # dogrudan sigma olarak kullanilir. Kullanim alani: sigma'nin
+                    # bilindigi sentetik kalibrasyon/coverage kampanyalari. Serbest
+                    # log_jitter, bilinen sigma'da zayif tanimlanir ve alt sinira
+                    # dogru sinir hunisi yaratir (NUTS max tree depth + r_hat
+                    # patlamasinin bilinen modu). Varsayilan False — gercek veride
+                    # jitter serbest kalir.
+                    jitter_val = pm.Data("jitter_val", 0.0)
+                else:
+                    _noise_est = float(np.nanmedian(np.abs(flux_err)))
+                    _log_jitter_init = float(np.clip(
+                        np.log(max(_noise_est * 0.1, 1e-7)),
+                        -12.0, -3.0
+                    ))
+                    _log_jitter = pm.TruncatedNormal(
+                        "log_jitter",
+                        mu=_log_jitter_init,
+                        sigma=2.0,
+                        lower=-15.0,
+                        upper=-1.0,
+                        initval=_log_jitter_init,
+                    )
+                    jitter_val = pm.math.exp(_log_jitter)
 
                 # Baseline: dar prior
                 baseline = pm.Normal(
@@ -476,7 +490,6 @@ class PyMCFitter:
                 model_flux_pm = pm.math.sum(light_curves, axis=-1) + baseline
 
                 # ── Likelihood ──
-                jitter_val = pm.math.exp(log_jitter)
                 sigma_total = pm.math.sqrt(flux_err ** 2 + jitter_val ** 2)
 
                 pm.Normal(
@@ -512,6 +525,9 @@ class PyMCFitter:
             "t0", "rp_rs", "impact_parameter",
             "log_jitter", "baseline",
         ]
+        if self.fix_jitter:
+            # log_jitter serbest degil; posterior cikartilmaz
+            param_names = [p for p in param_names if p != "log_jitter"]
 
         posteriors = {}
         for pname in param_names:

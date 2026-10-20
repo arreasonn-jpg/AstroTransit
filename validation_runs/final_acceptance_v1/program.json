@@ -410,7 +410,54 @@
     {
       "id": "mcmc_coverage_ppc",
       "status": "pending_run",
-      "required_output": "validation_runs/final_acceptance_v1/mcmc/report.json"
+      "required_output": "validation_runs/final_acceptance_v1/mcmc/report.json",
+      "acceptance_checks": [
+        {
+          "path": "status",
+          "operator": "equals",
+          "value": "measured"
+        },
+        {
+          "path": "declared.cases",
+          "operator": "gte",
+          "value": 12
+        },
+        {
+          "path": "result.n_measured",
+          "operator": "gte",
+          "value": 12
+        },
+        {
+          "path": "result.hdi94_coverage_pooled",
+          "operator": "gte",
+          "value": 0.75
+        },
+        {
+          "path": "result.hdi94_coverage_pooled",
+          "operator": "lte",
+          "value": 1.0
+        },
+        {
+          "path": "result.ppc_residual_rms_per_sigma_median",
+          "operator": "gte",
+          "value": 0.5
+        },
+        {
+          "path": "result.ppc_residual_rms_per_sigma_median",
+          "operator": "lte",
+          "value": 1.5
+        },
+        {
+          "path": "result.r_hat_max_median",
+          "operator": "lte",
+          "value": 1.1
+        },
+        {
+          "path": "result.ess_median",
+          "operator": "gte",
+          "value": 100
+        }
+      ]
     },
     {
       "id": "performance",
@@ -442,7 +489,34 @@
     {
       "id": "independent_reproduction_fmea",
       "status": "pending_run",
-      "required_output": "validation_runs/final_acceptance_v1/reproduction/report.json"
+      "required_output": "validation_runs/final_acceptance_v1/reproduction/report.json",
+      "acceptance_checks": [
+        {
+          "path": "status",
+          "operator": "equals",
+          "value": "measured"
+        },
+        {
+          "path": "declared.expected_rows",
+          "operator": "equals",
+          "value": 960
+        },
+        {
+          "path": "declared.bias_rel_tolerance",
+          "operator": "lte",
+          "value": 0.05
+        },
+        {
+          "path": "declared.rmse_rel_tolerance",
+          "operator": "lte",
+          "value": 0.05
+        },
+        {
+          "path": "result.pooled_agreement_score",
+          "operator": "gte",
+          "value": 1.0
+        }
+      ]
     },
     {
       "id": "final_report_release",

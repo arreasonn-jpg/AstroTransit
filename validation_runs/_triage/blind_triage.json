@@ -1,0 +1,56 @@
+{
+  "n_rows": 8,
+  "label_counts": {
+    "false_positive": 4,
+    "planet": 4
+  },
+  "modes": {
+    "data_error": 0,
+    "no_sector": 0,
+    "no_data": 0,
+    "no_candidate": 0,
+    "vetoed": 3,
+    "accepted": 2,
+    "fp_leak": 3
+  },
+  "error_prefixes": {},
+  "veto_flag_counts": {
+    "secondary_eclipse_snr": 3,
+    "secondary_eclipse": 2,
+    "odd_even_mismatch": 1,
+    "odd_even_harmonic": 1
+  },
+  "fp_leak_flag_counts": {
+    "odd_even_mismatch": 1
+  },
+  "vetting_test_verdicts": {
+    "planet": {
+      "secondary_eclipse:warn": 3,
+      "odd_even_mismatch:fail": 2,
+      "secondary_eclipse_snr:fail": 2,
+      "transit_shape:warn": 2,
+      "odd_even_harmonic:fail": 1,
+      "depth_variance:warn": 1,
+      "secondary_eclipse:fail": 1
+    },
+    "false_positive": {
+      "secondary_eclipse:warn": 3,
+      "secondary_eclipse:fail": 1,
+      "secondary_eclipse_snr:fail": 1,
+      "odd_even_mismatch:fail": 1,
+      "secondary_eclipse_snr:warn": 1
+    }
+  },
+  "mode_samples": {
+    "fp_leak": [
+      "118329434",
+      "141412823",
+      "286561122"
+    ],
+    "vetoed": [
+      "77951245",
+      "102713734",
+      "88902249"
+    ]
+  }
+}

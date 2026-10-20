@@ -42,6 +42,10 @@ excludes = [
     # pipeline modulleri torch'suz import edilir); sklearn array-API uyumluluk
     # katmanindan tasinarak exe'yi ~1 GB sistirmisti.
     "torch", "torchvision", "torchaudio",
+    # ISIRTESZ katmanlar: lightkurve.interact (bokeh), jupyter arac zinciri
+    # (playwright/selenium/sympy — sympy yalniz pymc/modeling extra icin) exe
+    # tarafi tayfa bu yollari kullanmaz; smoke dogrulamasiyla sinirlidir.
+    "bokeh", "playwright", "selenium", "sympy",
 ]
 
 a = Analysis(

@@ -13,7 +13,7 @@ Sürümleme: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
   - `desktop/analysis.py` (Qt-bağımsız): orkestratör çağrısı + loguru → callback log aktarımı
   - `desktop/worker.py` / `app.py` / `main.py`: QThread worker, ana pencere (Analiz / Sonuçlar / Kayıtlı Çıktılar / Log sekmeleri), aday detay penceresi
   - `--smoke` bayrağı: pencere açılır 300 ms sonra kapanır (CI/PyInstaller doğrulaması)
-- **Windows .exe paketi**: `packaging/astrotransit-desktop.spec` (PyInstaller onedir; astropy/astroquery veri dosyaları + configs bundle; ağır opsiyonel paketler pymc/streamlit/exoplanet dışlanır) — `scripts/package/build_desktop_exe.bat` / `.sh`
+- **Windows .exe paketi**: `packaging/astrotransit-desktop.spec` (PyInstaller onedir; astropy/astroquery veri dosyaları + configs bundle; ağır opsiyonel paketler pymc/streamlit/exoplanet dışlanır) — `scripts/package/build_desktop_exe.bat` / `.sh`. **Boyut optimizasyonu**: torch ailesi (runtime'da kullanılmaz — tüm pipeline modülleri torch'suz import edilir) + bokeh/playwright/selenium/sympy dışlandı: 1.2 GB → ~700 MB, `--smoke` doğrulaması her rebuild'de koşulur.
 - **`desktop` projesinde**: `[project.optional-dependencies].gui` (`PySide6`), console script `astrotransit-desktop`
 - **`run_batch(progress=...)`**: öncesinde dashboard'da sahte 0/10/20/100 progress bar vardı; artık orkestratör/`TESSPipeline.run_batch` gerçek hedef-bazlı ilerleme geri çağrısı destekliyor; `progress=None` iken çağrı kontratı korunur.
 - **Robustness kapısı (contract missing listesinden çıkarıldı)**:
@@ -22,6 +22,9 @@ Sürümleme: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
   - `scripts/validation/run_robustness_campaign.py`: kapı kanıt artefaktı üretimi (`detrending_cadence_impact_robustness`), threshold ilanı CLI'den dondurulur
 - **Performance kapısı koşucusu**: `scripts/validation/run_performance_campaign.py` — `noop`/`csv-read` operasyonları; medyan saniye/1000-satır tavanı CLI'den dondurulur
 - **`reproduce --verify`**: her kapı evidans manifest'inin (evidence_manifest.json / reproduce manifest) SHA-256 kayıtları yeniden hesaplanıp doğrulanabilir — `docs/validation_status.md` Kural 3'ün komut karşılığı (eşiksiz, salt-hash doğrulama).
+- **`mcmc_coverage_ppc` kapısı**: `scripts/validation/run_mcmc_coverage_ppc.py` — sentetik (batman+gürültü) vaka üstünde MAP→PyMC NUTS posterior örnekleme; HDI-94% kapsama (rp_rs/t0/b), PPC-proxy (kalıntı RMS/σ), ESS/r_hat eşikleri; kabul kontrolleri **kanıt yokken** program.json'a ilan edildi ("detection-conditioned" kapsama — claim_boundary'de açık).
+- **`independent_reproduction_fmea` kapısı**: `scripts/validation/run_reproduction_fmea.py` — parametre-recovery FMEA'sının bağımsız üretimler arası mutabakat denetimi (bias/RMSE bağıl tolerans ≤ %2/%5; eksik parametre/kohort mutabakatsız sayılır); kabul kontrolleri kanıt yokken ilan edildi.
+- **Körlü triyaj aracı**: `scripts/validation/analyze_blind_holdout_failures.py` — recall çöküşünü 7 modlu taksonomiye ayırır (data_error/no_sector/no_data/no_candidate/vetoed/accepted/fp_leak) + veto/fp_leak işaret frekansları; gerçek shard satırlarıyla çalışır, hiçbir eşiği değiştirmez.
 - **CLI simetri**: `batch` komutuna eksik `--force-mcmc` bayrağı eklendi.
 - Yeni testler: `test_desktop_app.py`, `test_temp_cache_concurrency.py`, `test_validation_performance.py`, `test_validation_robustness.py`, `test_robustness_campaign.py`, `test_performance_campaign.py`, `test_provenance_evidence.py`, `test_reproduce_verify.py`, `release-gate` kabul testleri
 
