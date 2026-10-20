@@ -24,9 +24,11 @@ Kullanım (ağır; pymc+batman gerektirir):
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import statistics
 import sys
+from pathlib import Path
 from typing import Any
 
 import numpy as np
@@ -307,24 +309,65 @@ def main(argv: list[str] | None = None) -> int:
     )
     args = parser.parse_args(argv)
 
-    entries = []
+    # Her vaka bittiği an diske güncellenen devam-defteri (kesinti toleransı):
+    # aynı konfigürasyonla yeniden koşum, tamamlanmış vakaları atlar.
+    cache_path = Path(args.output).parent / "entries_cache.jsonl"
+    cache_path.parent.mkdir(parents=True, exist_ok=True)
+    config_keys = {
+        "cases": args.cases, "seed": args.seed, "draws": args.draws,
+        "chains": args.chains, "tune": args.tune,
+        "coverage_floor": args.coverage_floor, "coverage_ceiling": args.coverage_ceiling,
+        "ppc_rmse_floor": args.ppc_rmse_floor, "ppc_rmse_ceiling": args.ppc_rmse_ceiling,
+        "r_hat_max": args.r_hat_max, "ess_min": args.ess_min,
+    }
+    config_hash = hashlib.sha256(
+        json.dumps(config_keys, sort_keys=True).encode("utf-8")
+    ).hexdigest()[:16]
+
+    entries: list[dict[str, Any]] = []
+    cache_fh = None
+    resumed = 0
+    if cache_path.exists():
+        for line in cache_path.read_text(encoding="utf-8").splitlines():
+            if not line.strip():
+                continue
+            try:
+                record = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            if record.get("config_hash") != config_hash:
+                continue  # farklı konfigürasyon satırları düşer
+            entries.append(record["entry"])
+            resumed += 1
+        if entries:
+            print(f"[resume] {resumed} tamamlanmış vaka devam-defterinden alındı", flush=True)
+
+    cache_fh = cache_path.open("a", encoding="utf-8")
+    done_seeds = {e.get("seed") for e in entries}
     for index in range(args.cases):
         seed = args.seed + index
+        if seed in done_seeds:
+            continue
         try:
-            entries.append(
-                run_case(
-                    seed,
-                    chains=args.chains,
-                    draws=args.draws,
-                    tune=args.tune,
-                    random_seed=args.seed,
-                )
+            entry = run_case(
+                seed,
+                chains=args.chains,
+                draws=args.draws,
+                tune=args.tune,
+                random_seed=args.seed,
             )
-            state = entries[-1].get("state")
+            entries.append(entry)
+            state = entry.get("state")
             print(f"[case {index + 1}/{args.cases}] seed={seed} state={state}", flush=True)
         except Exception as exc:  # kampanya satırı; kayıp hedef verilmeli
-            entries.append({"seed": seed, "state": f"exception:{type(exc).__name__}"})
+            entry = {"seed": seed, "state": f"exception:{type(exc).__name__}"}
+            entries.append(entry)
             print(f"[case {index + 1}/{args.cases}] seed={seed} HATA: {exc}", file=sys.stderr, flush=True)
+        # satır bazlı süreklilik — kill'e dayanıklı devam-defteri
+        cache_fh.write(json.dumps({"config_hash": config_hash, "entry": entry}, ensure_ascii=False) + "\n")
+        cache_fh.flush()
+
+    cache_fh.close()
 
     summary = summarize(entries)
     status, reasons = evaluate_gate(
@@ -347,6 +390,8 @@ def main(argv: list[str] | None = None) -> int:
             "draws": args.draws,
             "chains": args.chains,
             "tune": args.tune,
+            "config_hash": config_hash,
+            "resumed_entries": resumed,
             "coverage_floor": args.coverage_floor,
             "coverage_ceiling": args.coverage_ceiling,
             "ppc_rmse_floor": args.ppc_rmse_floor,
