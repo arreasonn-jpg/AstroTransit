@@ -107,7 +107,7 @@ class RobustnessGateResult:
     campaign: RobustnessCampaign
     min_cases: int
     declared_max_recall_drop: float
-    status: str              # "measured_pass" | "measured_fail" | "pending_run"
+    status: str              # "measured" | "measured_fail" | "pending_run"
     blocking_reasons: tuple[str, ...] = ()
 
     def to_dict(self) -> dict[str, Any]:
@@ -129,7 +129,8 @@ def evaluate_cadence_robustness_gate(
     """Önceden ilan edilmiş eşiklerle kapı sonucu üretir.
 
     - Kampanya yok / n_cases < min_cases → ``pending_run``
-    - ``max_recall_drop <= declared_max_recall_drop`` → ``measured_pass``
+    - ``max_recall_drop <= declared_max_recall_drop`` → ``measured``
+      (denetim sözleşmesi CLOSED = {"measured","pass"} ile hizalı)
     - değil → ``measured_fail``
     """
 
@@ -149,7 +150,7 @@ def evaluate_cadence_robustness_gate(
     if drop is None:
         status, reasons = "measured_fail", ("recall could not be measured",)
     elif drop <= declared_max_recall_drop:
-        status, reasons = "measured_pass", ()
+        status, reasons = "measured", ()
     else:
         status = "measured_fail"
         reasons = (

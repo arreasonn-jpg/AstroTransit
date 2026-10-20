@@ -68,7 +68,7 @@ def test_gate_pass_declared_floor_and_pending_below_floor():
 
     campaign = measure_cadence_robustness(cases, detector, {"cadence_50": perturb})
     gate = evaluate_cadence_robustness_gate(campaign, min_cases=100, declared_max_recall_drop=0.05)
-    assert gate.status == "measured_pass"
+    assert gate.status == "measured"
     assert gate.blocking_reasons == ()
 
 

@@ -55,7 +55,7 @@ def test_mock_campaign_writes_measured_artifact(tmp_path: Path):
     assert payload["gate"] == "detrending_cadence_impact_robustness"
     assert payload["declared"]["min_cases"] == 5
     assert payload["declared"]["declared_max_recall_drop"] == 0.05
-    assert payload["status"] in {"measured_pass", "measured_fail"}
+    assert payload["status"] in {"measured", "measured_fail"}
     assert payload["result"]["campaign"]["baseline"]["n_cases"] == 6
     assert len(payload["result"]["campaign"]["measurements"]) == 2
     names = [m["name"] for m in payload["result"]["campaign"]["measurements"]]

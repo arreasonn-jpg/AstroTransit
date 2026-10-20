@@ -280,7 +280,39 @@
     {
       "id": "detrending_cadence_impact_robustness",
       "status": "pending_run",
-      "required_output": "validation_runs/final_acceptance_v1/robustness/report.json"
+      "required_output": "validation_runs/final_acceptance_v1/robustness/report.json",
+      "acceptance_checks": [
+        {
+          "path": "status",
+          "operator": "equals",
+          "value": "measured"
+        },
+        {
+          "path": "declared.detector",
+          "operator": "equals",
+          "value": "pipeline"
+        },
+        {
+          "path": "declared.corpus",
+          "operator": "equals",
+          "value": "validation_runs/final_acceptance_v1/dev_holdout/dev_manifest.json"
+        },
+        {
+          "path": "result.min_cases",
+          "operator": "gte",
+          "value": 24
+        },
+        {
+          "path": "result.campaign.baseline.n_cases",
+          "operator": "gte",
+          "value": 24
+        },
+        {
+          "path": "declared.declared_max_recall_drop",
+          "operator": "lte",
+          "value": 0.05
+        }
+      ]
     },
     {
       "id": "tls_bls_baselines_ablations",

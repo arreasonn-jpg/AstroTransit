@@ -187,7 +187,7 @@ def main(argv: list[str] | None = None) -> int:
     }
     write_artifact(payload, args.output)
     print(json.dumps(payload, indent=2, ensure_ascii=False))
-    return 0 if gate.status == "measured_pass" else 1
+    return 0 if gate.status == "measured" else 1
 
 
 if __name__ == "__main__":
