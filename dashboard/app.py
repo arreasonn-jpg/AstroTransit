@@ -24,18 +24,6 @@ def load_json_cached(path_str: str):
         return json.load(f)
 
 @st.cache_data(show_spinner=False)
-def list_json_candidates():
-    roots = [Path("outputs/json"), Path("outputs_top10/json"), Path("outputs_wsl_mcmc/json"), Path("outputs_novel_followup/json"), Path("outputs_novel_mcmc/json")]
-    files = []
-    for root in roots:
-        if root.exists():
-            files.extend([f for f in root.glob("*.json") if f.name != "all_candidates.jsonl"])
-    uniq = {}
-    for f in files:
-        uniq[f.name] = f
-    return sorted(uniq.values(), key=lambda x: x.name)
-
-@st.cache_data(show_spinner=False)
 def find_candidate_images(source_id: str, sector: int):
     safe_id = source_id.replace(" ", "_").replace("/", "_")
     sector_str = f"S{sector:02d}"
@@ -77,12 +65,12 @@ def apply_custom_css():
 
 def page_home():
     st.title("AstroTransit")
-    st.markdown("**TESS ve JWST verilerinden transit tespiti platformu**")
+    st.markdown("**TESS-first transit keşif platformu; JWST için gelişen takip arayüzü**")
     st.divider()
 
     col1, col2, col3, col4 = st.columns(4)
     with col1:
-        st.metric("Veri Kaynagi", "TESS + JWST")
+        st.metric("Veri Kaynagi", "TESS (JWST takip)")
     with col2:
         st.metric("Tespit", "BLS + TLS")
     with col3:
@@ -214,9 +202,13 @@ def page_catalog_explorer():
     path = Path(parquet_path)
     if not path.exists():
         st.warning(f"Dosya bulunamadi: `{parquet_path}`")
+        # Demo verisi SADECE ayrı bir *_demo.parquet dosyasına yazılır;
+        # kullanıcının gerçek katalog parquet'ini yazılan yol ile ezmesi
+        # engellenir (demo dosya adı pipeline çıktı adlarıyla çakışmaz).
+        demo_path = path.with_name("astrotransit_demo.parquet")
         if st.button("Demo Veri Olustur"):
-            _create_demo_parquet(path)
-            st.rerun()
+            _create_demo_parquet(demo_path)
+            st.info(f"Demo Dosya Yolu alanina ``{demo_path}`` yazip tekrar deneyin.")
         return
 
     import pandas as pd

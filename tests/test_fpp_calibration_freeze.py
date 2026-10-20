@@ -146,6 +146,8 @@ def test_freeze_writes_evidence_and_flips_only_the_fpp_gate(tmp_path: Path):
     )
     program_copy = tmp_path / "program.json"
     program_copy.write_text(program_text, encoding="utf-8")
+    program_before = json.loads(program_text)
+    statuses_before = {g["id"]: g["status"] for g in program_before["gates"]}
 
     freeze_args = argparse.Namespace(
         report=args.output,
@@ -163,13 +165,22 @@ def test_freeze_writes_evidence_and_flips_only_the_fpp_gate(tmp_path: Path):
     gates = {gate["id"]: gate for gate in program["gates"]}
     assert gates["fpp_quality_calibration"]["status"] == "measured"
     assert len(gates) == 11
-    assert gates["labelled_fp_quiet_controls"]["status"] == "pending_run"
     assert gates["final_report_release"]["status"] == "blocked_by_gates"
-    # Dondurma adimi baska hicbir kapinin durumunu "measured"a cevirmemeli;
-    # status'lari yalnizca o kapinin kendi kaniti degistirir (korpus dondurme
-    # gibi durus degisiklikleri de buradan gecerli olmali, sabit literal degil).
+    # Dondurma adimi SADECE kendi kapisinin (fpp_quality_calibration)
+    # durumunu degistirmeli; commit 360625c oncesi literal beklerken
+    # (pending_run) kapilar oleuldu - artik oncesi/sonrasi snapshot
+    # ile kontrat guvence altinda: dier hibir kapinin status'u donmemeli.
+    statuses_after = {g["id"]: g["status"] for g in program["gates"]}
+    flipped = {
+        gate_id
+        for gate_id in statuses_after
+        if statuses_after[gate_id] != statuses_before[gate_id]
+    }
+    assert flipped == {"fpp_quality_calibration"}
+    assert gates["labelled_fp_quiet_controls"]["status"] == statuses_before["labelled_fp_quiet_controls"]
+    assert gates["adversarial_false_positives"]["status"] == statuses_before["adversarial_false_positives"]
     assert gates["blind_domain_holdout"]["status"] != "measured"
-    assert gates["adversarial_false_positives"]["status"] != "measured"
+    assert gates["detrending_cadence_impact_robustness"]["status"] != "measured"
     committed = json.loads(PROGRAM.read_text(encoding="utf-8"))
     before = {g["id"]: g["status"] for g in committed["gates"] if g["id"] != "fpp_quality_calibration"}
     after = {g["id"]: g["status"] for g in program["gates"] if g["id"] != "fpp_quality_calibration"}
@@ -184,12 +195,19 @@ def test_freeze_writes_evidence_and_flips_only_the_fpp_gate(tmp_path: Path):
     assert evidence["cohort_sha256"] == json.loads(FROZEN_MANIFEST.read_text(encoding="utf-8"))["cohort_sha256"]
     assert hashlib.sha256((dest / "report.json").read_bytes()).hexdigest() == evidence["report_sha256"]
 
-    # Dondurulmuş kanıt, denetçi tarafından gerçekten kapalı sayılır.
+    # Dondurulmu kanit, deneti tarafndan gerekten kapal saylr. Commit
+    # 360625c ile adversarial + labelled_fp kaplar da nceden leldiu iin
+    # kapan listesi 4 eymi olmaldr.
     import scripts.validation.final_acceptance_audit as audit_module
 
     result = audit_module.audit(program_copy)
     closed = [gate["id"] for gate in result["gates"] if gate["closed"]]
-    assert closed == ["parameter_recovery", "fpp_quality_calibration"]
+    assert sorted(closed) == [
+        "adversarial_false_positives",
+        "fpp_quality_calibration",
+        "labelled_fp_quiet_controls",
+        "parameter_recovery",
+    ]
 
 
 def test_freeze_refuses_a_noncanonical_dest_dir(tmp_path: Path):

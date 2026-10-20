@@ -44,6 +44,7 @@ def evaluate_release_gates(
     has_injection_report: bool = False,
     has_blind_report: bool = False,
     has_baseline_report: bool = False,
+    has_robustness_report: bool = False,
     has_provenance: bool = False,
     release: str = "v0.x-validation",
 ) -> ReleaseGateReport:
@@ -54,6 +55,7 @@ def evaluate_release_gates(
         _bool_gate("injection_recovery", has_injection_report),
         _bool_gate("blind_test", has_blind_report),
         _bool_gate("independent_baseline", has_baseline_report),
+        _bool_gate("cadence_robustness", has_robustness_report),
         _bool_gate("provenance", has_provenance),
     ]
     return ReleaseGateReport(release, tuple(checks))

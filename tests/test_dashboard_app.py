@@ -105,28 +105,26 @@ def test_load_json_cached(tmp_path):
     assert data == {"k": 1}
 
 
-def test_list_json_candidates(tmp_path, monkeypatch):
-    import dashboard.app as app_mod
+def test_list_json_results_discovers_and_filters(tmp_path):
+    from desktop.helpers import list_json_results, output_roots
 
-    monkeypatch.chdir(tmp_path)
     d = tmp_path / "outputs" / "json"
     d.mkdir(parents=True)
     (d / "a.json").write_text("{}")
     (d / "all_candidates.jsonl").write_text("")
-    fn = app_mod.list_json_candidates
-    results = fn.__wrapped__() if hasattr(fn, "__wrapped__") else fn()
-    names = [Path(f).name for f in results]
-    assert "a.json" in names
+    (d / "b.json").write_text("{}")
+
+    results = list_json_results(output_roots(tmp_path))
+    names = [f.name for f in results]
+    assert names == ["a.json", "b.json"]
     assert "all_candidates.jsonl" not in names
 
 
-def test_list_json_candidates_empty(tmp_path, monkeypatch):
-    import dashboard.app as app_mod
+def test_list_json_results_empty_without_roots(tmp_path):
+    from desktop.helpers import list_json_results, output_roots
 
-    monkeypatch.chdir(tmp_path)
-    fn = app_mod.list_json_candidates
-    results = fn.__wrapped__() if hasattr(fn, "__wrapped__") else fn()
-    assert results == []
+    assert output_roots(tmp_path) == []
+    assert list_json_results([]) == []
 
 
 def test_find_candidate_images_returns_iterable(tmp_path, monkeypatch):

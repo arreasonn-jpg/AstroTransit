@@ -20,6 +20,7 @@ Tek bir hedef veya sektör için tam iş akışını çalıştırır:
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from typing import Optional
 
@@ -649,6 +650,7 @@ class TESSPipeline:
         self,
         targets: list[str | int],
         sectors: Optional[list[int]] = None,
+        progress: Optional[Callable[[int, int, str], None]] = None,
     ) -> list[TESSTargetResult]:
         """
         Birden fazla hedef için pipeline'ı sırayla çalıştırır.
@@ -659,6 +661,9 @@ class TESSPipeline:
             Hedef listesi (TIC ID'ler).
         sectors : list[int], opsiyonel
             İşlenecek sektörler (tüm hedefler için aynı).
+        progress : Callable[[int, int, str], None], opsiyonel
+            Her hedef tamamlanınca çağrılır: (tamamlanan_sayisi,
+            toplam_sayi, hedef_id).
 
         Returns
         -------
@@ -689,6 +694,9 @@ class TESSPipeline:
                     success=False,
                     error=str(e),
                 ))
+            finally:
+                if progress is not None:
+                    progress(i, len(targets), str(target))
 
         # Toplu çıktı
         self._output.flush()

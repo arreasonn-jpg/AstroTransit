@@ -39,6 +39,9 @@ dependencies = [
 jwst = [
     "celerite2>=0.1.2",
 ]
+gui = [
+    "PySide6>=6.6,<7",
+]
 dashboard = [
     "streamlit>=1.24",
     "plotly>=5.14",
@@ -67,6 +70,7 @@ dev = [
 
 [project.scripts]
 astrotransit = "cli.main:app"
+astrotransit-desktop = "desktop.main:main"
 
 [tool.setuptools]
 py-modules = []
@@ -80,6 +84,8 @@ include = [
     "cli.*",
     "dashboard",
     "dashboard.*",
+    "desktop",
+    "desktop.*",
 ]
 exclude = [
     "tests*",
@@ -102,6 +108,8 @@ line-length = 100
 extend-exclude = [
     "scripts/archive",
     "scripts/patches",
+    # PyInstaller spec/bat dosyalari spec-global değişkenler içerir; lint kapsamı dışıdır.
+    "packaging",
 ]
 
 [tool.ruff.lint]
@@ -166,11 +174,16 @@ exclude = [
 [tool.coverage.run]
 
 branch = true
-source = ["astrotransit", "cli", "dashboard"]
+source = ["astrotransit", "cli", "dashboard", "desktop"]
 omit = [
     "*/tests/*",
     "*/__pycache__/*",
     "*/site-packages/*",
+    # UI katmanı (Qt pencereleri) headless CI ortamında ölçülemez;
+    # mantık katmanı desktop/helpers.py testlerle ölçülür.
+    "*/desktop/worker.py",
+    "*/desktop/app.py",
+    "*/desktop/main.py",
 ]
 
 [tool.coverage.report]

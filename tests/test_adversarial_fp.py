@@ -463,7 +463,9 @@ def test_program_json_declares_the_gate_contract() -> None:
     program = json.loads((PROJECT_ROOT / "validation_runs/final_acceptance_v1/program.json").read_text())
     gate = next(item for item in program["gates"] if item.get("id") == "adversarial_false_positives")
     checks = {item["path"]: item for item in gate["acceptance_checks"]}
-    assert gate["status"] == "pending_run"
+    # Commit 360625c: adversarial kapısı ölçüldü (85.42% / 8/8 ctrl) — program
+    # artık "measured" durumunu taşır; "pending_run" beklemekelı test bayatlıktı.
+    assert gate["status"] == "measured"
     assert checks["corpus.grid_sha256"]["value"] == grid_sha256(build_grid())
     assert checks["overall.adversarial_rejection_rate"] == {"path": "overall.adversarial_rejection_rate", "operator": "gte", "value": 0.8}
     assert checks["overall.control_acceptance_rate"]["value"] == 0.5

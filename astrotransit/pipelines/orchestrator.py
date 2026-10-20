@@ -15,6 +15,7 @@ Desteklenen modlar:
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from enum import Enum
 from typing import Any, Optional, cast
 
@@ -131,9 +132,10 @@ class AstroTransitOrchestrator:
         self,
         targets: list[str | int],
         sectors: Optional[list[int]] = None,
+        progress: Optional[Callable[[int, int, str], None]] = None,
     ) -> list[TESSTargetResult]:
         """
-        Toplu hedef analizi.
+        Birden fazla hedef için pipeline'ı sırayla çalıştırır.
 
         Parameters
         ----------
@@ -141,6 +143,10 @@ class AstroTransitOrchestrator:
             TIC ID listesi.
         sectors : list[int], opsiyonel
             İşlenecek sektörler.
+        progress : Callable[[int, int, str], None], opsiyonel
+            Her hedef tamamlanınca çağrılır: (tamamlanan_sayisi,
+            toplam_sayi, hedef_id). CLI dışı arayüzler (masaüstü)
+            gerçek ilerleme çubuğu için kullanır.
 
         Returns
         -------
@@ -150,7 +156,11 @@ class AstroTransitOrchestrator:
         logger.info(f"Mod: BATCH — {len(targets)} hedef")
 
         with self._create_tess_pipeline() as pipeline:
-            results = pipeline.run_batch(targets, sectors=sectors)
+            if progress is not None:
+                results = pipeline.run_batch(targets, sectors=sectors, progress=progress)
+            else:
+                # Geriye dönük uyum: ilerleme geri çağrısı verilmezse eski çağrı biçimi.
+                results = pipeline.run_batch(targets, sectors=sectors)
 
         self._finalize()
         return cast(list[TESSTargetResult], results)

@@ -77,8 +77,14 @@ def test_measured_evidence_closes_only_when_all_checks_pass(tmp_path):
     assert report["status"] == "complete"
 
 
-def test_current_program_closes_only_parameter_recovery():
+def test_current_program_closes_measured_fp_gates():
+    """Commit 360625c ile adversarial + labelled_fp kapıları ölçüldü; program
+    audit'inin bunları kapatması gerekir (parameter_recovery ile birlikte 3)."""
     report = AUDIT.audit(Path("validation_runs/final_acceptance_v1/program.json"))
-    assert report["closed_gates"] == 1
+    assert report["closed_gates"] == 3
     closed_ids = [gate["id"] for gate in report["gates"] if gate["closed"]]
-    assert closed_ids == ["parameter_recovery"]
+    assert sorted(closed_ids) == [
+        "adversarial_false_positives",
+        "labelled_fp_quiet_controls",
+        "parameter_recovery",
+    ]

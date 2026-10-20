@@ -87,6 +87,34 @@ Dashboard:
 streamlit run dashboard/app.py
 ```
 
+Desktop app (optional, PySide6):
+
+```bash
+python -m pip install -e ".[gui]"
+astrotransit-desktop
+```
+
+The desktop app runs single/batch analysis in the background with real
+per-target progress and live logs, lists results in tables, and opens
+candidate figures in evidence-chain order in a detail window. The logic
+layer (`desktop/helpers.py`, `desktop/analysis.py`) is Qt-free and tested.
+
+### Windows .exe package
+
+Run without a Python installation (onedir layout):
+
+```bat
+scripts\package\build_desktop_exe.bat
+REM → dist\AstroTransitDesktop\AstroTransitDesktop.exe
+```
+
+- Linux/WSLg: `bash scripts/package/build_desktop_exe.sh`
+- Spec: `packaging/astrotransit-desktop.spec` — heavy optional deps
+  (pymc, streamlit, exoplanet/celerite2) are deliberately excluded; MCMC
+  and follow-up quantities stay in the CLI/dev install.
+- Package verification uses the `--smoke` flag: the window opens and
+  closes after 300 ms (CI-friendly, run with `QT_QPA_PLATFORM=offscreen`).
+
 ## Scientific claims and their limits
 
 This section formally defines what AstroTransit's outputs mean; do not relay

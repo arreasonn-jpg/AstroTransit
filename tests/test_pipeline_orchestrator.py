@@ -216,6 +216,39 @@ def test_run_batch(orchestrator, monkeypatch) -> None:
     orchestrator._output.export_csv.assert_called_once()
 
 
+def test_run_batch_forwards_progress(orchestrator, monkeypatch) -> None:
+    """Masaüstü ilerleme geri çağrısı pipeline'a aynen iletilmeli."""
+
+    mock_pipeline = MagicMock()
+    mock_pipeline.run_batch.return_value = []
+    monkeypatch.setattr(
+        orchestrator, "_create_tess_pipeline", lambda: _fake_pipeline_cm(mock_pipeline),
+    )
+
+    calls: list[tuple[int, int, str]] = []
+
+    def _progress(done: int, total: int, target: str) -> None:
+        calls.append((done, total, target))
+
+    orchestrator.run_batch(["TIC-1", "TIC-2"], sectors=[14], progress=_progress)
+    mock_pipeline.run_batch.assert_called_once_with(
+        ["TIC-1", "TIC-2"], sectors=[14], progress=_progress,
+    )
+    assert calls == []  # mock pipeline çağrıyı gerçekten yapmadı
+
+
+def test_run_batch_without_progress_keeps_legacy_call(orchestrator, monkeypatch) -> None:
+    """progress=None iken mock tabanlı eski kontrat korunmalı."""
+
+    mock_pipeline = MagicMock()
+    mock_pipeline.run_batch.return_value = []
+    monkeypatch.setattr(
+        orchestrator, "_create_tess_pipeline", lambda: _fake_pipeline_cm(mock_pipeline),
+    )
+    orchestrator.run_batch(["TIC-1"], progress=None)
+    mock_pipeline.run_batch.assert_called_once_with(["TIC-1"], sectors=None)
+
+
 # ─────────────────────────────────────────────────────────────
 # _create_tess_pipeline
 # ─────────────────────────────────────────────────────────────

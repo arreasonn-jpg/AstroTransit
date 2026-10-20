@@ -3,6 +3,15 @@ Geçici dosya ve cache yönetimi.
 
 İndirilen verileri belirlenen süre boyunca geçici olarak saklar.
 Süresi dolan dosyaları otomatik temizler.
+
+Dizin koşusu güvenliği
+----------------------
+Aynı cache kökünü paylaşan birden fazla process (örn. sharded
+benchmark shard'ları) aynı indeksi okuyup yazabilir. Yarış
+koşullarını önlemek için tüm "indeks oku-değiştir-yaz" işlemleri
+`_cache_index.lock` dosyası üzerindeki danışma kilidi (advisory
+lock) altında yapılır; yazma anındaki en güncel indeks diskten
+yeniden okunur ve harici process'lerin kayıtları korunur.
 """
 
 from __future__ import annotations
@@ -10,11 +19,17 @@ from __future__ import annotations
 import contextlib
 import hashlib
 import json
+import os
+import sys
 import time
+from collections.abc import Callable, Iterator
 from pathlib import Path
 from typing import Optional
 
 from loguru import logger
+
+_INDEX_FILE_NAME = "_cache_index.json"
+_LOCK_FILE_NAME = "_cache_index.lock"
 
 
 class TempCache:
@@ -37,7 +52,8 @@ class TempCache:
             raise ValueError("ttl_hours pozitif olmalıdır.")
         self.cache_dir = Path(cache_dir).expanduser().resolve()
         self.ttl_seconds = float(ttl_hours) * 3600
-        self._index_file = self.cache_dir / "_cache_index.json"
+        self._index_file = self.cache_dir / _INDEX_FILE_NAME
+        self._lock_file = self.cache_dir / _LOCK_FILE_NAME
 
         # Cache dizinini oluştur
         self.cache_dir.mkdir(parents=True, exist_ok=True)
@@ -50,6 +66,58 @@ class TempCache:
             f"TTL: {ttl_hours} saat, "
             f"mevcut kayıt: {len(self._index)}"
         )
+
+    # ── Cross-platform advisory lock ──────────────────────────
+
+    @contextlib.contextmanager
+    def _index_lock(self) -> Iterator[None]:
+        """İndeks okuma/yazma için süreçler arası danışma kilidi.
+
+        flock (POSIX) veya msvcrt.locking (Windows) desteklenmeyen
+        ortamlarda (örn. bazı ağ dosya sistemleri) kilitsiz devam
+        edilir; korunma olmuyorsa bile veri bozulmaz, sadece
+        eşzamanlı yazım kayıp riski taşır.
+        """
+
+        with self._lock_file.open("a") as lock_file:
+            locked = self._acquire_lock(lock_file)
+            try:
+                yield
+            finally:
+                if locked:
+                    self._release_lock(lock_file)
+
+    @staticmethod
+    def _acquire_lock(lock_file) -> bool:
+        """Dosyada münhasır kilit kurmaya çalışır; başarısızsa False."""
+
+        try:
+            if sys.platform == "win32":
+                import msvcrt
+                msvcrt.locking(lock_file.fileno(), msvcrt.LK_LOCK, 1)
+            else:
+                import fcntl
+                fcntl.flock(lock_file.fileno(), fcntl.LOCK_EX)
+            return True
+        except (ImportError, OSError) as e:
+            logger.debug(f"Cache kilidi kurulamadı (kilitsiz devam): {e}")
+            return False
+
+    @staticmethod
+    def _release_lock(lock_file) -> None:
+        """Münhasır kilit bırakır."""
+
+        try:
+            if sys.platform == "win32":
+                import msvcrt
+                msvcrt.locking(lock_file.fileno(), msvcrt.LK_UNLCK, 1)
+            else:
+                import fcntl
+                fcntl.flock(lock_file.fileno(), fcntl.LOCK_UN)
+        except (ImportError, OSError) as e:
+            logger.debug(f"Cache kilidi bırakılamadı: {e}")
+
+    # ── İndeks diske dayalı okuma/yazma ────────────────────────
 
     def _load_index(self) -> dict:
         """Cache indeksini diskten yükler."""
@@ -75,7 +143,9 @@ class TempCache:
     def _save_index(self) -> None:
         """Cache indeksini atomik olarak diske yazar."""
 
-        temp_path = self._index_file.with_suffix(".tmp")
+        temp_path = self._index_file.with_suffix(
+            f".tmp.{os.getpid()}"
+        )
         try:
             with temp_path.open("w", encoding="utf-8") as f:
                 json.dump(self._index, f, indent=2, ensure_ascii=False)
@@ -85,6 +155,26 @@ class TempCache:
             logger.error(f"Cache indeksi yazılamadı: {e}")
             with contextlib.suppress(OSError):
                 temp_path.unlink(missing_ok=True)
+
+    def _mutate_index(self, mutator: Callable[[dict], None]) -> None:
+        """İndeks değişikliğini kilit altında, en güncel disk verisiyle uygular.
+
+        `mutator` en güncel indeks sözlüğünü alır ve yerinde değiştirir.
+        Diğer process'lerin kayıtları silinmez; yalnızca bu süreç de
+        bilinçli olarak değiştirdiği anahtarlar değişir.
+        """
+
+        with self._index_lock():
+            self._index = self._load_index()
+            mutator(self._index)
+            self._save_index()
+
+    def _refresh_index(self) -> dict:
+        """Kilit altında indeksi diskten yeniler ve sözlüğü döndürür."""
+
+        with self._index_lock():
+            self._index = self._load_index()
+            return self._index
 
     @staticmethod
     def _make_key(identifier: str) -> str:
@@ -122,30 +212,37 @@ class TempCache:
 
         key = self._make_key(identifier)
 
-        if key not in self._index:
-            return None
+        with self._index_lock():
+            index = self._load_index()
+            entry = index.get(key)
 
-        entry = self._index[key]
-        file_path = self._resolve_path(entry["path"])
+            if entry is None:
+                self._index = index
+                return None
 
-        # Dosya var mı kontrol et
-        if not file_path.exists():
-            logger.debug(f"Cache dosyası kayıp: {identifier}")
-            del self._index[key]
-            self._save_index()
-            return None
+            file_path = self._resolve_path(entry["path"])
 
-        # TTL kontrolü
-        age = time.time() - entry["timestamp"]
-        if age > self.ttl_seconds:
-            logger.debug(f"Cache süresi dolmuş: {identifier} ({age / 3600:.1f} saat)")
-            self._remove_file(file_path)
-            del self._index[key]
-            self._save_index()
-            return None
+            # Dosya var mı kontrol et
+            if not file_path.exists():
+                logger.debug(f"Cache dosyası kayıp: {identifier}")
+                index.pop(key)
+                self._index = index
+                self._save_index()
+                return None
 
-        logger.debug(f"Cache geçerli: {identifier}")
-        return file_path
+            # TTL kontrolü
+            age = time.time() - entry["timestamp"]
+            if age > self.ttl_seconds:
+                logger.debug(f"Cache süresi dolmuş: {identifier} ({age / 3600:.1f} saat)")
+                self._remove_file(file_path)
+                index.pop(key)
+                self._index = index
+                self._save_index()
+                return None
+
+            self._index = index
+            logger.debug(f"Cache geçerli: {identifier}")
+            return file_path
 
     def register(self, identifier: str, file_path: Path) -> None:
         """
@@ -161,14 +258,16 @@ class TempCache:
 
         key = self._make_key(identifier)
         resolved_path = self._resolve_path(file_path)
-
-        self._index[key] = {
+        entry = {
             "identifier": identifier,
             "path": str(resolved_path),
             "timestamp": time.time(),
         }
 
-        self._save_index()
+        def _set(index: dict) -> None:
+            index[key] = entry
+
+        self._mutate_index(_set)
         logger.debug(f"Cache'e kaydedildi: {identifier}")
 
     def invalidate(self, identifier: str) -> None:
@@ -176,12 +275,14 @@ class TempCache:
 
         key = self._make_key(identifier)
 
-        if key in self._index:
-            file_path = self._resolve_path(self._index[key]["path"])
-            self._remove_file(file_path)
-            del self._index[key]
-            self._save_index()
-            logger.debug(f"Cache silindi: {identifier}")
+        def _remove(index: dict) -> None:
+            entry = index.pop(key, None)
+            if entry is not None:
+                file_path = self._resolve_path(entry["path"])
+                self._remove_file(file_path)
+                logger.debug(f"Cache silindi: {identifier}")
+
+        self._mutate_index(_remove)
 
     def cleanup_expired(self) -> int:
         """
@@ -193,24 +294,26 @@ class TempCache:
             Temizlenen dosya sayısı.
         """
 
-        expired_keys = []
-        now = time.time()
+        removed_count = 0
 
-        for key, entry in self._index.items():
-            age = now - entry["timestamp"]
-            if age > self.ttl_seconds:
-                expired_keys.append(key)
+        def _purge(index: dict) -> None:
+            nonlocal removed_count
+            now = time.time()
+            expired = [
+                key for key, entry in index.items()
+                if now - entry["timestamp"] > self.ttl_seconds
+            ]
+            for key in expired:
+                file_path = self._resolve_path(index[key]["path"])
+                self._remove_file(file_path)
+                del index[key]
+            removed_count = len(expired)
 
-        for key in expired_keys:
-            file_path = self._resolve_path(self._index[key]["path"])
-            self._remove_file(file_path)
-            del self._index[key]
+        self._mutate_index(_purge)
 
-        if expired_keys:
-            self._save_index()
-            logger.info(f"Süresi dolmuş {len(expired_keys)} cache dosyası temizlendi.")
-
-        return len(expired_keys)
+        if removed_count:
+            logger.info(f"Süresi dolmuş {removed_count} cache dosyası temizlendi.")
+        return removed_count
 
     def cleanup_all(self) -> int:
         """
@@ -222,16 +325,19 @@ class TempCache:
             Temizlenen dosya sayısı.
         """
 
-        count = len(self._index)
+        removed_count = 0
 
-        for entry in self._index.values():
-            self._remove_file(self._resolve_path(entry["path"]))
+        def _purge(index: dict) -> None:
+            nonlocal removed_count
+            removed_count = len(index)
+            for entry in index.values():
+                self._remove_file(self._resolve_path(entry["path"]))
+            index.clear()
 
-        self._index.clear()
-        self._save_index()
+        self._mutate_index(_purge)
 
-        logger.info(f"Tüm cache temizlendi: {count} dosya silindi.")
-        return count
+        logger.info(f"Tüm cache temizlendi: {removed_count} dosya silindi.")
+        return removed_count
 
     @staticmethod
     def _remove_file(path: Path) -> None:
@@ -258,13 +364,17 @@ class TempCache:
 
         for entry in self._index.values():
             file_path = self._resolve_path(entry["path"])
-            if file_path.exists():
-                total_size += file_path.stat().st_size
-                age = now - entry["timestamp"]
-                if age <= self.ttl_seconds:
-                    valid_count += 1
-                else:
-                    expired_count += 1
+            try:
+                file_size = file_path.stat().st_size
+            except OSError:
+                # Dosya, varlık kontrolü ile stat arasında silindiyse atla.
+                continue
+            total_size += file_size
+            age = now - entry["timestamp"]
+            if age <= self.ttl_seconds:
+                valid_count += 1
+            else:
+                expired_count += 1
 
         return {
             "total_entries": len(self._index),
@@ -273,3 +383,6 @@ class TempCache:
             "total_size_mb": round(total_size / (1024 * 1024), 2),
             "cache_dir": str(self.cache_dir),
         }
+
+
+__all__ = ["TempCache"]

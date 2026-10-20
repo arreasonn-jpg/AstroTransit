@@ -95,6 +95,35 @@ Dashboard:
 streamlit run dashboard/app.py
 ```
 
+Masaüstü uygulaması (isteğe bağlı, PySide6):
+
+```bash
+python -m pip install -e ".[gui]"
+astrotransit-desktop
+```
+
+Masaüstü uygulaması tek/toplu hedef analizini arka planda çalışır,
+gerçek hedef-bazlı ilerleme ve canlı log gösterir; sonuçları tablo
+olarak listeler ve aday görsellerini kanıt zinciri sırasına göre
+detay penceresinde açar. Mantık katmanı (`desktop/helpers.py`,
+`desktop/analysis.py`) Qt-bağımsız ve test edilmiştir.
+
+### Windows .exe paketi
+
+Python kurulumu gerektirmeden çalıştırmak için (onedir paketi):
+
+```bat
+scripts\package\build_desktop_exe.bat
+REM → dist\AstroTransitDesktop\AstroTransitDesktop.exe
+```
+
+- Linux/WSLg için: `bash scripts/package/build_desktop_exe.sh`
+- Spec: `packaging/astrotransit-desktop.spec` — agır opsiyonel bağımlılıklar
+  (pymc, streamlit, exoplanet/celerite2) bilinçli olarak dışlanır; MCMC ve
+  JWST miktarları CLI/geliştirme kurulumundan kullanılır.
+- Paket doğrulaması `--smoke` bayrağıyla yapılır: pencere açılır 300 ms
+  sonra kapanır (CI dostu, `QT_QPA_PLATFORM=offscreen` ile çalışır).
+
 ## Bilimsel iddialar ve sınırlar
 
 Bu bölüm, AstroTransit'in çıktılarının ne anlama geldiğini resmi olarak

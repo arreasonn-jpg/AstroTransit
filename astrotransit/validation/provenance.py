@@ -121,6 +121,33 @@ def attach_manifest(payload: Mapping[str, Any], manifest: Mapping[str, Any]) -> 
     return result
 
 
+_MANIFEST_KEYS = ("commit", "provenance", "cohort_sha256", "report_sha256", "input_hash")
+
+
+def report_carries_provenance(report_path: str | Path) -> bool:
+    """Kanıt raporunun gerçek kayıt yükü (commit/hash/manifest) taşıdığını doğrular.
+
+    ``has_provenance`` gate'ini "dosya var" demenin ötesine taşıyan kontrat:
+    boş JSON ya da manifest anahtarları içermeyen bir rapor kanıt sayılmaz.
+    """
+
+    path = Path(report_path)
+    if not path.is_file():
+        return False
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return False
+    if not isinstance(payload, dict):
+        return False
+    return any(
+        payload.get(key) for key in _MANIFEST_KEYS
+    ) or (
+        isinstance(payload.get("evidence"), dict)
+        and any(payload["evidence"].get(key) for key in _MANIFEST_KEYS)
+    )
+
+
 __all__ = [
     "CORE_PACKAGES",
     "attach_manifest",
@@ -128,5 +155,6 @@ __all__ = [
     "canonical_hash",
     "git_revision",
     "installed_package_versions",
+    "report_carries_provenance",
     "sha256_file",
 ]

@@ -125,6 +125,11 @@ def batch(
     ),
     config: Optional[str] = typer.Option(None, "--config", "-c"),
     force_map: bool = typer.Option(False, "--force-map"),
+    force_mcmc: bool = typer.Option(
+        False,
+        "--force-mcmc",
+        help="Tüm adaylarda PyMC MCMC zorla (ağır; top - MCMC extras gerekir)",
+    ),
     no_viz: bool = typer.Option(True, "--no-viz"),
     no_catalog: bool = typer.Option(False, "--no-catalog"),
     log_level: str = typer.Option("INFO", "--log-level"),
@@ -165,6 +170,7 @@ def batch(
     with AstroTransitOrchestrator(
         config_path=config,
         force_map=force_map,
+        force_mcmc=force_mcmc,
         skip_visualization=no_viz,
         skip_catalog=no_catalog,
         log_level=log_level,
@@ -455,9 +461,10 @@ def migrate_outputs(
         help="Yeni dosya yolu; verilmezse dosya yerinde güncellenir",
     ),
 ):
-    """Eski JSON/Parquet çıktısını schema 1.6'ya taşır."""
+    """Eski JSON/Parquet çıktısını aktif şema sürümüne taşır."""
 
     from astrotransit.outputs.migration import migrate_json, migrate_parquet
+    from astrotransit.outputs.schemas import SCHEMA_VERSION
 
     source = Path(input_path)
     if not source.exists():
@@ -478,7 +485,7 @@ def migrate_outputs(
     console.print(
         Panel(
             f"[bold green]Schema migration tamamlandı[/bold green]\\n"
-            f"Kaynak: {source}\\nHedef: {destination}\\nSchema: 1.6",
+            f"Kaynak: {source}\\nHedef: {destination}\\nSchema: {SCHEMA_VERSION}",
             border_style="green",
         )
     )
@@ -558,9 +565,77 @@ def benchmark(
     console.print(result.metrics.report())
 
 
+def _verify_evidence_manifest(manifest_path: Path, sha256_file) -> dict:
+    """Kapı evidans manifest'ini yeniden hesaplayıp doğrular.
+
+    Desteklenen şemalar:
+    1. reproduce manifest: {"output_path", "output_hash"}
+    2. evidence manifest: {"report_sha256"?, "rows_sha256"?, manifestDir/report.json | rows.jsonl}
+    """
+
+    try:
+        payload = json.loads(manifest_path.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as exc:
+        return {"ok": False, "manifest": str(manifest_path), "error": f"manifest okunamadı: {exc}"}
+    if not isinstance(payload, dict):
+        return {"ok": False, "manifest": str(manifest_path), "error": "manifest sözlük değil"}
+
+    checks = []
+    manifest_dir = manifest_path.parent
+
+    if "output_path" in payload and "output_hash" in payload:
+        target = Path(str(payload["output_path"]))
+        actual = sha256_file(target) if target.is_file() else None
+        checks.append(
+            {
+                "file": str(target),
+                "expected": payload["output_hash"],
+                "actual": actual,
+                "match": actual is not None and actual == payload["output_hash"],
+            }
+        )
+
+    for key, filename in (("report_sha256", "report.json"), ("rows_sha256", "rows.jsonl")):
+        if key not in payload:
+            continue
+        target = manifest_dir / filename
+        if not target.is_file():
+            checks.append({"file": str(target), "expected": payload[key], "actual": None, "match": False})
+            continue
+        actual = sha256_file(target)
+        checks.append(
+            {
+                "file": str(target),
+                "expected": payload[key],
+                "actual": actual,
+                "match": actual == payload[key],
+            }
+        )
+
+    if not checks:
+        return {
+            "ok": False,
+            "manifest": str(manifest_path),
+            "error": "doğrulanabilir hash alanı bulunamadı (output_hash | report_sha256 | rows_sha256)",
+        }
+    return {
+        "ok": all(c["match"] for c in checks),
+        "manifest": str(manifest_path),
+        "checks": checks,
+    }
+
+
 @app.command()
 def reproduce(
-    dataset: str = typer.Argument(..., help="Reproducible dataset identifier (örn. benchmark-v1)"),
+    dataset: Optional[str] = typer.Argument(
+        None,
+        help="Reproducible dataset identifier (örn. benchmark-v1). --verify ile kullanılmayacaksa zorunlu.",
+    ),
+    verify: Optional[str] = typer.Option(
+        None,
+        "--verify",
+        help="Evidence manifest JSON; output_path/output_hash alanlarını yeniden hesaplayıp doğrular.",
+    ),
     max_per_category: Optional[int] = typer.Option(None, "--max"),
     output: str = typer.Option("outputs/benchmark/benchmark_performance.json", "--output", "-o"),
     csv_output: str = typer.Option("outputs/benchmark/benchmark_targets.csv", "--csv-output"),
@@ -569,9 +644,25 @@ def reproduce(
     config: Optional[str] = typer.Option(None, "--config", "-c"),
     log_level: str = typer.Option("INFO", "--log-level"),
 ):
-    """Tek komutla benchmark'ı çalıştırır ve çıktının hash/provenance kaydını üretir."""
+    """Tek komutla benchmark'ı çalıştırır ve çıktının hash/provenance kaydını üretir.
+
+    ``--verify`` ile verilen kapı evidans manifest'i (evidence_manifest.json)
+    doğrulanabilir: rapor dosyasının SHA-256'si manifest'teki kaydyla aynı mı?
+    Böylece her kapının kanıtı commit + dataset hash'ten tekrar doğrulanabilir
+    (``docs/validation_status.md`` Kural 3).
+    """
     from astrotransit.validation.provenance import build_manifest, sha256_file
 
+    if verify is not None:
+        verification = _verify_evidence_manifest(Path(verify), sha256_file)
+        console.print(json.dumps(verification, indent=2, ensure_ascii=False))
+        if not verification["ok"]:
+            raise typer.Exit(1)
+        return
+
+    if not dataset:
+        console.print("[red]Dataset belirtin ya da --verify kullanın.[/red]")
+        raise typer.Exit(2)
     if dataset != "benchmark-v1":
         console.print(f"[red]Bilinmeyen dataset: {dataset}. Desteklenen: benchmark-v1[/red]")
         raise typer.Exit(2)
@@ -606,10 +697,14 @@ def release_gate(
     injection_report: Optional[str] = typer.Option(None, "--injection-report"),
     blind_report: Optional[str] = typer.Option(None, "--blind-report"),
     baseline_report: Optional[str] = typer.Option(None, "--baseline-report"),
+    robustness_report: Optional[str] = typer.Option(
+        None, "--robustness-report", help="Cadence-robustness gate JSON (robustness.py)"
+    ),
     output: Optional[str] = typer.Option(None, "--output", "-o"),
 ):
     """Evaluate release evidence without turning missing data into a pass."""
     from astrotransit.validation.corpus import corpus_summary, load_corpus
+    from astrotransit.validation.provenance import report_carries_provenance
     from astrotransit.validation.release_gate import evaluate_release_gates
 
     known_path = Path("benchmarks/verified_targets.json")
@@ -624,7 +719,12 @@ def release_gate(
         has_injection_report=bool(injection_report and Path(injection_report).exists()),
         has_blind_report=bool(blind_report and Path(blind_report).exists()),
         has_baseline_report=bool(baseline_report and Path(baseline_report).exists()),
-        has_provenance=bool(injection_report or blind_report or baseline_report),
+        has_robustness_report=bool(robustness_report and Path(robustness_report).exists()),
+        has_provenance=any(
+            report_carries_provenance(report)
+            for report in (injection_report, blind_report, baseline_report, robustness_report)
+            if report
+        ),
     )
     rendered = json.dumps(report.to_dict(), indent=2, ensure_ascii=False)
     if output:
