@@ -21,7 +21,7 @@ def test_noop_operates_and_declares(tmp_path: Path):
     payload = json.loads(out.read_text(encoding="utf-8"))
     assert code == 0  # noop her zaman hızlıdır
     assert payload["gate"] == "performance"
-    assert payload["status"] == "measured_pass"
+    assert payload["status"] == "measured"
     assert payload["declared"]["declared_max_seconds_per_1k_rows"] == 10
     assert payload["result"]["median_seconds"] >= 0
     assert len(payload["result"]["measurements"]) == 2

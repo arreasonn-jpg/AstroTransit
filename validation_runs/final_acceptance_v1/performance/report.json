@@ -1,0 +1,70 @@
+{
+  "gate": "performance",
+  "status": "measured",
+  "declared": {
+    "op": "csv-read",
+    "repeat": 3,
+    "declared_max_seconds_per_1k_rows": 30.0
+  },
+  "blocking_reasons": [],
+  "result": {
+    "rows_operated": 294,
+    "median_seconds": 0.019379745004698634,
+    "seconds_per_1k_rows": 0.06591750001598175,
+    "measurements": [
+      {
+        "name": "csv-read#1",
+        "n_targets": 294,
+        "seconds": 0.06880828100838698,
+        "seconds_per_target": 0.0002340417721373707,
+        "peak_memory_mb": 108.8984375,
+        "cpu_count": 8
+      },
+      {
+        "name": "csv-read#2",
+        "n_targets": 294,
+        "seconds": 0.019379745004698634,
+        "seconds_per_target": 6.591750001598174e-05,
+        "peak_memory_mb": 109.2734375,
+        "cpu_count": 8
+      },
+      {
+        "name": "csv-read#3",
+        "n_targets": 294,
+        "seconds": 0.01786660199286416,
+        "seconds_per_target": 6.077075507776926e-05,
+        "peak_memory_mb": 109.45703125,
+        "cpu_count": 8
+      }
+    ]
+  },
+  "provenance": {
+    "target_id": null,
+    "sector": null,
+    "data_product": null,
+    "cadence": null,
+    "pipeline_version": "",
+    "git_commit": "394d0cc7cd897d7adf9afaf2e76f12c9c3c422cc",
+    "config_hash": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+    "schema_version": null,
+    "model_version": null,
+    "random_seed": null,
+    "run_timestamp_utc": "2026-10-20T13:21:42.498271Z",
+    "host_platform": "Linux-6.18.54.1-microsoft-standard-WSL2-x86_64-with-glibc2.39",
+    "python_version": "3.12.3",
+    "package_versions": {
+      "astropy": "8.0.1",
+      "astrotransit": "0.3.0",
+      "lightkurve": "2.4.2",
+      "numpy": "2.5.3",
+      "pandas": "3.0.5",
+      "pydantic": "2.13.5",
+      "scipy": "1.18.1",
+      "transitleastsquares": "1.32",
+      "wotan": "1.10"
+    },
+    "input_hash": null,
+    "environment_manifest_hash": null,
+    "output_hash": "a4a89651c38e901942b5c70b68818686ebf6ff1ffd99ddc58c87303bf7d550ac"
+  }
+}

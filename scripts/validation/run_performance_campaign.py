@@ -89,11 +89,12 @@ def main(argv: list[str] | None = None) -> int:
     seconds_sorted = sorted(m["seconds"] for m in measurements)
     median_seconds = seconds_sorted[len(seconds_sorted) // 2]
     seconds_per_1k_rows = median_seconds / rows_operated * 1000
+    # audit kapı sözleşmesi: closed için evidence status ∈ {"measured","pass"}.
     status = (
-        "measured_pass" if seconds_per_1k_rows <= args.declared_max_seconds_per_1k_rows
+        "measured" if seconds_per_1k_rows <= args.declared_max_seconds_per_1k_rows
         else "measured_fail"
     )
-    blocking = [] if status == "measured_pass" else [
+    blocking = [] if status == "measured" else [
         f"saniye/1000 satır {seconds_per_1k_rows:.3f} > ilan edilen tavan "
         f"{args.declared_max_seconds_per_1k_rows:.3f}"
     ]
@@ -111,7 +112,7 @@ def main(argv: list[str] | None = None) -> int:
     }
     write_artifact(payload, args.output)
     print(json.dumps(payload, indent=2, ensure_ascii=False))
-    return 0 if status == "measured_pass" else 1
+    return 0 if status == "measured" else 1
 
 
 if __name__ == "__main__":

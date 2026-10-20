@@ -414,8 +414,30 @@
     },
     {
       "id": "performance",
-      "status": "pending_run",
-      "required_output": "validation_runs/final_acceptance_v1/performance/report.json"
+      "status": "measured",
+      "required_output": "validation_runs/final_acceptance_v1/performance/report.json",
+      "acceptance_checks": [
+        {
+          "path": "status",
+          "operator": "equals",
+          "value": "measured"
+        },
+        {
+          "path": "declared.op",
+          "operator": "equals",
+          "value": "csv-read"
+        },
+        {
+          "path": "result.rows_operated",
+          "operator": "gte",
+          "value": 200
+        },
+        {
+          "path": "declared.declared_max_seconds_per_1k_rows",
+          "operator": "gte",
+          "value": 0.1
+        }
+      ]
     },
     {
       "id": "independent_reproduction_fmea",
