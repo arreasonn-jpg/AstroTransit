@@ -38,6 +38,10 @@ excludes = [
     "streamlit", "plotly", "altair",
     "IPython", "jupyterlab", "pytest", "mypy", "ruff",
     "tkinter", "PyQt5", "PyQt6",
+    # torch, astrotransit calisma zincirinde kullanilmaz (dogrulandi: tum
+    # pipeline modulleri torch'suz import edilir); sklearn array-API uyumluluk
+    # katmanindan tasinarak exe'yi ~1 GB sistirmisti.
+    "torch", "torchvision", "torchaudio",
 ]
 
 a = Analysis(
