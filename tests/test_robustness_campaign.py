@@ -1,7 +1,8 @@
 """run_robustness_campaign koşucusu entegrasyon testleri (mock detector).
 
 Gerçek pipeline kampanyası TESS verisi indirir; burada yalnızca
-sözleşme + artefakt şeması doğrulanır.
+sözleşme + artefakt şeması doğrulanır. Koşum-bazlı checkpoint sarmalayıcı
+(cache / resume) ünite düzeyinde test edilir.
 """
 
 from __future__ import annotations
@@ -10,6 +11,10 @@ import json
 from pathlib import Path
 
 from scripts.validation import run_robustness_campaign as runner
+from scripts.validation.run_robustness_campaign import (
+    _cached_detector_factory,
+    _run_fingerprint,
+)
 
 
 def _write_corpus(tmp_path: Path, n: int) -> Path:
@@ -69,3 +74,53 @@ def test_unsupported_detector_rejected(tmp_path: Path):
     with pytest.raises(SystemExit) as excinfo:
         runner.main(["--corpus", str(corpus), "--detector", "yok_bir_detector"])
     assert excinfo.value.code == 2  # argparse hata kodu
+
+
+# ── checkpoint sarmalayıcı ünite testleri ──
+
+
+def test_cached_detector_reuses_result_within_and_across_runs(tmp_path: Path):
+    cache_path = tmp_path / "robustness" / "runs_cache.jsonl"
+    cache_path.parent.mkdir(parents=True, exist_ok=True)
+    fingerprint = _run_fingerprint("corpus.json", "pipeline", True)
+    calls = {"n": 0}
+
+    def base(case):
+        calls["n"] += 1
+        return True
+
+    det1 = _cached_detector_factory(base, cache_path=cache_path, fingerprint=fingerprint)
+    case_a = {"target_id": "TIC 1001", "sectors": [14, 15], "label": "planet"}
+    case_b = {"target_id": "TIC 1001", "sectors": [14, 15], "sectors_override": [14],
+              "label": "planet"}
+    assert det1(case_a) is True
+    assert det1(case_b) is True
+    # aynı sektör kümesi → önbellek; farklı → yeni koşum
+    assert det1(case_a) is True
+    assert calls["n"] == 2
+    assert det1(case_b) is True
+    assert calls["n"] == 2
+
+    # ikinci fabrika örneği diskten yüklemeli (resume)
+    det2 = _cached_detector_factory(base, cache_path=cache_path, fingerprint=fingerprint)
+    assert det2(case_a) is True
+    assert det2(case_b) is True
+    assert calls["n"] == 2  # hiç yeni koşum yok
+
+
+def test_cached_detector_fingerprint_mismatch_ignored(tmp_path: Path):
+    cache_path = tmp_path / "runs_cache.jsonl"
+    fp_old = _run_fingerprint("corpus_v1.json", "pipeline", True)
+    det1 = _cached_detector_factory(lambda case: False, cache_path=cache_path,
+                                    fingerprint=fp_old)
+    det1({"target_id": "TIC 2002"})
+    fp_new = _run_fingerprint("corpus_v2.json", "pipeline", True)
+    calls = {"n": 0}
+
+    def base(case):
+        calls["n"] += 1
+        return True
+
+    det2 = _cached_detector_factory(base, cache_path=cache_path, fingerprint=fp_new)
+    assert det2({"target_id": "TIC 2002"}) is True  # eski kayıt yok sayılır
+    assert calls["n"] == 1

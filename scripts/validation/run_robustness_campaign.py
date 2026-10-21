@@ -123,6 +123,68 @@ def _pipeline_detector_factory(
     return detector
 
 
+def _run_fingerprint(corpus: str, detector_name: str, force_map: bool) -> str:
+    """Önbellek geçerliliği: corpus + dedektör konfigürasyonu parmak izi."""
+    import hashlib
+
+    payload = json.dumps(
+        {"corpus": corpus, "detector": detector_name, "force_map": force_map},
+        sort_keys=True,
+    )
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()[:16]
+
+
+def _cached_detector_factory(
+    base_detector,
+    *,
+    cache_path: Path,
+    fingerprint: str,
+):
+    """Koşum-bazlı checkpoint sarmalayıcı (kesinti toleransı).
+
+    Anahtar: (hedef, sektör-override kümesi). Aynı (hedef, sektör) çifti
+    tekrar istenirse pipeline yeniden koşulmadan önbellekten döner; her yeni
+    sonuç anında diske yazılır (append + flush) — kesintide tamamlanan
+    koşumlar korunur. Yanlış-bilgilendirme riski yönlüdür: geçici ağ hatası
+    False saklanabilir; bu, recall düşüşünü ASLA iyileştirmez, ancak
+    gerektiğinde aşırı muhafazakâr sonuç (measured_fail) üretebilir.
+    """
+
+    cache: dict[str, bool] = {}
+    if cache_path.exists():
+        for line in cache_path.read_text(encoding="utf-8").splitlines():
+            if not line.strip():
+                continue
+            try:
+                record = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            if record.get("fingerprint") != fingerprint:
+                continue
+            cache[record["key"]] = record["detected"]
+
+    completed = len(cache)
+    cache_path.parent.mkdir(parents=True, exist_ok=True)
+    fh = cache_path.open("a", encoding="utf-8")
+
+    def detector(case: Mapping[str, Any]) -> bool:
+        nonlocal completed
+        target = str(case.get("target_id", "")).replace("TIC ", "")
+        override = case.get("sectors_override")
+        key = target + "|" + (",".join(str(s) for s in override) if override is not None else "ALL")
+        if key in cache:
+            return cache[key]
+        detected = bool(base_detector(case))
+        cache[key] = detected
+        fh.write(json.dumps({"fingerprint": fingerprint, "key": key, "detected": detected}) + "\n")
+        fh.flush()
+        completed += 1
+        print(f"[run {completed}] {key} -> detected={detected}", flush=True)
+        return detected
+
+    return detector
+
+
 def _perturbations() -> dict[str, Any]:
     """Kadans azaltma pertürbasyonları (sözleşme sabitleri)."""
 
@@ -153,6 +215,7 @@ def main(argv: list[str] | None = None) -> int:
         "min_cases": args.min_cases,
         "declared_max_recall_drop": args.declared_max_recall_drop,
         "detector": args.detector,
+        "corpus": args.corpus,
     }
     if args.dry_run:
         print(json.dumps({"gate": "detrending_cadence_impact_robustness",
@@ -170,6 +233,14 @@ def main(argv: list[str] | None = None) -> int:
         skip_visualizations=args.skip_visualizations,
         skip_catalog=args.skip_catalog,
     )
+    if args.detector == "pipeline":
+        cache_path = Path(args.output).parent / "runs_cache.jsonl"
+        cache_path.parent.mkdir(parents=True, exist_ok=True)
+        fingerprint = _run_fingerprint(args.corpus, args.detector, args.force_map)
+        detector = _cached_detector_factory(
+            detector, cache_path=cache_path, fingerprint=fingerprint
+        )
+        print(f"[checkpoint] önbellek: {cache_path} fingerprint={fingerprint}", flush=True)
     campaign = robustness.measure_cadence_robustness(
         cases, detector, _perturbations()
     )
