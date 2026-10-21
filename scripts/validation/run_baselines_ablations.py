@@ -34,6 +34,7 @@ from __future__ import annotations
 import argparse
 import json
 import multiprocessing
+import os
 import re
 import signal
 import sys
@@ -150,6 +151,39 @@ def _download_with_corrupt_retry(search, idx: int):
         raise
 
 
+def _download_with_network_retry(search, idx: int, attempts: int = 3):
+    """MAST indirmesi ağ bölmesine dayanıklı: geri çekilmeli 3 deneme.
+
+    Zehir önleme: kısa süreli ağ kopmaları (RemoteDisconnected,
+    ConnectionReset) 'error' görev satırı üretmeden toparlanır.
+    ``OSError`` alt sınıfları (requests.ConnectionError/Timeout dâhil)
+    yakalanır; ``LightkurveError`` bozuk dosya semantiğidir ve
+    ``_download_with_corrupt_retry`` sorumluluğundadır.
+    """
+
+    import time
+
+    for attempt in range(1, attempts + 1):
+        try:
+            return _download_with_corrupt_retry(search, idx)
+        except (ConnectionError, OSError) as exc:
+            if attempt >= attempts:
+                print(
+                    f"[net-retry] {attempt}/{attempts} deneme tükendi: "
+                    f"{type(exc).__name__}: {exc}",
+                    flush=True,
+                )
+                raise
+            delay = 30.0 * attempt
+            print(
+                f"[net-retry] {type(exc).__name__} ({attempt}/{attempts}); "
+                f"{delay:.0f} sn sonra yeniden",
+                flush=True,
+            )
+            time.sleep(delay)
+    raise RuntimeError("hawk-retry ulaşılmaz nokta")  # pragma: no cover
+
+
 def _load_stitched_lc(target_expr: str, sectors: list[int]):
     """SPOC ışık eğrilerini (önbellekten) yükler, birleştirir, temizler."""
 
@@ -170,7 +204,7 @@ def _load_stitched_lc(target_expr: str, sectors: list[int]):
         match = re.search(r"Sector\s+(\d+)", mission)
         if not (match and int(match.group(1)) in wanted):
             continue
-        lcs.append(_download_with_corrupt_retry(search, idx))
+        lcs.append(_download_with_network_retry(search, idx))
     if not lcs:
         raise RuntimeError(f"istenen sektörlerde veri yok: {target_expr} {sorted(wanted)}")
     stitched = lcs[0] if len(lcs) == 1 else lk.LightCurveCollection(lcs).stitch()
@@ -185,16 +219,27 @@ def _load_stitched_lc(target_expr: str, sectors: list[int]):
 # ── sade TLS dedektörü ──
 
 
-def _tls_detect(lc) -> bool:
-    """Sade TLS kuralı (ilan edilen sabitler)."""
+def _tls_detect(lc, oversampling_factor: float | None = None) -> bool:
+    """Sade TLS kuralı (ilan edilen sabitler).
+
+    ``oversampling_factor`` ilanlı kural değerinin üstüne geçilebilir
+    (coarse-scan çevrimi); parmak izi bu değeri içerir, cache otomatik
+    ayrışır. İlansız (None) kullanım kuralın kendisidir — tests bunun
+    varsayılanına bağlı.
+    """
 
     from transitleastsquares import transitleastsquares as TLSModel
 
+    factor = (
+        float(oversampling_factor)
+        if oversampling_factor is not None
+        else TLS_RULE["oversampling_factor"]
+    )
     model = TLSModel(lc.time.value, lc.flux.value)
     result = model.power(
         period_min=TLS_RULE["period_min"],
         period_max=TLS_RULE["period_max"],
-        oversampling_factor=TLS_RULE["oversampling_factor"],
+        oversampling_factor=factor,
         show_progress_bar=False,
         use_threads=2,
     )
@@ -290,6 +335,7 @@ def _naive_worker(
     timeout_sec: int,
     cache_path: str,
     fingerprint: str,
+    oversampling_factor: float | None = None,
 ) -> tuple[str, bool]:
     """Tek sade-dedektör koşumu (işçi süreç; SIGALRM zaman aşımı)."""
 
@@ -309,7 +355,7 @@ def _naive_worker(
         target = str(case["target_id"]).replace("TIC ", "").strip()
         lc = _load_stitched_lc(f"TIC {target}", case["sectors"])
         if detector_name == "tls":
-            detected = _tls_detect(lc)
+            detected = _tls_detect(lc, oversampling_factor=oversampling_factor)
         elif detector_name == "bls":
             detected = _bls_detect(lc)
         else:
@@ -350,6 +396,15 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--corpus", required=True, help="Labelled corpus JSON (dengeli-24)")
     parser.add_argument("--workers", type=int, default=1)
     parser.add_argument("--task-timeout-min", type=int, default=45)
+    parser.add_argument(
+        "--oversampling-factor",
+        type=float,
+        default=None,
+        help=(
+            "TLS ızgara sıkılığı (coarse-scan levresi; ilanlı kural 3.0). "
+            "1.0 ≈ 3x hızlı tarama; parmak izine dâhildir, cache ayrışır."
+        ),
+    )
     parser.add_argument("--mp-method", default="spawn", choices=["spawn", "fork"])
     parser.add_argument(
         "--reuse-fingerprint",
@@ -368,6 +423,11 @@ def main(argv: list[str] | None = None) -> int:
         "bls_rule": BLS_RULE,
         "workers": args.workers,
         "task_timeout_min": args.task_timeout_min,
+        "oversampling_factor": (
+            args.oversampling_factor
+            if args.oversampling_factor is not None
+            else TLS_RULE["oversampling_factor"]
+        ),
         "ablations": "sonraki faz (check ilanıyla eklenecek)",
     }
     if args.dry_run:
@@ -404,8 +464,10 @@ def main(argv: list[str] | None = None) -> int:
     # ── sade dedektörler: paralel görev havuzu + önbellek ──
     out_dir = Path(args.output).parent
     out_dir.mkdir(parents=True, exist_ok=True)
+    _acquire_runner_lock(out_dir)
+    _heartbeat(out_dir)
     cache_path = out_dir / "runs_cache.jsonl"
-    naive_fp = baseline_fingerprint(args.corpus, RULE_TAG)
+    naive_fp = baseline_fingerprint(args.corpus, RULE_TAG, args.oversampling_factor)
 
     def _cached_lookup(key: str) -> bool | None:
         """Önbellek araması; timed_out/error satırları 'yok' sayılır (retry)."""
@@ -450,6 +512,7 @@ def main(argv: list[str] | None = None) -> int:
                     timeout_sec=args.task_timeout_min * 60,
                     cache_path=str(cache_path),
                     fingerprint=naive_fp,
+                    oversampling_factor=args.oversampling_factor,
                 ): task[0]
                 for task in tasks
             }
@@ -468,6 +531,8 @@ def main(argv: list[str] | None = None) -> int:
                                 "status": "error",
                             }
                         ) + "\n")
+                print(f"[{done}/{total}] görev işlendi: {key}", flush=True)
+                _heartbeat(out_dir)
     elif tasks:
         for task in tasks:
             _naive_worker(
@@ -476,7 +541,9 @@ def main(argv: list[str] | None = None) -> int:
                 timeout_sec=args.task_timeout_min * 60,
                 cache_path=str(cache_path),
                 fingerprint=naive_fp,
+                oversampling_factor=args.oversampling_factor,
             )
+            _heartbeat(out_dir)
 
     naive_map = _read_cache(cache_path, naive_fp)
     for name in ("tls", "bls"):
@@ -533,13 +600,86 @@ def main(argv: list[str] | None = None) -> int:
     return 0 if checks_pass else 1
 
 
-def baseline_fingerprint(corpus: str, rules_tag: str) -> str:
-    """Corpus + kural sürümüne bağlı parmak izi (kural değişirse cache bozulur)."""
+def baseline_fingerprint(
+    corpus: str, rules_tag: str, oversampling_factor: float | None = None
+) -> str:
+    """Corpus + kural sürümüne bağlı parmak izi (koşum ayarı değişirse cache bozulur).
+
+    ``oversampling_factor`` kuralı yeniden tanımlı coarse-scan geçişidir;
+    farklı faktör farklı kanıt alanıdır — parmak izine dahildir.
+    """
 
     import hashlib
 
-    payload = json.dumps({"corpus": corpus, "rules": rules_tag}, sort_keys=True)
+    payload = json.dumps(
+        {
+            "corpus": corpus,
+            "rules": rules_tag,
+            "oversampling_factor": float(
+                oversampling_factor
+                if oversampling_factor is not None
+                else TLS_RULE["oversampling_factor"]
+            ),
+        },
+        sort_keys=True,
+    )
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()[:16]
+
+
+def _heartbeat(out_dir: Path) -> None:
+    """Watchdog v5 kalp atışı: her görev tamamlanışında güncellenir."""
+
+    (Path(out_dir) / "heartbeat").write_text(str(time.time()))
+    print("[heartbeat] tık", flush=True)
+
+
+def _release_runner_lock(lock_path: Path, pid: int) -> None:
+    """Kilidi yalnızca kendisi aldıysa bırakır (yetim kilidi koruma)."""
+
+    try:
+        if lock_path.exists() and lock_path.read_text().strip() == str(pid):
+            lock_path.unlink()
+    except OSError:
+        pass
+
+
+def _runner_alive(pid: int) -> bool:
+    """pid canlı ve gerçekten koşucu mu? (bayat kilit ayrımı için)"""
+
+    try:
+        os.kill(pid, 0)
+    except ProcessLookupError:
+        return False
+    except OSError:
+        return True
+    try:
+        cmdline = Path(f"/proc/{pid}/cmdline").read_bytes().split(b"\x00")
+        return any(b"run_baselines_ablations" in part for part in cmdline)
+    except OSError:
+        return True
+
+
+def _acquire_runner_lock(out_dir: Path) -> None:
+    """Tekil koşum kilidi: aynı çıktı dizininde ikinci koşum yasaktır.
+
+    Yetim koşum faciasını (çift koşum → RAM çöküşü) önler. Bayat kilit
+    (ölü pid veya koşucu olmayan pid) sessizce devralınır.
+    """
+
+    lock_path = Path(out_dir) / "runner.lock"
+    if lock_path.exists():
+        try:
+            existing = int(lock_path.read_text().strip())
+        except (ValueError, OSError):
+            existing = None
+        if existing is not None and _runner_alive(existing):
+            raise RuntimeError(
+                f"başka koşum aktif (pid {existing}); tekil koşum kilidi"
+            )
+    lock_path.write_text(f"{os.getpid()}\n")
+    import atexit
+
+    atexit.register(_release_runner_lock, lock_path, os.getpid())
 
 
 def _read_cache(cache_path: Path, fingerprint: str) -> dict[str, bool]:

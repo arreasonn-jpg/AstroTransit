@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from http.client import RemoteDisconnected
 from pathlib import Path
 
 import numpy as np
@@ -64,3 +65,56 @@ def test_baseline_fingerprint_depends_on_rules():
     b = runner.baseline_fingerprint("corpus.json", "v2")
     assert a != b
     assert runner.baseline_fingerprint("corpus.json", "v1") == a  # deterministik
+
+
+def test_baseline_fingerprint_depends_on_oversampling_factor():
+    a = runner.baseline_fingerprint("corpus.json", "v1", 3.0)
+    b = runner.baseline_fingerprint("corpus.json", "v1", 1.0)
+    assert a != b  # coarse-scan farklı kanıt alanıdır
+    c = runner.baseline_fingerprint("corpus.json", "v1", 3.0)
+    assert a == c  # deterministik
+
+
+def test_read_cache_skips_incomplete_rows(tmp_path: Path):
+    cache = tmp_path / "runs_cache.jsonl"
+    rows = [
+        {"fingerprint": "fp", "key": "tls|100|ALL", "detected": True},
+        {"fingerprint": "fp", "key": "tls|200|ALL", "detected": False, "status": "timed_out"},
+        {"fingerprint": "fp", "key": "tls|300|ALL", "detected": False, "status": "error"},
+        {"fingerprint": "fp", "key": "tls|400|ALL", "detected": False},
+    ]
+    cache.write_text("\n".join(json.dumps(r) for r in rows) + "\n", encoding="utf-8")
+    assert runner._read_cache(cache, "fp") == {"tls|100|ALL": True, "tls|400|ALL": False}
+
+
+def test_download_network_retry_recovers(monkeypatch):
+    """Ağ bölmesi ilk iki denemede düşer, üçüncüde toparlanır — zehirsiz."""
+
+    import scripts.validation.run_baselines_ablations as mod
+
+    calls: list[int] = []
+
+    def flaky(_search, _idx):
+        calls.append(1)
+        if len(calls) < 3:
+            raise ConnectionError(("Connection aborted.", RemoteDisconnected()))
+        return "ok"
+
+    monkeypatch.setattr(mod, "_download_with_corrupt_retry", flaky)
+    monkeypatch.setattr(mod.time, "sleep", lambda _s: None)  # bekleme yok (test)
+    assert mod._download_with_network_retry(None, 0) == "ok"
+    assert len(calls) == 3
+
+
+def test_download_network_retry_exhausts(monkeypatch):
+    """Tükenen ağ zehri hâlâ 'error' görevine yol açar (çift katman kanıt)."""
+
+    import scripts.validation.run_baselines_ablations as mod
+
+    def always_down(_search, _idx):
+        raise ConnectionError("RemoteDisconnected")
+
+    monkeypatch.setattr(mod, "_download_with_corrupt_retry", always_down)
+    monkeypatch.setattr(mod.time, "sleep", lambda _s: None)
+    with pytest.raises(ConnectionError):
+        mod._download_with_network_retry(None, 0)
