@@ -195,6 +195,22 @@ def _qss() -> str:
         width: 2px;
     }}
 
+    QGroupBox {{
+        background: {PANEL};
+        border: 1px solid {BORDER};
+        border-radius: 8px;
+        margin-top: 12px;
+        padding: 14px 12px 10px 12px;
+        font-weight: 600;
+    }}
+    QGroupBox::title {{
+        subcontrol-origin: margin;
+        left: 10px;
+        padding: 0 6px;
+        color: {ACCENT};
+        background: transparent;
+    }}
+
     QStatusBar {{
         background: {PANEL};
         color: {TEXT_DIM};

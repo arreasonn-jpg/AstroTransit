@@ -161,6 +161,10 @@ def sector_rows(result: Any) -> list[dict[str, Any]]:
     for sr in _get(result, "sector_results", default=[]):
         quality = _get(sr, "quality", default=None)
         candidate = _get(sr, "candidate", default=None)
+        try:
+            plan_fit = _get(sr, "plan_fit", default=None)
+        except Exception:
+            plan_fit = None
         cand_dict: dict[str, Any] = {}
         to_dict = getattr(candidate, "to_dict", None)
         if callable(to_dict):
@@ -170,6 +174,16 @@ def sector_rows(result: Any) -> list[dict[str, Any]]:
                 cand_dict = {}
         cls = _get(quality, "score", "candidate_class")
         cls_value = getattr(cls, "value", None) or (cls if isinstance(cls, str) else "")
+        # Plan modu: kalite/vetting koşmadı; MAP fit sonucuyla doldur.
+        if plan_fit is not None and not cand_dict:
+            cand_dict = {
+                "period": _get(plan_fit, "period"),
+                "duration": _get(plan_fit, "duration"),
+                "rp_rs": _get(plan_fit, "rp_rs"),
+                "snr": None,
+            }
+            cls_value = "plan_fit (kısıtlı doğrulama)"
+            quality = None
         rows.append(
             {
                 "target_id": str(target_id),

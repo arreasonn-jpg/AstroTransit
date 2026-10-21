@@ -104,6 +104,7 @@ class AstroTransitOrchestrator:
         self,
         target: str | int,
         sectors: Optional[list[int]] = None,
+        plan_params: Optional[Any] = None,
     ) -> TESSTargetResult:
         """
         Tek bir hedef analizi.
@@ -114,6 +115,9 @@ class AstroTransitOrchestrator:
             TIC ID.
         sectors : list[int], opsiyonel
             İşlenecek sektörler.
+        plan_params : PlanParams, opsiyonel
+            Kullanıcının manuel analiz parametreleri (kısıtlı doğrulama).
+            Periyot + T0 doluysa kör arama atlanır; boşsa standart arama.
 
         Returns
         -------
@@ -123,7 +127,7 @@ class AstroTransitOrchestrator:
         logger.info(f"Mod: SINGLE — hedef: {target}")
 
         with self._create_tess_pipeline() as pipeline:
-            result = pipeline.run_target(target, sectors=sectors)
+            result = pipeline.run_target(target, sectors=sectors, plan_params=plan_params)
 
         self._finalize()
         return cast(TESSTargetResult, result)

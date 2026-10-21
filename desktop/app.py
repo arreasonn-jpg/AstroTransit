@@ -19,6 +19,8 @@ from PySide6.QtWidgets import (
     QDialog,
     QFileDialog,
     QFormLayout,
+    QGridLayout,
+    QGroupBox,
     QHBoxLayout,
     QHeaderView,
     QLabel,
@@ -28,6 +30,7 @@ from PySide6.QtWidgets import (
     QPlainTextEdit,
     QProgressBar,
     QPushButton,
+    QScrollArea,
     QSpinBox,
     QSplitter,
     QTableWidget,
@@ -116,7 +119,14 @@ class MainWindow(QMainWindow):
         splitter = QSplitter(Qt.Horizontal)
         layout.addWidget(splitter)
 
+        # Sol form sütunu: içerik pencereye sığmazsa kaydırılır (satırlar
+        # asla üst üste binmez); widgetResizable ile genişlik uyumu otomatik.
         form_panel = QWidget()
+        form_scroll = QScrollArea()
+        form_scroll.setWidgetResizable(True)
+        form_scroll.setFrameShape(QScrollArea.NoFrame)
+        form_scroll.setWidget(form_panel)
+        splitter.addWidget(form_scroll)
         form = QFormLayout(form_panel)
         form.setSpacing(10)
 
@@ -126,19 +136,23 @@ class MainWindow(QMainWindow):
         form.addRow(_field_label("Mod"), self.mode_combo)
 
         self.target_edit = QLineEdit("TIC 261136679")
+        self.target_edit.setMaximumWidth(420)
         form.addRow(_field_label("TIC ID (tek)"), self.target_edit)
 
         self.batch_edit = QLineEdit()
         self.batch_edit.setPlaceholderText("CSV dosyası ya da virgülle ayrılmış TIC listesi")
+        self.batch_edit.setMaximumWidth(420)
         form.addRow(_field_label("Toplu"), self.batch_edit)
         browse_button = QPushButton("CSV Seç…")
         browse_button.setObjectName("secondary")
+        browse_button.setMaximumWidth(420)
         browse_button.clicked.connect(self._pick_batches_csv)
         form.addRow("", browse_button)
 
         self.discovery_spin = QSpinBox()
         self.discovery_spin.setRange(1, 20)
         self.discovery_spin.setValue(5)
+        self.discovery_spin.setMaximumWidth(200)
         self.discovery_spin.setToolTip(
             "TIC girmeden bu kadar hedef otomatik seçilir:\n"
             "MAST TESS-SPOC envanterinden rastgele sektör, indirilebilir hedefler."
@@ -153,6 +167,7 @@ class MainWindow(QMainWindow):
 
         self.sectors_edit = QLineEdit()
         self.sectors_edit.setPlaceholderText("Örn. 14,15 (boş = tümü)")
+        self.sectors_edit.setMaximumWidth(420)
         form.addRow(_field_label("Sektörler"), self.sectors_edit)
 
         self.force_map_check = QCheckBox("Sadece MAP")
@@ -170,6 +185,53 @@ class MainWindow(QMainWindow):
         self.run_button.clicked.connect(self._start_analysis)
         form.addRow("", self.run_button)
 
+        # ── Analiz Parametreleri paneli (butonun hızla ardında) ──
+        self.params_group = QGroupBox("⚙  Analiz Parametreleri")
+        self.params_group.setObjectName("paramsGroup")
+        params_grid = QGridLayout(self.params_group)
+        params_grid.setVerticalSpacing(7)
+        params_grid.setHorizontalSpacing(8)
+        self._param_fields: dict[str, QLineEdit] = {}
+        seen_labels = {
+            "period_days": "Periyot (gün)",
+            "t0_btjd": "T0 (BTJD)",
+            "rp_rs": "Rp/Rs",
+            "impact_parameter": "b (etki)",
+            "a_over_rs": "a/Rs",
+            "inclination_deg": "i (°)",
+            "planet_radius_rearth": "Re (R⊕)",
+            "planet_radius_rjup": "Rj (Rjup)",
+            "semi_major_axis_au": "Au (AU)",
+            "teff_k": "Sıcaklık (K)",
+            "log_l_lsun": "Log L (L☉)",
+        }
+        for idx, (key, text) in enumerate(seen_labels.items()):
+            edit = QLineEdit()
+            edit.setPlaceholderText("default")
+            edit.setMinimumSize(96, 26)
+            edit.setToolTip(
+                {
+                    "period_days": "Kısıtlı doğrulama için T0 ile birlikte doldurun.",
+                    "t0_btjd": "Birinci transit zamanı (BTJD); Periyot ile birlikte zorunlu.",
+                    "impact_parameter": "Boş bırakılırsa a/Rs + i geometrisinden hesaplanır.",
+                    "teff_k": "Log L ile birlikte girilirse yıldız yarıçapı formülle hesaplanır.",
+                    "log_l_lsun": "log10(L/L☉); Sıcaklık ile birlikte girilirse R★ hesaplanır.",
+                }.get(key, "Boş = varsayılan/katalog değeri.")
+            )
+            row, col = divmod(idx, 2)
+            label = QLabel(text)
+            label.setMinimumSize(82, 26)
+            params_grid.addWidget(label, row, col * 2)
+            params_grid.addWidget(edit, row, col * 2 + 1)
+            self._param_fields[key] = edit
+        params_hint = QLabel(
+            "Boş bırakılan alanlar varsayılanla arar. Periyot + T0 doluysa\n"
+            "kör arama yerine KISITLI DOĞRULAMA (MAP fit) yapılır."
+        )
+        params_hint.setObjectName("appSubtitle")
+        params_grid.addWidget(params_hint, params_grid.rowCount(), 0, 1, 4)
+        form.addRow("", self.params_group)
+
         self.progress_bar = QProgressBar()
         self.progress_bar.setValue(0)
         form.addRow(_field_label("İlerleme"), self.progress_bar)
@@ -183,12 +245,13 @@ class MainWindow(QMainWindow):
         summary_label.setObjectName("appSubtitle")
         summary_label.setWordWrap(True)
         form.addRow(summary_label)
-        splitter.addWidget(form_panel)
+        # form_scroll zaten splitter'a eklendi (satır ~124)
 
         self.run_results_table = self._build_table()
         splitter.addWidget(self.run_results_table)
         splitter.setStretchFactor(0, 0)
         splitter.setStretchFactor(1, 1)
+        splitter.setSizes([660, 560])
         self._on_mode_changed(self.mode_combo.currentText())
         return panel
 
@@ -202,9 +265,19 @@ class MainWindow(QMainWindow):
         self.batch_edit.setEnabled(batch)
         self.discovery_spin.setEnabled(discovery)
         self.sectors_edit.setEnabled(not discovery)
+        # Analiz parametreleri yalnız Tek Hedef modunda anlamlı
+        self.params_group.setEnabled(single)
         self.run_button.setText(
             "Keşif + Analizi Başlat" if discovery else "Analizi Başlat"
         )
+
+    def _collect_plan_params(self) -> Optional[dict[str, str]]:
+        """Panel alanlarını sözlük olarak toplar; tamamen boşsa None."""
+
+        values = {key: edit.text() for key, edit in self._param_fields.items()}
+        if all(v.strip() == "" for v in values.values()):
+            return None
+        return values
 
     def _pick_batches_csv(self) -> None:
         path, _ = QFileDialog.getOpenFileName(
@@ -249,6 +322,21 @@ class MainWindow(QMainWindow):
             else:
                 targets = []  # keşif worker'ı doldurur
             sectors = [] if discovery else parse_sectors(self.sectors_edit.text())
+            plan_values = self._collect_plan_params()
+            plan_params = None
+            if plan_values:
+                from astrotransit.pipelines.plan_params import (
+                    plan_params_from_user_input,
+                )
+
+                if mode != "Tek Hedef":
+                    raise AnalysisError(
+                        "Analiz Parametreleri yalnız 'Tek Hedef' modunda kullanılabilir."
+                    )
+                try:
+                    plan_params = plan_params_from_user_input(plan_values)
+                except ValueError as error:
+                    raise AnalysisError(str(error)) from error
         except ValueError as error:
             QMessageBox.critical(self, "Girdi hatası", str(error))
             return
@@ -261,6 +349,7 @@ class MainWindow(QMainWindow):
             skip_visualization=self.skip_viz_check.isChecked(),
             skip_catalog=self.skip_catalog_check.isChecked(),
             log_level="INFO",
+            plan_params=plan_params,
         )
 
         self.run_button.setEnabled(False)

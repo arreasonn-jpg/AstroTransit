@@ -49,10 +49,12 @@ from astrotransit.detection.long_period import (
 
 # Modelleme
 from astrotransit.modeling.fitter import FitResult, ModelingOrchestrator
+from astrotransit.modeling.map_fit import MAPFitResult, MAPFitter
 from astrotransit.outputs.schemas import TransitCandidateRecord
 
 # Çıktı
 from astrotransit.outputs.writers import OutputManager
+from astrotransit.pipelines.plan_params import PlanParams, build_plan_priors
 
 # Ön işleme
 from astrotransit.preprocessing.pipeline import (
@@ -151,6 +153,9 @@ class TESSSectorResult:
         Cascade sonucu.
     fit_result : Optional[FitResult]
         Fit sonucu (MAP veya MCMC).
+    plan_fit : Optional[MAPFitResult]
+        Kısıtlı doğrulama (kullanıcı parametreli) MAP fit sonucu. Yalnız
+        plan modunda doldurulur; kalite/vetting koşmadan döner.
     quality : Optional[QualityEvaluationResult]
         Kalite değerlendirmesi.
     record : Optional[TransitCandidateRecord]
@@ -169,6 +174,7 @@ class TESSSectorResult:
     detrended: Optional[DetrendedLightCurve] = None
     candidate: Optional[CascadeCandidate] = None
     fit_result: Optional[FitResult] = None
+    plan_fit: Optional[MAPFitResult] = None
     quality: Optional[QualityEvaluationResult] = None
     record: Optional[TransitCandidateRecord] = None
     viz: Optional[VisualizationReport] = None
@@ -275,6 +281,7 @@ class TESSPipeline:
         self,
         target: str | int,
         sectors: Optional[list[int]] = None,
+        plan_params: Optional[PlanParams] = None,
     ) -> TESSTargetResult:
         """
         Tek bir hedef için tam pipeline'ı çalıştırır.
@@ -285,6 +292,11 @@ class TESSPipeline:
             TIC ID veya hedef adı.
         sectors : list[int], opsiyonel
             İşlenecek sektörler. Verilmezse tüm mevcut sektörler.
+        plan_params : PlanParams, opsiyonel
+            Kullanıcının manuel analiz parametreleri. Periyot + T0 doluysa
+            KISITLI DOĞRULAMA modu: kör tespit/vetting atlanır, kullanıcı
+            prior'u ile MAP fit koşulur ve türetilmiş fiziksel değerler
+            (Re, Rj, AU, Teq) üretilir. None ise standart kör arama yapılır.
 
         Returns
         -------
@@ -382,6 +394,7 @@ class TESSPipeline:
                 stellar_radius=stellar_radius,
                 stellar_mass=stellar_mass,
                 stellar_teff=stellar_teff,
+                plan_params=plan_params,
             )
 
             result.sector_results.append(sector_result)
@@ -467,9 +480,15 @@ class TESSPipeline:
         stellar_radius: float,
         stellar_mass: float,
         stellar_teff: float,
+        plan_params: Optional[PlanParams] = None,
     ) -> TESSSectorResult:
         """
         Tek bir sektörü işler.
+
+        ``plan_params`` verilirse (Periyot + T0 dolu) kör arama atlanır ve
+        KISITLI DOĞRULAMA yapılır: kullanıcı parametrelerinden kurulan
+        ``TransitPriors`` ile MAP fit koşulur, sonuç ``plan_fit`` alanına
+        yazılır. Boş bırakılırsa standart Cascade akışı çalışır.
 
         Parameters
         ----------
@@ -485,6 +504,8 @@ class TESSPipeline:
             Yıldız özellikleri.
         stellar_radius, stellar_mass, stellar_teff : float
             Yıldız fiziksel parametreleri.
+        plan_params : PlanParams, opsiyonel
+            Kullanıcının manuel analiz parametreleri (kısıtlı doğrulama).
 
         Returns
         -------
@@ -514,6 +535,40 @@ class TESSPipeline:
         except Exception as e:
             sector_result.error = f"Ön işleme hatası: {e}"
             logger.error(f"Sektör {sector} ön işleme: {e}")
+            return sector_result
+
+        # ── Kısıtlı doğrulama (plan modu): kör tespit atlanır ──
+        if plan_params is not None and plan_params.complete_for_plan_mode():
+            plan_fit_result = self._fit_with_plan_params(
+                detrended=detrended,
+                plan_params=plan_params,
+                stellar_radius=stellar_radius,
+                stellar_mass=stellar_mass,
+                stellar_teff=stellar_teff,
+            )
+            sector_result.plan_fit = plan_fit_result
+            if plan_fit_result is not None and plan_fit_result.success:
+                sector_result.success = True
+                derived = plan_fit_result.derived
+                logger.info(
+                    f"Sektör {sector} kısıtlı doğrulama tamamlandı — "
+                    f"P={plan_fit_result.period:.4f}d, "
+                    f"Rp={derived.planet_radius_rearth:.2f}R⊕ "
+                    f"({derived.planet_radius_rjup:.2f}Rj), "
+                    f"a={derived.semi_major_axis_au:.3f}AU, "
+                    f"Teq={derived.equilibrium_temperature_k:.0f}K, "
+                    f"residual_rms={plan_fit_result.residual_rms:.4f}"
+                )
+            else:
+                sector_result.success = False
+                message = (
+                    "istisna"
+                    if plan_fit_result is None
+                    else plan_fit_result.optimizer_message
+                )
+                logger.warning(
+                    f"Sektör {sector} kısıtlı doğrulama: MAP fit başarısız — {message}"
+                )
             return sector_result
 
         # ── Transit tespiti ──
@@ -622,6 +677,37 @@ class TESSPipeline:
             )
 
         return sector_result
+
+    def _fit_with_plan_params(
+        self,
+        detrended: DetrendedLightCurve,
+        plan_params: PlanParams,
+        *,
+        stellar_radius: float,
+        stellar_mass: float,
+        stellar_teff: float,
+    ) -> Optional[MAPFitResult]:
+        """Kullanıcı parametrelerinden kurulan prior ile MAP fit koşar.
+
+        Blind (kör) arama YAPMAZ; aday tespiti ve vetting atlanır — bu bir
+        'bilinen parametreli doğrulama' yoludur. Dönüş None olabilir
+        (istisna yakalandıysa) ve UI bunu dayanıklı işler.
+        """
+
+        priors = build_plan_priors(
+            plan_params,
+            stellar_radius=stellar_radius,
+            stellar_mass=stellar_mass,
+            stellar_teff=stellar_teff,
+        )
+        fitter = MAPFitter()
+        return fitter.fit(
+            detrended=detrended,
+            priors=priors,
+            stellar_radius=priors.stellar_radius,
+            stellar_mass=priors.stellar_mass,
+            stellar_teff=priors.stellar_teff,
+        )
 
     def _get_stellar_properties(
         self,

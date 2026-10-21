@@ -179,7 +179,9 @@ def test_run_single(orchestrator, monkeypatch) -> None:
 
     result = orchestrator.run_single("TIC-100")
     assert result is mock_result
-    mock_pipeline.run_target.assert_called_once_with("TIC-100", sectors=None)
+    mock_pipeline.run_target.assert_called_once_with(
+        "TIC-100", sectors=None, plan_params=None
+    )
     orchestrator._output.export_csv.assert_called_once()
 
 
@@ -192,7 +194,9 @@ def test_run_single_with_sectors(orchestrator, monkeypatch) -> None:
     )
 
     orchestrator.run_single(12345, sectors=[1, 2])
-    mock_pipeline.run_target.assert_called_once_with(12345, sectors=[1, 2])
+    mock_pipeline.run_target.assert_called_once_with(
+        12345, sectors=[1, 2], plan_params=None
+    )
 
 
 # ─────────────────────────────────────────────────────────────

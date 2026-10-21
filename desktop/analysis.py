@@ -27,6 +27,7 @@ class AnalysisConfig:
     skip_catalog: bool = False
     config_path: Optional[str] = None
     log_level: str = "INFO"
+    plan_params: Optional[Any] = None
 
 
 class AnalysisError(RuntimeError):
@@ -96,7 +97,11 @@ def analyze_targets(
     try:
         if len(config.targets) == 1:
             results = [
-                orchestrator.run_single(config.targets[0], sectors=config.sectors)
+                orchestrator.run_single(
+                    config.targets[0],
+                    sectors=config.sectors,
+                    plan_params=config.plan_params,
+                )
             ]
             if progress is not None:
                 progress(1, 1, config.targets[0])
