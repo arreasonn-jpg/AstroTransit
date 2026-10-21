@@ -1,0 +1,71 @@
+{
+  "gate": "detrending_cadence_impact_robustness",
+  "status": "measured",
+  "declared": {
+    "min_cases": 24,
+    "declared_max_recall_drop": 0.05,
+    "detector": "pipeline",
+    "corpus": "validation_runs/final_acceptance_v1/dev_holdout/dev_manifest_balanced24.json",
+    "workers": 3,
+    "task_timeout_min": 45
+  },
+  "blocking_reasons": [],
+  "result": {
+    "campaign": {
+      "baseline": {
+        "name": "unperturbed",
+        "n_cases": 24,
+        "detected": 23,
+        "recall": 0.9583333333333334
+      },
+      "measurements": [
+        {
+          "name": "cadence_50pct",
+          "n_cases": 24,
+          "detected": 22,
+          "recall": 0.9166666666666666
+        },
+        {
+          "name": "cadence_25pct",
+          "n_cases": 24,
+          "detected": 22,
+          "recall": 0.9166666666666666
+        }
+      ],
+      "max_recall_drop": 0.04166666666666674
+    },
+    "min_cases": 24,
+    "declared_max_recall_drop": 0.05,
+    "status": "measured",
+    "blocking_reasons": []
+  },
+  "provenance": {
+    "target_id": null,
+    "sector": null,
+    "data_product": null,
+    "cadence": null,
+    "pipeline_version": "",
+    "git_commit": "df1edfe6ec29e69f596ac9b82b7a0f9f156dc158",
+    "config_hash": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+    "schema_version": null,
+    "model_version": null,
+    "random_seed": null,
+    "run_timestamp_utc": "2026-10-21T16:08:17.837990Z",
+    "host_platform": "Linux-6.18.54.1-microsoft-standard-WSL2-x86_64-with-glibc2.39",
+    "python_version": "3.12.3",
+    "package_versions": {
+      "astropy": "8.0.1",
+      "astrotransit": "0.3.0",
+      "lightkurve": "2.4.2",
+      "numpy": "2.5.3",
+      "pandas": "3.0.5",
+      "pydantic": "2.13.5",
+      "scipy": "1.18.1",
+      "transitleastsquares": "1.32",
+      "wotan": "1.10"
+    },
+    "input_hash": null,
+    "environment_manifest_hash": null,
+    "output_hash": "b12f88ea73995f5a2863878c1987573475dcce2278b5eb92251b32538a7a364b"
+  }
+}
