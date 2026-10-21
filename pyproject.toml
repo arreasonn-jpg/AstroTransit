@@ -171,6 +171,13 @@ exclude = [
 # - disallow_any_generics / disallow_untyped_calls
 # Bu taban yapılandırma, CI'da bilgilendirici olarak çalışır.
 
+# PySide6 stub'ları Qt enum sabitlerini sınıf özniteliği olarak çözmez
+# (örn. Qt.Horizontal, QPainter.Antialiasing); UI katmanında bu ailenin
+# bilgili spam'i bastırılır — union-attr gibi gerçek hatalar etkilenmez.
+[[tool.mypy.overrides]]
+module = ["desktop.app", "desktop.main", "desktop.branding"]
+disable_error_code = ["attr-defined"]
+
 [tool.coverage.run]
 
 branch = true
