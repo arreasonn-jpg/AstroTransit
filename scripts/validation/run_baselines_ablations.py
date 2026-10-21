@@ -304,6 +304,7 @@ def _naive_worker(
         signal.alarm(max(1, timeout_sec))
 
     detected: bool
+    status: str
     try:
         target = str(case["target_id"]).replace("TIC ", "").strip()
         lc = _load_stitched_lc(f"TIC {target}", case["sectors"])
@@ -313,18 +314,32 @@ def _naive_worker(
             detected = _bls_detect(lc)
         else:
             raise ValueError(f"bilinmeyen sade detector: {detector_name}")
+        status = "ok"
     except TimeoutError:
         print(f"[timeout] {key}: {timeout_sec} sn içinde bitmedi -> detected=False", flush=True)
         detected = False
+        status = "timed_out"  # gerçek non-detection değil; kanıtta saydam olmalı
     except Exception as exc:
         print(f"[error] {key}: {type(exc).__name__}: {exc} -> detected=False", flush=True)
         detected = False
+        status = "error"  # ağ/çevre hatası; kanıt sayılır ama yeniden denenebilir
     finally:
         if have_alarm:
             signal.alarm(0)
     elapsed = time.monotonic() - started
     with Path(cache_path).open("a", encoding="utf-8") as fh:
-        fh.write(json.dumps({"fingerprint": fingerprint, "key": key, "detected": detected}) + "\n")
+        fh.write(
+            json.dumps(
+                {
+                    "fingerprint": fingerprint,
+                    "key": key,
+                    "detected": detected,
+                    "status": status,
+                    "elapsed_s": round(elapsed, 1),
+                }
+            )
+            + "\n"
+        )
         fh.flush()
     print(f"[task] {key} -> detected={detected} ({elapsed:.0f} sn)", flush=True)
     return key, detected
@@ -393,6 +408,8 @@ def main(argv: list[str] | None = None) -> int:
     naive_fp = baseline_fingerprint(args.corpus, RULE_TAG)
 
     def _cached_lookup(key: str) -> bool | None:
+        """Önbellek araması; timed_out/error satırları 'yok' sayılır (retry)."""
+
         if not cache_path.exists():
             return None
         for line in cache_path.read_text(encoding="utf-8").splitlines():
@@ -403,6 +420,8 @@ def main(argv: list[str] | None = None) -> int:
             except json.JSONDecodeError:
                 continue
             if record.get("fingerprint") == naive_fp and record.get("key") == key:
+                if record.get("status", "ok") != "ok":
+                    return None
                 return bool(record["detected"])
         return None
 
@@ -442,7 +461,13 @@ def main(argv: list[str] | None = None) -> int:
                     print(f"[{done}/{total}] {key} -> ÇÖKÜŞ: {exc} (False)", flush=True)
                     with cache_path.open("a", encoding="utf-8") as fh:
                         fh.write(json.dumps(
-                            {"fingerprint": naive_fp, "key": key, "detected": False}) + "\n")
+                            {
+                                "fingerprint": naive_fp,
+                                "key": key,
+                                "detected": False,
+                                "status": "error",
+                            }
+                        ) + "\n")
     elif tasks:
         for task in tasks:
             _naive_worker(
@@ -518,6 +543,13 @@ def baseline_fingerprint(corpus: str, rules_tag: str) -> str:
 
 
 def _read_cache(cache_path: Path, fingerprint: str) -> dict[str, bool]:
+    """Önbelleği okur; tamamlanmamış (timed_out/error) satırları yok sayar.
+
+    Eski koşumların (status alanı olmayan) satırları legacy 'ok' kabul edilir;
+    yeni koşumdan itibaren timeout'a takılan ya da hata alan görevler
+    önbellek-geçerli sayılmaz ve yeniden çalıştırılır (kanıt dürüstlüğü).
+    """
+
     results: dict[str, bool] = {}
     if not cache_path.exists():
         return results
@@ -528,8 +560,11 @@ def _read_cache(cache_path: Path, fingerprint: str) -> dict[str, bool]:
             record = json.loads(line)
         except json.JSONDecodeError:
             continue
-        if record.get("fingerprint") == fingerprint:
-            results[str(record["key"])] = record["detected"]
+        if record.get("fingerprint") != fingerprint:
+            continue
+        if record.get("status", "ok") != "ok":
+            continue
+        results[str(record["key"])] = record["detected"]
     return results
 
 
