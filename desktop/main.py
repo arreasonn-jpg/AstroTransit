@@ -30,8 +30,10 @@ def main() -> None:
     from PySide6.QtWidgets import QApplication
 
     from desktop.app import MainWindow
+    from desktop.theme import apply_theme
 
     app = QApplication.instance() or QApplication(["astrotransit-desktop"])
+    apply_theme(app)
     window = MainWindow()
     window.show()
     if smoke:

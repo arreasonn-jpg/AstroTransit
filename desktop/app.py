@@ -28,6 +28,7 @@ from PySide6.QtWidgets import (
     QPlainTextEdit,
     QProgressBar,
     QPushButton,
+    QSpinBox,
     QSplitter,
     QTableWidget,
     QTableWidgetItem,
@@ -47,7 +48,15 @@ from desktop.helpers import (
     rows_from_json_files,
     sector_rows,
 )
-from desktop.worker import AnalysisWorker
+from desktop.worker import AnalysisWorker, DiscoveryWorker
+
+
+def _field_label(text: str) -> QLabel:
+    """Form alanı etiketi (tema sınıfı fieldLabel)."""
+
+    label = QLabel(text)
+    label.setObjectName("fieldLabel")
+    return label
 
 
 class MainWindow(QMainWindow):
@@ -56,22 +65,54 @@ class MainWindow(QMainWindow):
     def __init__(self) -> None:
         super().__init__()
         self.setWindowTitle("AstroTransit — TESS Transit Keşif Konsolu")
-        self.resize(1180, 720)
-        self._worker: Optional[AnalysisWorker] = None
+        self.resize(1280, 760)
+        self.setMinimumSize(980, 640)
+        self._worker: Optional[AnalysisWorker | DiscoveryWorker] = None
         self._roots = output_roots(project_root())
 
+        central = QWidget()
+        outer = QVBoxLayout(central)
+        outer.setContentsMargins(0, 0, 0, 0)
+        outer.setSpacing(0)
+        outer.addWidget(self._build_header())
         self.tabs = QTabWidget()
         self.tabs.addTab(self._build_run_tab(), "Analiz")
         self.tabs.addTab(self._build_results_tab(), "Sonuçlar")
         self.tabs.addTab(self._build_json_tab(), "Kayıtlı Çıktılar")
         self.tabs.addTab(self._build_log_tab(), "Log")
-        self.setCentralWidget(self.tabs)
+        outer.addWidget(self.tabs, 1)
+        self.setCentralWidget(central)
+
+    # ── Üst banner ────────────────────────────────────────────
+
+    def _build_header(self) -> QWidget:
+        header = QWidget()
+        layout = QHBoxLayout(header)
+        layout.setContentsMargins(22, 10, 22, 8)
+        column = QVBoxLayout()
+        column.setContentsMargins(6, 0, 0, 0)
+        column.setSpacing(1)
+        title = QLabel("✦  ASTROTRANSIT")
+        title.setObjectName("appTitle")
+        column.addWidget(title)
+        subtitle = QLabel(
+            "TESS ışık eğrisi transit keşfi — Bakus et al. 2024, 2025"
+        )
+        subtitle.setObjectName("appSubtitle")
+        column.addWidget(subtitle)
+        layout.addLayout(column)
+        layout.addStretch(1)
+        version_label = QLabel("AstroTransit v1.0")
+        version_label.setObjectName("appSubtitle")
+        layout.addWidget(version_label)
+        return header
 
     # ── Analiz sekmesi ────────────────────────────────────────
 
     def _build_run_tab(self) -> QWidget:
         panel = QWidget()
         layout = QHBoxLayout(panel)
+        layout.setContentsMargins(12, 8, 12, 12)
         splitter = QSplitter(Qt.Horizontal)
         layout.addWidget(splitter)
 
@@ -80,22 +121,39 @@ class MainWindow(QMainWindow):
         form.setSpacing(10)
 
         self.mode_combo = QComboBox()
-        self.mode_combo.addItems(["Tek Hedef", "Toplu Hedefler"])
-        form.addRow("Mod", self.mode_combo)
+        self.mode_combo.addItems(["Tek Hedef", "Toplu Hedefler", "Otomatik Keşif"])
+        self.mode_combo.currentTextChanged.connect(self._on_mode_changed)
+        form.addRow(_field_label("Mod"), self.mode_combo)
 
         self.target_edit = QLineEdit("TIC 261136679")
-        form.addRow("TIC ID (tek)", self.target_edit)
+        form.addRow(_field_label("TIC ID (tek)"), self.target_edit)
 
         self.batch_edit = QLineEdit()
         self.batch_edit.setPlaceholderText("CSV dosyası ya da virgülle ayrılmış TIC listesi")
-        form.addRow("Toplu", self.batch_edit)
+        form.addRow(_field_label("Toplu"), self.batch_edit)
         browse_button = QPushButton("CSV Seç…")
+        browse_button.setObjectName("secondary")
         browse_button.clicked.connect(self._pick_batches_csv)
         form.addRow("", browse_button)
 
+        self.discovery_spin = QSpinBox()
+        self.discovery_spin.setRange(1, 20)
+        self.discovery_spin.setValue(5)
+        self.discovery_spin.setToolTip(
+            "TIC girmeden bu kadar hedef otomatik seçilir:\n"
+            "MAST TESS-SPOC envanterinden rastgele sektör, indirilebilir hedefler."
+        )
+        form.addRow(_field_label("Hedef Sayısı (keşif)"), self.discovery_spin)
+        discovery_hint = QLabel(
+            "TIC girmeden N hedef: verisi mevcut rastgele SPOC hedefleri taranır."
+        )
+        discovery_hint.setObjectName("appSubtitle")
+        discovery_hint.setWordWrap(True)
+        form.addRow("", discovery_hint)
+
         self.sectors_edit = QLineEdit()
         self.sectors_edit.setPlaceholderText("Örn. 14,15 (boş = tümü)")
-        form.addRow("Sektörler", self.sectors_edit)
+        form.addRow(_field_label("Sektörler"), self.sectors_edit)
 
         self.force_map_check = QCheckBox("Sadece MAP")
         self.force_map_check.setChecked(True)
@@ -114,14 +172,15 @@ class MainWindow(QMainWindow):
 
         self.progress_bar = QProgressBar()
         self.progress_bar.setValue(0)
-        form.addRow("İlerleme", self.progress_bar)
+        form.addRow(_field_label("İlerleme"), self.progress_bar)
         self.progress_label = QLabel("")
         form.addRow("", self.progress_label)
 
         summary_label = QLabel(
-            "Çıktılar ProjectPaths üzerinden outputs/ dizinine yazılır.\n"
-            "Loglar 'Log' sekmesinde gerçek zamanlı aktarılır."
+            "Çıktılar outputs/ dizinine yazılır; ayrıntılı sonuçlar 'Sonuçlar' sekmesinde,\n"
+            "gerçek zamanlı loglar 'Log' sekmesinde görünür."
         )
+        summary_label.setObjectName("appSubtitle")
         summary_label.setWordWrap(True)
         form.addRow(summary_label)
         splitter.addWidget(form_panel)
@@ -130,7 +189,22 @@ class MainWindow(QMainWindow):
         splitter.addWidget(self.run_results_table)
         splitter.setStretchFactor(0, 0)
         splitter.setStretchFactor(1, 1)
+        self._on_mode_changed(self.mode_combo.currentText())
         return panel
+
+    def _on_mode_changed(self, mode: str) -> None:
+        """Girdi alanlarını moda göre açar/kapatır ve buton metnini uyarlar."""
+
+        discovery = mode == "Otomatik Keşif"
+        single = mode == "Tek Hedef"
+        batch = mode == "Toplu Hedefler"
+        self.target_edit.setEnabled(single)
+        self.batch_edit.setEnabled(batch)
+        self.discovery_spin.setEnabled(discovery)
+        self.sectors_edit.setEnabled(not discovery)
+        self.run_button.setText(
+            "Keşif + Analizi Başlat" if discovery else "Analizi Başlat"
+        )
 
     def _pick_batches_csv(self) -> None:
         path, _ = QFileDialog.getOpenFileName(
@@ -163,20 +237,23 @@ class MainWindow(QMainWindow):
             from desktop.analysis import AnalysisError
 
             mode = self.mode_combo.currentText()
+            discovery = mode == "Otomatik Keşif"
             if mode == "Tek Hedef":
                 targets = [self.target_edit.text().strip()]
                 if not targets[0]:
                     raise AnalysisError("TIC ID boş olamaz.")
-            else:
+            elif mode == "Toplu Hedefler":
                 targets = self._collect_batch_targets()
                 if not targets:
                     raise AnalysisError("Toplu hedef listesi boş.")
-            sectors = parse_sectors(self.sectors_edit.text())
+            else:
+                targets = []  # keşif worker'ı doldurur
+            sectors = [] if discovery else parse_sectors(self.sectors_edit.text())
         except ValueError as error:
             QMessageBox.critical(self, "Girdi hatası", str(error))
             return
 
-        config = AnalysisConfig(
+        base_config = AnalysisConfig(
             targets=targets,
             sectors=sectors,
             force_map=self.force_map_check.isChecked(),
@@ -189,7 +266,12 @@ class MainWindow(QMainWindow):
         self.run_button.setEnabled(False)
         self.progress_bar.setValue(0)
         self.progress_label.setText("Kuruluyor…")
-        self._worker = AnalysisWorker(config)
+        if discovery:
+            count = self.discovery_spin.value()
+            self.progress_label.setText(f"Keşif başlıyor ({count} hedef)…")
+            self._worker = DiscoveryWorker(count, base_config)
+        else:
+            self._worker = AnalysisWorker(base_config)
         self._worker.log_line.connect(self.append_log)
         self._worker.progress.connect(self._on_progress)
         self._worker.finished_ok.connect(self._on_analysis_finished)
