@@ -322,7 +322,45 @@
     {
       "id": "tls_bls_baselines_ablations",
       "status": "pending_run",
-      "required_output": "validation_runs/final_acceptance_v1/baselines/report.json"
+      "required_output": "validation_runs/final_acceptance_v1/baselines/report.json",
+      "rationale": "Baseline comparison declared before running: the full pipeline (preprocessing + BLS->TLS cascade + vetting) is compared on the same balanced-24 corpus against naive TLS and naive BLS run on raw stitched SPOC light curves with classic thresholds (SDE/SNR). Cheap floors mirror the already-declared performance-gate quality floor (recall >= 0.5, FPR <= 0.6 on the same labelled corpus); the scientific claim of this gate is calibration of the pipeline's advantage, and naive detector rows are evidence rows, not pass conditions. Ablation rows (pipeline-minus-module) are a declared follow-up phase and will carry their own checks when measured.",
+      "acceptance_checks": [
+        {
+          "path": "status",
+          "operator": "equals",
+          "value": "measured"
+        },
+        {
+          "path": "result.comparison.reference",
+          "operator": "equals",
+          "value": "astrotransit"
+        },
+        {
+          "path": "result.detectors.astrotransit.recall",
+          "operator": "gte",
+          "value": 0.5
+        },
+        {
+          "path": "result.detectors.astrotransit.false_positive_rate",
+          "operator": "lte",
+          "value": 0.6
+        },
+        {
+          "path": "result.detectors.tls.recall",
+          "operator": "gte",
+          "value": 0
+        },
+        {
+          "path": "result.detectors.bls.recall",
+          "operator": "gte",
+          "value": 0
+        },
+        {
+          "path": "result.n_cases",
+          "operator": "gte",
+          "value": 24
+        }
+      ]
     },
     {
       "id": "blind_domain_holdout",
