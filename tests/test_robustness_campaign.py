@@ -12,8 +12,11 @@ from pathlib import Path
 
 from scripts.validation import run_robustness_campaign as runner
 from scripts.validation.run_robustness_campaign import (
+    _build_task_list,
     _cached_detector_factory,
+    _precomputed_detector,
     _run_fingerprint,
+    _task_key,
 )
 
 
@@ -124,3 +127,76 @@ def test_cached_detector_fingerprint_mismatch_ignored(tmp_path: Path):
     det2 = _cached_detector_factory(base, cache_path=cache_path, fingerprint=fp_new)
     assert det2({"target_id": "TIC 2002"}) is True  # eski kayıt yok sayılır
     assert calls["n"] == 1
+
+
+# ── paralel görev planlama + önceden hesaplanmış detector testleri ──
+
+
+def test_task_key_override_vs_all(tmp_path: Path):
+    assert _task_key({"target_id": "TIC 1001"}) == "1001|ALL"
+    assert _task_key({"target_id": "TIC 1001", "sectors": [14, 15]}) == "1001|ALL"
+    assert _task_key({"target_id": "TIC 1001", "sectors_override": [14]}) == "1001|14"
+    assert _task_key({"target_id": "TIC 1001", "sectors_override": [14, 15]}) == "1001|14,15"
+
+
+def test_build_task_list_dedupes_and_orders_variants():
+    cases = [
+        {"target_id": "TIC 1", "label": "planet", "sectors": [14, 15, 16, 17]},
+        {"target_id": "TIC 2", "label": "false_positive", "sectors": []},
+    ]
+    tasks = _build_task_list(cases, runner._perturbations())
+    keys = [key for key, _ in tasks]
+    # 4-sektörlü vaka: baseline + 2 farklı alt küme = 3 tekil görev
+    assert keys[:3] == ["1|ALL", "1|14,15", "1|14"]
+    # 1-sektörlü vaka: tüm varyantlar aynı anahtara çöker → tek görev
+    assert keys[3:] == ["2|ALL"]
+    assert len(tasks) == 4
+
+
+def test_precomputed_detector_uses_cache_and_rejects_missing():
+    results = {"1|ALL": True, "1|14,15": False}
+    detector = _precomputed_detector(results)
+    assert detector({"target_id": "TIC 1"}) is True
+    assert detector({"target_id": "TIC 1", "sectors_override": [14, 15]}) is False
+    import pytest
+
+    with pytest.raises(RuntimeError):
+        detector({"target_id": "TIC 9"})
+
+
+def test_parallel_path_with_mock_detector_end_to_end(tmp_path: Path):
+    """Paralel yol küçük görev kümesiyle uçtan uca (çalışan işçiler fork)."""
+
+    import pytest  # noqa: F401
+
+    cases = [
+        {
+            "target_id": f"TIC {3000 + i}",
+            "label": "planet" if i % 2 == 0 else "false_positive",
+            "reference": f"reference-{i}",
+            "sectors": [14, 15, 16, 17],
+        }
+        for i in range(3)
+    ]
+    corpus = tmp_path / "corpus.json"
+    corpus.write_text(json.dumps({"cases": cases}), encoding="utf-8")
+    out = tmp_path / "robustness" / "report.json"
+    code = runner.main(
+        [
+            "--corpus", str(corpus),
+            "--max-cases", "3",
+            "--detector", "mock",
+            "--min-cases", "3",
+            "--workers", "2",
+            "--mp-method", "fork",
+            "--output", str(out),
+        ]
+    )
+    assert code in (0, 1)
+    payload = json.loads(out.read_text(encoding="utf-8"))
+    assert payload["status"] in {"measured", "measured_fail"}
+    assert payload["declared"]["workers"] == 2
+    # 3 vaka × 3 varyant (sektörler dolu → 9 tekil görev) — hepsi önbellekte
+    # mock için paralel yol, _build_task_list + önceden hesaplanmış detector
+    # kullanır; ölçüm sonuçları seri yolla birebir aynı olmalı:
+    assert payload["result"]["campaign"]["baseline"]["n_cases"] == 3

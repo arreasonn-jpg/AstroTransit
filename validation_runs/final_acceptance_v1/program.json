@@ -295,7 +295,12 @@
         {
           "path": "declared.corpus",
           "operator": "equals",
-          "value": "validation_runs/final_acceptance_v1/dev_holdout/dev_manifest.json"
+          "value": "validation_runs/final_acceptance_v1/dev_holdout/dev_manifest_balanced24.json"
+        },
+        {
+          "path": "declared.task_timeout_min",
+          "operator": "gte",
+          "value": 30
         },
         {
           "path": "result.min_cases",
