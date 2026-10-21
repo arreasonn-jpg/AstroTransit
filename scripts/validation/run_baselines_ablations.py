@@ -63,7 +63,7 @@ BLS_RULE: dict[str, Any] = {
     "min_depth_snr": 7.0,
     "min_transits": 2,
 }
-RULE_TAG = "tls_sde5_snr7_t2__bls_dsnr7_t2_v1"
+RULE_TAG = "tls_sde5_snr7_t2__bls_dsnr7_t2__loader_v2"
 
 REPORT_PATH = Path("validation_runs/final_acceptance_v1/baselines/report.json")
 ROBUSTNESS_CACHE = Path("validation_runs/final_acceptance_v1/robustness/runs_cache.jsonl")
@@ -126,6 +126,30 @@ def load_runtime_fingerprint() -> str:
 # ── ham ışık eğrisi yükleme (sade dedektörler için) ──
 
 
+def _download_with_corrupt_retry(search, idx: int):
+    """İndirme hatasında cached FITS'i doğrudan okur (reader-dispatch bypass).
+
+    lightkurve 2.4.2 + astropy 8 kombinasyonunda bazı SPOC ürünleri
+    genel karakter-okuyucular ayakta kalamıyor, ancak FITS sağlıklı;
+    hata mesajından ürün yolu çözülüp ``read_tess_lightcurve`` ile
+    doğrudan okunur. Dosya yoksa indirme hatası olduğu için yeniden
+    dener (ağ hatası + yarım dosya netleri).
+    """
+
+    import lightkurve as _lk
+    from lightkurve import LightkurveError
+
+    try:
+        # Not: allow_cadence_timeout kwarg'ı astropy 8 ile TessLightCurve
+        # reader'ına sızmıyor (TypeError) — kullanma.
+        return search[idx].download()
+    except LightkurveError as exc:
+        match = re.search(r"(/[\w.\-]+\.fits)", str(exc))
+        if match and Path(match.group(1)).exists():
+            return _lk.io.tess.read_tess_lightcurve(match.group(1))
+        raise
+
+
 def _load_stitched_lc(target_expr: str, sectors: list[int]):
     """SPOC ışık eğrilerini (önbellekten) yükler, birleştirir, temizler."""
 
@@ -144,8 +168,9 @@ def _load_stitched_lc(target_expr: str, sectors: list[int]):
     for idx in range(len(search)):
         mission = str(table["mission"][idx])
         match = re.search(r"Sector\s+(\d+)", mission)
-        if match and int(match.group(1)) in wanted:
-            lcs.append(search[idx, 0].download(allow_cadence_timeout=True))
+        if not (match and int(match.group(1)) in wanted):
+            continue
+        lcs.append(_download_with_corrupt_retry(search, idx))
     if not lcs:
         raise RuntimeError(f"istenen sektörlerde veri yok: {target_expr} {sorted(wanted)}")
     stitched = lcs[0] if len(lcs) == 1 else lk.LightCurveCollection(lcs).stitch()
