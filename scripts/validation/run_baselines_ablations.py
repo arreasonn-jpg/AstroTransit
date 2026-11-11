@@ -344,6 +344,9 @@ def _naive_worker(
 
     key, case = task
     started = time.monotonic()
+    import gc
+
+    gc.collect()  # spawn-surekli iscilerde onceki gorevin copunu topla (RAM suruklenmesi)
     have_alarm = hasattr(signal, "SIGALRM")
     if have_alarm:
         signal.signal(signal.SIGALRM, _alarm)
@@ -351,6 +354,7 @@ def _naive_worker(
 
     detected: bool
     status: str
+    error_msg = ""
     try:
         target = str(case["target_id"]).replace("TIC ", "").strip()
         lc = _load_stitched_lc(f"TIC {target}", case["sectors"])
@@ -365,10 +369,12 @@ def _naive_worker(
         print(f"[timeout] {key}: {timeout_sec} sn içinde bitmedi -> detected=False", flush=True)
         detected = False
         status = "timed_out"  # gerçek non-detection değil; kanıtta saydam olmalı
+        error_msg = f"timeout ({timeout_sec} sn pencere)"
     except Exception as exc:
         print(f"[error] {key}: {type(exc).__name__}: {exc} -> detected=False", flush=True)
         detected = False
         status = "error"  # ağ/çevre hatası; kanıt sayılır ama yeniden denenebilir
+        error_msg = f"{type(exc).__name__}: {exc}"[:280]
     finally:
         if have_alarm:
             signal.alarm(0)
@@ -382,6 +388,7 @@ def _naive_worker(
                     "detected": detected,
                     "status": status,
                     "elapsed_s": round(elapsed, 1),
+                    "error": error_msg,
                 }
             )
             + "\n"
@@ -466,6 +473,7 @@ def main(argv: list[str] | None = None) -> int:
     out_dir.mkdir(parents=True, exist_ok=True)
     _acquire_runner_lock(out_dir)
     _heartbeat(out_dir)
+    _start_periodic_heartbeat(out_dir, every_sec=60)
     cache_path = out_dir / "runs_cache.jsonl"
     naive_fp = baseline_fingerprint(args.corpus, RULE_TAG, args.oversampling_factor)
 
@@ -486,6 +494,36 @@ def main(argv: list[str] | None = None) -> int:
                     return None
                 return bool(record["detected"])
         return None
+
+    def _cached_attempts() -> dict[str, int]:
+        """key -> non-ok (timed_out/error) deneme sayısı.
+
+        Yalnızca OPERASYONEL: parmak izine girmez; amacı zaman aşımı
+        yükseltmesi (escalation) — kronik uzun görevlere ikinci turda
+        2x pencere verir ki pencere-yetersizliği döngüsü kırılsın.
+        """
+
+        counts: dict[str, int] = {}
+        if not cache_path.exists():
+            return counts
+        for line in cache_path.read_text(encoding="utf-8").splitlines():
+            if not line.strip():
+                continue
+            try:
+                record = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            if record.get("fingerprint") == naive_fp and record.get("status", "ok") != "ok":
+                k = str(record.get("key"))
+                counts[k] = counts.get(k, 0) + 1
+        return counts
+
+    attempts = _cached_attempts()
+
+    def _escalated_timeout_sec(key: str) -> int:
+        """Deneme sayısına göre pencere: base, 2x, 4x (tavan 480 dk)."""
+        n = min(attempts.get(key, 0), 2)
+        return min(args.task_timeout_min * 60 * (2 ** n), 480 * 60)
 
     naive_results: dict[str, bool] = {}
     tasks: list[tuple[str, dict[str, Any]]] = []
@@ -509,7 +547,7 @@ def main(argv: list[str] | None = None) -> int:
                     _naive_worker,
                     task,
                     detector_name=task[0].split("|", 1)[0],
-                    timeout_sec=args.task_timeout_min * 60,
+                    timeout_sec=_escalated_timeout_sec(task[0]),
                     cache_path=str(cache_path),
                     fingerprint=naive_fp,
                     oversampling_factor=args.oversampling_factor,
@@ -529,6 +567,7 @@ def main(argv: list[str] | None = None) -> int:
                                 "key": key,
                                 "detected": False,
                                 "status": "error",
+                                "error": f"pool-collapse: {type(exc).__name__}: {exc}"[:280],
                             }
                         ) + "\n")
                 print(f"[{done}/{total}] görev işlendi: {key}", flush=True)
@@ -538,7 +577,7 @@ def main(argv: list[str] | None = None) -> int:
             _naive_worker(
                 task,
                 detector_name=task[0].split("|", 1)[0],
-                timeout_sec=args.task_timeout_min * 60,
+                timeout_sec=_escalated_timeout_sec(task[0]),
                 cache_path=str(cache_path),
                 fingerprint=naive_fp,
                 oversampling_factor=args.oversampling_factor,
@@ -631,6 +670,28 @@ def _heartbeat(out_dir: Path) -> None:
 
     (Path(out_dir) / "heartbeat").write_text(str(time.time()))
     print("[heartbeat] tık", flush=True)
+
+
+def _start_periodic_heartbeat(out_dir: Path, every_sec: int = 60) -> None:
+    """Ölüm gibi görünen uzun görevlerde watchdog'un yalancı pozitif
+    kovanmaması için arka planla bir kalp atışı başlatıyoruz (print yok;
+    sadece dosya, run4 log'unu şişirmesin).
+    """
+
+    import threading
+
+    stop = threading.Event()
+
+    def _tick() -> None:
+        while not stop.wait(every_sec):
+            try:
+                (Path(out_dir) / "heartbeat").write_text(str(time.time()))
+            except Exception:
+                pass
+
+    thread = threading.Thread(target=_tick, daemon=True)
+    thread.start()
+    return  # kalp atışı sonlanmazsa eleme ile durur (daemon)
 
 
 def _release_runner_lock(lock_path: Path, pid: int) -> None:

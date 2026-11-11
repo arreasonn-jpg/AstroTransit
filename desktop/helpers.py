@@ -222,13 +222,30 @@ def run_summary_row(result: Any) -> dict[str, Any]:
     }
 
 
+_JSON_ROW_CACHE: dict[str, tuple[float, int, dict[str, Any]]] = {}
+
+
 def rows_from_json_files(files: Iterable[Path]) -> list[dict[str, Any]]:
-    """Kaydedilmiş aday JSON çıktısını tablo satırına çevirir (alanlar eski şemalara toleranslı)."""
+    """Kaydedilmiş aday JSON çıktısını tablo satırına çevirir (alanlar eski şemalara toleranslı).
+
+    Optimizasyon: mtime+boyut sabit olan dosyalar yeniden örneklenmez; son
+    taramayla aynıysa bellekten dönüş yapılır (yüzlerce dosyada UI takılması...
+    """
 
     import json
 
     rows: list[dict[str, Any]] = []
     for path in files:
+        key = str(path)
+        try:
+            stat = Path(path).stat()
+            stamp = (stat.st_mtime, stat.st_size)
+        except OSError:
+            continue
+        cached = _JSON_ROW_CACHE.get(key)
+        if cached is not None and cached[0] == stamp[0] and cached[1] == stamp[1]:
+            rows.append(cached[2])
+            continue
         try:
             with Path(path).open("r", encoding="utf-8") as f:
                 data = json.load(f)
@@ -249,22 +266,24 @@ def rows_from_json_files(files: Iterable[Path]) -> list[dict[str, Any]]:
         )
         if fpp is None:
             fpp = _float(quality.get("fpp") if isinstance(quality, dict) else None) or _float(data.get("fpp"))
-        rows.append(
-            {
-                "target_id": target.get("source_id", Path(path).stem),
-                "sector": target.get("sector", ""),
-                "success": True,
-                "candidate_class": str(score_data.get("candidate_class", "")),
-                "total_score": _float(score_data.get("total_score")),
-                "snr": _float(_get(quality, "snr", "snr_adopted")),
-                "fpp": fpp,
-                "period_days": _float(params.get("period_days", params.get("period"))),
-                "duration_hours": _float(params.get("duration_hours", params.get("duration"))),
-                "depth_ppm": _float(params.get("depth_ppm", derived.get("depth_ppm"))),
-                "planet_radius_rearth": _float(derived.get("planet_radius_rearth")),
-                "earth_similarity_score": _float(similarity.get("score")),
-            }
-        )
+        row = {
+            "target_id": target.get("source_id", Path(path).stem),
+            "sector": target.get("sector", ""),
+            "success": True,
+            "candidate_class": str(score_data.get("candidate_class", "")),
+            "total_score": _float(score_data.get("total_score")),
+            "snr": _float(_get(quality, "snr", "snr_adopted")),
+            "fpp": fpp,
+            "period_days": _float(params.get("period_days", params.get("period"))),
+            "duration_hours": _float(params.get("duration_hours", params.get("duration"))),
+            "depth_ppm": _float(params.get("depth_ppm", derived.get("depth_ppm"))),
+            "planet_radius_rearth": _float(derived.get("planet_radius_rearth")),
+            "earth_similarity_score": _float(similarity.get("score")),
+        }
+        if len(_JSON_ROW_CACHE) > 4000:  # tavan: aşırı büyümeyi önle
+            _JSON_ROW_CACHE.clear()
+        _JSON_ROW_CACHE[key] = (stamp[0], stamp[1], row)
+        rows.append(row)
     return rows
 
 

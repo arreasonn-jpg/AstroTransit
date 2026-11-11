@@ -1,0 +1,294 @@
+{
+  "blocking_reasons": [
+    "no_labelled_fpp_cases",
+    "false_positive_cohort_below_minimum:0<40",
+    "planet_cohort_below_minimum:0<40",
+    "blind_test_below_minimum:0<10",
+    "blind_test_roc_auc_unavailable"
+  ],
+  "campaign": "fpp_quality_calibration_v1",
+  "cases": {
+    "false_positive_cases": 0,
+    "measured_exact_zero_count": 0,
+    "n_cases": 0,
+    "not_evaluated": {
+      "no_candidate_record": 190,
+      "not_evaluated": 10
+    },
+    "planet_cases": 0
+  },
+  "claim_boundary": "Calibration of a heuristic risk proxy on two frozen, independently labelled cohorts. This is not a Bayesian false-positive probability, not a population prevalence estimate, and not proof that any single candidate is or is not a planet. Targets without a scored candidate are reported as not_evaluated and are never converted into an FPP of zero.",
+  "claim_policy": "A gate closes only when its declared status and immutable evidence are measured/pass and every predeclared acceptance check passes; pending work is never a score.",
+  "cohorts": {
+    "false_positives": {
+      "accepted_candidate_count": 51,
+      "evaluated_count": 90,
+      "fpp_available_count": 0,
+      "labelled_count": 100,
+      "not_evaluated": {
+        "no_candidate_record": 90,
+        "not_evaluated": 10
+      },
+      "unevaluated_count": 10
+    },
+    "frozen_selection": {
+      "cohort_sha256": "9de7d31a0aaf45418f849c733de975e9b498a75b579390999674ca08ebe4ab2c",
+      "detector_used_for_selection": false,
+      "labelled_corpus_sha256": "c6490fa32c8fea72fcddf50a8af038d825de573b5da39cbb3063a4c0cecbb9b0",
+      "method": "sha256_seeded_rank_after_label_and_host_exclusions_v1",
+      "seed": 20260917,
+      "selected_count": 200
+    },
+    "planets": {
+      "accepted_candidate_count": 59,
+      "evaluated_count": 100,
+      "fpp_available_count": 0,
+      "labelled_count": 100,
+      "not_evaluated": {
+        "no_candidate_record": 100
+      },
+      "unevaluated_count": 0
+    },
+    "quiet_controls": {
+      "accepted_candidate_count": 0,
+      "evaluated_count": 0,
+      "fpp_observed_count": 0,
+      "labelled_count": 0,
+      "role": "reported_only_not_a_calibration_label",
+      "spurious_acceptance_rate": null
+    }
+  },
+  "data_integrity": {
+    "conflicting_label_targets": [],
+    "duplicate_target_ids": 0,
+    "missing_fpp_rows_kept_as_not_evaluated": 200,
+    "unknown_label_rows": 0,
+    "zero_filled_missing_fpp_count": 0
+  },
+  "environment": {
+    "generated_at_utc": "2026-10-17T19:25:49.419510+00:00",
+    "github_run_id": null,
+    "github_sha": null,
+    "platform": "Linux-6.18.54.1-microsoft-standard-WSL2-x86_64-with-glibc2.39",
+    "python": "3.12.3 (main, Aug 31 2026, 10:18:26) [GCC 13.3.0]"
+  },
+  "label_counts": {
+    "false_positive": 100,
+    "planet": 100
+  },
+  "method": {
+    "adopted_fpp_rule": "max_total_score_then_lowest_sector",
+    "blind_test_role": "single_directional_final_report",
+    "calibration_transform_applied": false,
+    "decision_rule": "fpp >= threshold is a false-positive call",
+    "fpp_semantics": "heuristic_risk_proxy_not_bayesian",
+    "metric_owner": "astrotransit/validation/fpp_benchmark.py",
+    "split_fractions": [
+      0.6,
+      0.2,
+      0.2
+    ],
+    "split_seed": 20260912,
+    "threshold": 0.5,
+    "threshold_selection_split": "development"
+  },
+  "provenance": {
+    "cadence": null,
+    "config_hash": "1969622fa1f257f9b369f1c2712c1da7433e731771b5e59c414f8403345afacd",
+    "data_product": null,
+    "environment_manifest_hash": null,
+    "git_commit": "360625cd3e470dc194c7ace327f1725e7b155dda",
+    "host_platform": "Linux-6.18.54.1-microsoft-standard-WSL2-x86_64-with-glibc2.39",
+    "input_hash": null,
+    "model_version": null,
+    "output_hash": null,
+    "package_versions": {
+      "astropy": "8.0.1",
+      "astrotransit": "0.3.0",
+      "lightkurve": "2.4.2",
+      "numpy": "2.5.3",
+      "pandas": "3.0.5",
+      "pydantic": "2.13.5",
+      "scipy": "1.18.1",
+      "transitleastsquares": "1.32",
+      "wotan": "1.10"
+    },
+    "pipeline_version": "0.3.0",
+    "python_version": "3.12.3",
+    "random_seed": 20260912,
+    "run_timestamp_utc": "2026-10-17T19:25:48.618253Z",
+    "schema_version": null,
+    "sector": null,
+    "target_id": null
+  },
+  "recorded_rows": 200,
+  "rows_sha256": "194b0a93b523354306392b3f6f8e357c363f672e0c9bb55f05431a1d7c868376",
+  "schema_version": "1.0",
+  "source": {
+    "shard_sha256": {
+      "0": "4843df085c89c70f6d22ed2302a61eb59c166849eba95934e0db313341a8aff3",
+      "1": "067ab2ebd5d11b9c4be357a1a513c8eb76b19a99c0d86e63ffc62537682158d6",
+      "10": "24cd5d6257638124416246d04fd5c143ea7005b0b3838e7d2916dc063040f70d",
+      "11": "e1d2c5c5b45b8e735f92cf0b8fa792e70e5165fbe12c6796c1c2f886e1b55db5",
+      "12": "f352e4e4ffe6e763987170a724bf4627e5c407c0f2ed8772a06b09e983a79fe9",
+      "13": "a7576b3508e84f302000c55e53efd3522694699e3606804b14bc852514a8e05d",
+      "14": "cf3ca13a7c6547775cf85e4f0834e4a74b2fe9fc95b149a26aea5c8839a4374e",
+      "15": "24f92c0cb82e45780063622eeda257589e425514e9135ed1af1265bcf70f51fd",
+      "16": "94fab0fb841722e670072357af3fd5a50330affbdaa9c27a8bc28b1dcc5a593a",
+      "17": "585756930705e9b6cd3a3f77188fe950d13a9f3247c3151581cc193784cbc98e",
+      "18": "ff827379d29db8d08c0fba7d10f313e01a16e00c062369685c57903a4fa27aa3",
+      "19": "1a6bcc7271dbc879d4243e3d40234783d59bcb4e822ef473e99db81f1692ee9b",
+      "2": "861d0678867b1803281bcde9105dec5bdc13cfd8a8c46143af72df3f9bb86c1b",
+      "3": "2c2b64b628e5098cbc227bc8f1265846ddeec736a7a32484ddb9d0526db4799f",
+      "4": "5b902ca9c7cd1b60590b75d8ce89520ab4391d52d8240fc9eb509a59aa18f20d",
+      "5": "9c08a879efde37a4cafb2a47d3d0fd9ad4ad50122194639617ce3bdfceeb7e45",
+      "6": "4cc2b0969ed259acd0cba24dae1a95d5544a044bb66ce17bdd90e9d19d402111",
+      "7": "4592e6c55fb000ef1c6d9e4769a2c17780cdf36a53f36b2cb6d9468a2480dae6",
+      "8": "83384c2edef6b281b3765e3b478a0b454d141225356d9ef1dab5a2fa04ec3dc4",
+      "9": "c44e1f7f13aa067e99fc1adaaec2490eda0d23f1f808cd9305bd0ee2252dc991"
+    },
+    "source": "outputs/fpp-calibration-v1-20261017_112201/shards"
+  },
+  "splits": {
+    "blind_test": {
+      "brier_score": null,
+      "calibration_curve": [],
+      "confusion_matrix": {},
+      "expected_calibration_error": null,
+      "false_positive_recall": null,
+      "n_cases": 0,
+      "planet_precision": null,
+      "pr_auc": null,
+      "roc_auc": null,
+      "threshold": 0.5
+    },
+    "development": {
+      "brier_score": null,
+      "calibration_curve": [],
+      "confusion_matrix": {},
+      "expected_calibration_error": null,
+      "false_positive_recall": null,
+      "n_cases": 0,
+      "planet_precision": null,
+      "pr_auc": null,
+      "roc_auc": null,
+      "threshold": 0.5
+    },
+    "validation": {
+      "brier_score": null,
+      "calibration_curve": [],
+      "confusion_matrix": {},
+      "expected_calibration_error": null,
+      "false_positive_recall": null,
+      "n_cases": 0,
+      "planet_precision": null,
+      "pr_auc": null,
+      "roc_auc": null,
+      "threshold": 0.5
+    }
+  },
+  "status": "pending_run",
+  "threshold_sweep": {
+    "development_only": true,
+    "minimum_brier_threshold": null,
+    "rows": [
+      {
+        "brier_score": null,
+        "false_positive_recall": null,
+        "planet_precision": null,
+        "threshold": 0.1
+      },
+      {
+        "brier_score": null,
+        "false_positive_recall": null,
+        "planet_precision": null,
+        "threshold": 0.15
+      },
+      {
+        "brier_score": null,
+        "false_positive_recall": null,
+        "planet_precision": null,
+        "threshold": 0.2
+      },
+      {
+        "brier_score": null,
+        "false_positive_recall": null,
+        "planet_precision": null,
+        "threshold": 0.25
+      },
+      {
+        "brier_score": null,
+        "false_positive_recall": null,
+        "planet_precision": null,
+        "threshold": 0.3
+      },
+      {
+        "brier_score": null,
+        "false_positive_recall": null,
+        "planet_precision": null,
+        "threshold": 0.35
+      },
+      {
+        "brier_score": null,
+        "false_positive_recall": null,
+        "planet_precision": null,
+        "threshold": 0.4
+      },
+      {
+        "brier_score": null,
+        "false_positive_recall": null,
+        "planet_precision": null,
+        "threshold": 0.45
+      },
+      {
+        "brier_score": null,
+        "false_positive_recall": null,
+        "planet_precision": null,
+        "threshold": 0.5
+      },
+      {
+        "brier_score": null,
+        "false_positive_recall": null,
+        "planet_precision": null,
+        "threshold": 0.55
+      },
+      {
+        "brier_score": null,
+        "false_positive_recall": null,
+        "planet_precision": null,
+        "threshold": 0.6
+      },
+      {
+        "brier_score": null,
+        "false_positive_recall": null,
+        "planet_precision": null,
+        "threshold": 0.65
+      },
+      {
+        "brier_score": null,
+        "false_positive_recall": null,
+        "planet_precision": null,
+        "threshold": 0.7
+      },
+      {
+        "brier_score": null,
+        "false_positive_recall": null,
+        "planet_precision": null,
+        "threshold": 0.75
+      },
+      {
+        "brier_score": null,
+        "false_positive_recall": null,
+        "planet_precision": null,
+        "threshold": 0.8
+      },
+      {
+        "brier_score": null,
+        "false_positive_recall": null,
+        "planet_precision": null,
+        "threshold": 0.85
+      }
+    ],
+    "split": "development"
+  }
+}

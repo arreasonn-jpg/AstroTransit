@@ -701,21 +701,28 @@ class MainWindow(QMainWindow):
         return table
 
     def _fill_table(self, table: QTableWidget, rows: list[dict[str, Any]]) -> None:
-        table.setRowCount(0)
-        for row_index, row in enumerate(rows):
-            table.insertRow(row_index)
-            for col_index, key in enumerate(RESULT_TABLE_COLUMNS):
-                value = row.get(key, "")
-                if isinstance(value, float):
-                    item = QTableWidgetItem(f"{value:.3f}")
-                elif isinstance(value, bool):
-                    item = QTableWidgetItem("✓" if value else "✗")
-                else:
-                    item = QTableWidgetItem(
-                        "" if value is None else str(value)
-                    )
-                item.setTextAlignment(Qt.AlignCenter)
-                table.setItem(row_index, col_index, item)
+        # Ölçekli doldurma: tek seferde satır-sayısı ayarlanır; yeniden çizim
+        # topluca açılır (yüzlerce satırda UI takılması olmaması için).
+        table.setUpdatesEnabled(False)
+        table.setSortingEnabled(False)
+        try:
+            table.setRowCount(len(rows))
+            for row_index, row in enumerate(rows):
+                for col_index, key in enumerate(RESULT_TABLE_COLUMNS):
+                    value = row.get(key, "")
+                    if isinstance(value, float):
+                        item = QTableWidgetItem(f"{value:.3f}")
+                    elif isinstance(value, bool):
+                        item = QTableWidgetItem("✓" if value else "✗")
+                    else:
+                        item = QTableWidgetItem(
+                            "" if value is None else str(value)
+                        )
+                    item.setTextAlignment(Qt.AlignCenter)
+                    table.setItem(row_index, col_index, item)
+        finally:
+            table.setSortingEnabled(True)
+            table.setUpdatesEnabled(True)
 
     def _fill_metric_cards(self, results: list[Any]) -> None:
         """Analiz sonucu üç metrik kartını doldurur."""

@@ -143,6 +143,41 @@ def materialize_cases(
     return [*fp_cases, *quiet_cases], metadata
 
 
+def _record_to_dict(record: Any) -> dict[str, Any] | None:
+    """Pipeline cikti kaydini JSON-safe sozluge cevirir (FPP telemetrisi icin).
+
+    Record; dataclass, pydantic v1/v2 veya mapping olabilir. FPP telemetrisi
+    ``false_positive_probability`` / ``fpp`` alanini okur; burada hepsini
+    guvenli bicimde dict'e indiriyoruz.
+    """
+    if record is None:
+        return None
+    if isinstance(record, dict):
+        return dict(record)
+    try:
+        import dataclasses
+        if dataclasses.is_dataclass(record) and not isinstance(record, type):
+            return dataclasses.asdict(record)
+    except Exception:
+        pass
+    if hasattr(record, "model_dump"):
+        try:
+            return record.model_dump()
+        except Exception:
+            pass
+    if hasattr(record, "dict"):
+        try:
+            return record.dict()
+        except Exception:
+            pass
+    fields = (
+        "sector", "candidate_confirmed", "false_positive_probability",
+        "fpp", "fpp_method", "detection_confidence", "claim_status",
+        "candidate_class", "flags", "is_false_positive", "total_score",
+    )
+    return {k: getattr(record, k, None) for k in fields}
+
+
 def _quality_value(sector_result: Any, name: str) -> Any:
     quality = getattr(sector_result, "quality", None)
     score = getattr(quality, "score", None)
@@ -237,6 +272,9 @@ def _evaluate_case_raw(
                     "quality_score": _quality_value(item, "score"),
                     "quality_class": _quality_value(item, "class"),
                     "error": str(item.error or ""),
+                    # FPP telemetrisi icin pipeline cikti kaydi (attach_row_fpp
+                    # bu alandan false_positive_probability / fpp okur).
+                    "record": _record_to_dict(getattr(item, "record", None)),
                 }
             )
         successful = sum(bool(row["success"]) for row in sectors)
