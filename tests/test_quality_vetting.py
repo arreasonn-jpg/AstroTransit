@@ -480,3 +480,50 @@ def test_vet_all_skipped():
     r = v.vet(c, m)
     # Bazıları SKIP, bazıları WARN/PASS
     assert r.false_positive_probability is not None
+
+
+# ═══════════════════════════════════════════════════════
+# FAZ 2b.5: secondary-eclipse corroboration (Bulgu 1)
+# ═══════════════════════════════════════════════════════
+
+def test_solo_secondary_snr_fail_does_not_veto():
+    """A lone secondary_eclipse_snr FAIL (1.5 < SNR, ratio below 0.5) must
+    NOT mark the candidate FP — this is the blind-recall fix."""
+    v = FalsePositiveVetter()
+    c = _candidate(depth=0.001, period=3.5, duration=0.1)
+    m = _metrics(
+        odd_even=0.5, secondary=0.0001, secondary_snr=2.0,  # SNR FAIL, ratio PASS
+        variable=False, amplitude=50.0, depth_var=1e-10,
+        n_transits=5, symmetry=0.9, completeness=0.95,
+    )
+    r = v.vet(c, m)
+    assert "secondary_eclipse_snr" in r.fp_flags
+    assert r.is_false_positive is False
+
+
+def test_secondary_snr_fail_plus_ratio_warn_vetoes():
+    """Corroboration: SNR FAIL + ratio WARN (ratio > 0.25 of primary) → FP."""
+    v = FalsePositiveVetter()
+    c = _candidate(depth=0.001, period=3.5, duration=0.1)
+    # secondary=0.0003 → ratio 0.3 > 0.25 (half of 0.5) → WARN; snr 2.0 → FAIL
+    m = _metrics(
+        odd_even=0.5, secondary=0.0003, secondary_snr=2.0,
+        variable=False, amplitude=50.0, depth_var=1e-10,
+        n_transits=5, symmetry=0.9, completeness=0.95,
+    )
+    r = v.vet(c, m)
+    assert r.is_false_positive is True
+
+
+def test_secondary_ratio_fail_alone_still_vetoes():
+    """secondary_eclipse FAIL (ratio > 0.5 AND snr >= 2.0) remains a solo veto."""
+    v = FalsePositiveVetter()
+    c = _candidate(depth=0.01, period=3.5, duration=0.1)
+    m = _metrics(
+        odd_even=0.5, secondary=0.006, secondary_snr=5.0,
+        variable=False, amplitude=50.0, depth_var=1e-10,
+        n_transits=5, symmetry=0.9, completeness=0.95,
+    )
+    r = v.vet(c, m)
+    assert "secondary_eclipse" in r.fp_flags
+    assert r.is_false_positive is True

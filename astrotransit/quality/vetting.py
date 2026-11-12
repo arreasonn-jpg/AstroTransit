@@ -61,13 +61,26 @@ CRITICAL_FP_TESTS = frozenset({
 })
 
 # Tek başına FAIL → FP kararı (yüksek güvenilirlik, fiziksel kesinlik)
+# FAZ 2b.5 (blind-recall fix, Bulgu 1): ``secondary_eclipse_snr`` removed from
+# the solo-veto set. On real TESS data a single-sector secondary-eclipse SNR
+# crossing (1.5 < SNR) fires on genuine planets as often as on EBs, so a solo
+# veto there costs recall without buying precision. The veto now requires
+# corroboration: ``secondary_eclipse`` FAIL (ratio > 0.5 AND SNR >= 2.0) or
+# the corroborated pair rule in ``vet()`` below.
 HARD_FAIL_TESTS = frozenset({
-    "secondary_eclipse_snr",
     "secondary_eclipse",
     "depth_limit",
     "duration_period_ratio",
     "transit_shape",
     "stellar_variability",
+})
+
+# İkincil tutulma için korelasyonlu veto: bu iki testten biri FAIL ve diğeri
+# FAIL/WARN ise (tek sektörde) FP kararı verilir. Tek başına SNR crossing
+# yeterli değildir (Bulgu 1).
+SECONDARY_CORROBORATION_TESTS = frozenset({
+    "secondary_eclipse",
+    "secondary_eclipse_snr",
 })
 
 # İki tanesi birlikte FAIL → FP kararı (orta güvenilirlik)
@@ -331,8 +344,21 @@ class FalsePositiveVetter:
         ]
         hard_fails = [name for name in fp_flags if name in HARD_FAIL_TESTS]
         soft_fails = [name for name in fp_flags if name in SOFT_FAIL_TESTS]
+        # FAZ 2b.5 (Bulgu 1): secondary-eclipse corroboration. A solo
+        # ``secondary_eclipse_snr`` FAIL no longer vetoes; the veto needs the
+        # depth-ratio test to agree (FAIL) or at least warn, so a noise-floor
+        # SNR crossing on a real planet does not kill the candidate.
+        verdict_by_name = {t.name: t.verdict for t in tests}
+        sec_fail = verdict_by_name.get("secondary_eclipse") == VettingVerdict.FAIL
+        sec_snr_fail = verdict_by_name.get("secondary_eclipse_snr") == VettingVerdict.FAIL
+        sec_snr_warn = verdict_by_name.get("secondary_eclipse_snr") == VettingVerdict.WARN
+        secondary_corroborated = sec_fail or (
+            sec_snr_fail
+            and verdict_by_name.get("secondary_eclipse") == VettingVerdict.WARN
+        )
         is_fp = (
             bool(hard_fails)
+            or secondary_corroborated
             or len(soft_fails) >= 2
             or n_fail >= 2
             or (fpp is not None and fpp > 0.5)
