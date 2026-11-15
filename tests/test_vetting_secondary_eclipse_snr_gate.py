@@ -31,6 +31,6 @@ def test_secondary_eclipse_snr_not_solo_hard():
 
 
 def test_secondary_pair_in_corroboration_set():
-    assert SECONDARY_CORROBORATION_TESTS == frozenset(
+    assert frozenset(
         {"secondary_eclipse", "secondary_eclipse_snr"}
-    )
+    ) == SECONDARY_CORROBORATION_TESTS
