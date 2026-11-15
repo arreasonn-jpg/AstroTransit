@@ -6,8 +6,8 @@ The model is idealized and does not include finite-mass third-body feedback,
 non-circular primaries, perturbing bodies, or control acceleration.
 """
 
-import math
 from dataclasses import dataclass
+import math
 from typing import cast
 
 
