@@ -7,7 +7,6 @@ non-circular primaries, perturbing bodies, or control acceleration.
 """
 
 import math
-
 from dataclasses import dataclass
 from typing import cast
 
