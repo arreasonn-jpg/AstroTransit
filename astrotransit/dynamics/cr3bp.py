@@ -10,7 +10,6 @@ import math
 from dataclasses import dataclass
 from typing import cast
 
-
 State = tuple[float, float, float, float, float, float]
 
 
