@@ -7,8 +7,8 @@ certificate and does not include finite-mass candidate feedback or control.
 
 from __future__ import annotations
 
-import math
 from dataclasses import dataclass
+import math
 
 from astrotransit.dynamics.cr3bp import CR3BPDynamics
 from astrotransit.dynamics.l1 import L1Geometry
