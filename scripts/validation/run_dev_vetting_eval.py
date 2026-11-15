@@ -16,8 +16,8 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 
 # The path bootstrap above is required for direct script execution.
-from astrotransit.pipelines.orchestrator import AstroTransitOrchestrator  # noqa: E402
 import scripts.validation.run_blind_holdout as blind_runner  # noqa: E402
+from astrotransit.pipelines.orchestrator import AstroTransitOrchestrator  # noqa: E402
 
 # Windows has no SIGALRM; the dev runner is local-only, so use a no-op time limit.
 if not hasattr(blind_runner.signal, "SIGALRM"):
