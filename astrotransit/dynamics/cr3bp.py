@@ -6,10 +6,9 @@ The model is idealized and does not include finite-mass third-body feedback,
 non-circular primaries, perturbing bodies, or control acceleration.
 """
 
-from __future__ import annotations
-
 import math
 from dataclasses import dataclass
+from typing import cast
 
 
 State = tuple[float, float, float, float, float, float]
@@ -84,12 +83,15 @@ class CR3BPDynamics:
             k2 = self.rhs(self._combine(state, k1, 0.5 * step_size))
             k3 = self.rhs(self._combine(state, k2, 0.5 * step_size))
             k4 = self.rhs(self._combine(state, k3, step_size))
-            state = tuple(
-                value + (step_size / 6.0) * (a + 2.0 * b + 2.0 * c + d)
-                for value, a, b, c, d in zip(state, k1, k2, k3, k4, strict=True)
+            state = cast(
+                State,
+                tuple(
+                    value + (step_size / 6.0) * (a + 2.0 * b + 2.0 * c + d)
+                    for value, a, b, c, d in zip(state, k1, k2, k3, k4, strict=True)
+                ),
             )
             self._validate_state(state)
-            trajectory.append(state)  # type: ignore[arg-type]
+            trajectory.append(state)
         return tuple(trajectory)
 
     def _distances(self, x: float, y: float, z: float) -> tuple[float, float]:
