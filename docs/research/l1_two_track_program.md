@@ -29,7 +29,7 @@ Potential observables include repeatable transit residuals, additional photometr
 
 ## L1 local linear stability implemented in Phase 3
 
-`astrotransit.dynamics.stability.analyze_l1_local_stability` constructs the six-dimensional first-order variational matrix at the supplied collinear L1 equilibrium. It evaluates the CR3BP Hessian terms and the planar characteristic quartic, then reports the real unstable pair and the two imaginary oscillatory pairs in normalized inverse-time units.
+`astrotransit.dynamics.stability.analyze_l1_local_stability` constructs the six-dimensional first-order variational matrix at the supplied collinear L1 equilibrium. It evaluates the CR3BP Hessian terms and the planar characteristic quartic, lambda^4 + (2 - A) lambda^2 + (1 + A - 2 A^2) = 0, where A = (1 - mu)/r1^3 + mu/r2^3. The Coriolis contribution is included explicitly. It then reports the real unstable pair and the two imaginary oscillatory pairs in normalized inverse-time units.
 
 For an ideal collinear L1 point, the linear spectrum has saddle-center-center structure: one exponentially growing/decaying planar pair, one planar oscillatory pair, and one vertical oscillatory pair. This is a local linear result. It does not establish nonlinear boundedness, long-term survival, halo-orbit existence, or station-keeping feasibility.
 
