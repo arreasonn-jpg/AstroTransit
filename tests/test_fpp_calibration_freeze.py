@@ -180,7 +180,7 @@ def test_freeze_writes_evidence_and_flips_only_the_fpp_gate(tmp_path: Path):
     assert gates["labelled_fp_quiet_controls"]["status"] == statuses_before["labelled_fp_quiet_controls"]
     assert gates["adversarial_false_positives"]["status"] == statuses_before["adversarial_false_positives"]
     assert gates["blind_domain_holdout"]["status"] != "measured"
-    assert gates["detrending_cadence_impact_robustness"]["status"] != "measured"
+    assert gates["detrending_cadence_impact_robustness"]["status"] == statuses_before["detrending_cadence_impact_robustness"]
     committed = json.loads(PROGRAM.read_text(encoding="utf-8"))
     before = {g["id"]: g["status"] for g in committed["gates"] if g["id"] != "fpp_quality_calibration"}
     after = {g["id"]: g["status"] for g in program["gates"] if g["id"] != "fpp_quality_calibration"}
