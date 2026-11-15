@@ -38,6 +38,9 @@ def test_planar_eigenvalues_satisfy_characteristic_polynomial() -> None:
     dynamics, geometry = _earth_moon_model()
     result = analyze_l1_local_stability(dynamics, geometry)
     c2, c0 = result.characteristic_polynomial_coefficients
+    gradient = result.gravity_gradient
+    assert c2 == pytest.approx(2.0 - gradient)
+    assert c0 == pytest.approx(1.0 + gradient - 2.0 * gradient**2)
 
     for eigenvalue in result.eigenvalues[:4]:
         residual = eigenvalue**4 + c2 * eigenvalue**2 + c0
