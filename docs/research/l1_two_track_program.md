@@ -47,7 +47,7 @@ Those are explicit subsequent work packages, not implicit capabilities.
 ## Development sequence
 
 1. **L1 geometry foundation:** validated L1 root solver and physical input checks.
-2. **CR3BP propagation:** rotating-frame equations, Jacobi constant, equilibrium and trajectory regression tests. (Implemented; CI validation pending.)
+2. **CR3BP propagation:** rotating-frame equations, Jacobi constant, equilibrium and trajectory regression tests. (Implemented; automated validation is tracked by the pull request CI.)
 3. **Track 1 finite-mass dynamics:** add the candidate as a gravitating body; integrate and perturb the full system; quantify boundedness and collision/escape outcomes.
 4. **Track 2 controlled dynamics:** add explicit control acceleration, station-keeping policy, control effort, and uncontrolled comparison.
 5. **Observational forward models:** predict transit/residual signatures for each track, including viewing geometry and cadence.
