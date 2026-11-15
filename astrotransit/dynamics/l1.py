@@ -97,7 +97,7 @@ class StarPlanetCR3BP:
 
         for _ in range(200):
             midpoint = left + 0.5 * (right - left)
-            if midpoint == left or midpoint == right:
+            if midpoint in (left, right):
                 break
             f_midpoint = equilibrium_equation(midpoint)
             if f_midpoint < 0.0:
