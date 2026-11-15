@@ -11,7 +11,7 @@ AstroTransit will investigate two distinct hypotheses. They share the star--plan
 
 The ambitious target is a near-Earth-twin candidate associated with the L1 region of a separate host-star/planet pair. Earth similarity is not a substitute for habitability: the assessment must separately consider radius, mass, incident stellar flux, atmosphere, temperature constraints, water indicators where measurable, and stellar activity.
 
-The host star--planet pair defines the L1 reference geometry. A candidate with non-negligible mass cannot be treated as a massless test particle at L1: its gravity changes the three-body configuration. Any candidate-scale interpretation therefore requires a finite-mass N-body model and a stability analysis, not only the CR3BP equilibrium calculation.
+The host star--planet pair defines the L1 reference geometry. L1 is a gravitational equilibrium point, not a habitable zone by definition; the candidate's local stellar irradiance must be calculated and compared with an explicitly stated habitable-zone model. A candidate with non-negligible mass cannot be treated as a massless test particle at L1: its gravity changes the three-body configuration. Any candidate-scale interpretation therefore requires a finite-mass N-body model and a stability analysis, not only the CR3BP equilibrium calculation.
 
 A body exactly at the ideal L1 equilibrium is not a stable free equilibrium. The research must test whether a physically admissible nearby trajectory exists and persists under perturbations. A photometric signal alone cannot establish L1 occupancy.
 
