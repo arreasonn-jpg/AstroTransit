@@ -59,7 +59,7 @@ def main() -> int:
                     search[idx].download()
                     print(f"[pf] {tag} ok ({time.time() - t0:.1f} sn)", flush=True)
                     break
-                except Exception as exc:  # noqa: BLE001
+                except Exception as exc:
                     msg = f"{type(exc).__name__}: {str(exc)[:120]}"
                     if attempt == len(DELAYS) - 1:
                         print(f"[pf] {tag} FAIL {msg}", flush=True)

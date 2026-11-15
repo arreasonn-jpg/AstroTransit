@@ -1,4 +1,4 @@
-"""DEV-only evaluation: run the full pipeline on the balanced24 dev corpus and
+""""DEV-only evaluation: run the full pipeline on the balanced24 dev corpus and
 dump per-sector vetting/metric rows. NEVER touches the blind holdout manifest.
 
 Red line (docs/blind_recall_roadmap.md): all recall fixes are validated on this
@@ -15,8 +15,9 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 
-from astrotransit.pipelines.orchestrator import AstroTransitOrchestrator
-import scripts.validation.run_blind_holdout as blind_runner
+# The path bootstrap above is required for direct script execution.
+import scripts.validation.run_blind_holdout as blind_runner  # noqa: E402
+from astrotransit.pipelines.orchestrator import AstroTransitOrchestrator  # noqa: E402
 
 # Windows has no SIGALRM; the dev runner is local-only, so use a no-op time limit.
 if not hasattr(blind_runner.signal, "SIGALRM"):

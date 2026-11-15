@@ -351,7 +351,6 @@ class FalsePositiveVetter:
         verdict_by_name = {t.name: t.verdict for t in tests}
         sec_fail = verdict_by_name.get("secondary_eclipse") == VettingVerdict.FAIL
         sec_snr_fail = verdict_by_name.get("secondary_eclipse_snr") == VettingVerdict.FAIL
-        sec_snr_warn = verdict_by_name.get("secondary_eclipse_snr") == VettingVerdict.WARN
         secondary_corroborated = sec_fail or (
             sec_snr_fail
             and verdict_by_name.get("secondary_eclipse") == VettingVerdict.WARN
