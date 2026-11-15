@@ -42,7 +42,7 @@ class L1LocalStability:
     @property
     def characteristic_polynomial_coefficients(self) -> tuple[float, float]:
         """Return (c2, c0) for lambda^4 + c2*lambda^2 + c0 = 0."""
-        return -self.gravity_gradient, (
+        return 2.0 - self.gravity_gradient, (
             1.0 + self.gravity_gradient - 2.0 * self.gravity_gradient**2
         )
 
@@ -122,14 +122,14 @@ def analyze_l1_local_stability(
         raise ValueError("Supplied geometry does not satisfy the collinear L1 equation.")
 
     gradient = (1.0 - mu) / (r1**3) + mu / (r2**3)
-    discriminant = 9.0 * gradient**2 - 4.0 * gradient - 4.0
+    discriminant = 9.0 * gradient**2 - 8.0 * gradient
     constant_term = 1.0 + gradient - 2.0 * gradient**2
     if not math.isfinite(discriminant) or discriminant <= 0.0 or constant_term >= 0.0:
         raise ArithmeticError("L1 spectral roots do not have the expected saddle-center structure.")
 
     root_discriminant = math.sqrt(discriminant)
-    positive_lambda_squared = 0.5 * (gradient + root_discriminant)
-    negative_lambda_squared = 0.5 * (gradient - root_discriminant)
+    positive_lambda_squared = 0.5 * (gradient - 2.0 + root_discriminant)
+    negative_lambda_squared = 0.5 * (gradient - 2.0 - root_discriminant)
     if positive_lambda_squared <= 0.0 or negative_lambda_squared >= 0.0:
         raise ArithmeticError("Could not resolve one real and one imaginary planar eigenvalue pair.")
 
