@@ -27,6 +27,14 @@ Potential observables include repeatable transit residuals, additional photometr
 
 `astrotransit.dynamics.cr3bp.CR3BPDynamics` implements the normalized rotating-frame equations, effective potential, Jacobi constant, and a fixed-step classical RK4 propagator. The state order is `(x, y, z, vx, vy, vz)`. The numerical regression suite checks that the computed L1 location is an equilibrium of the vector field and that Jacobi drift decreases under step refinement. This remains an idealized massless-test-particle model; it is not a finite-mass Earth-twin model or a controlled station-keeping model.
 
+## L1 local linear stability implemented in Phase 3
+
+`astrotransit.dynamics.stability.analyze_l1_local_stability` constructs the six-dimensional first-order variational matrix at the supplied collinear L1 equilibrium. It evaluates the CR3BP Hessian terms and the planar characteristic quartic, then reports the real unstable pair and the two imaginary oscillatory pairs in normalized inverse-time units.
+
+For an ideal collinear L1 point, the linear spectrum has saddle-center-center structure: one exponentially growing/decaying planar pair, one planar oscillatory pair, and one vertical oscillatory pair. This is a local linear result. It does not establish nonlinear boundedness, long-term survival, halo-orbit existence, or station-keeping feasibility.
+
+Regression tests compare the analytic matrix against finite differences of the nonlinear CR3BP vector field, verify the characteristic polynomial, check the expected eigenvalue structure for Earth--Moon and Sun--Earth mass ratios, and reject inconsistent geometry inputs.
+
 ## Geometry model implemented in Phase 1
 
 `astrotransit.dynamics.l1.StarPlanetCR3BP` solves the collinear L1 equilibrium for two point-mass primaries on a circular orbit. It reports normalized barycentric and primary/secondary distances, plus dimensional distances for a user-supplied separation.
@@ -52,11 +60,12 @@ Those are explicit subsequent work packages, not implicit capabilities.
 
 1. **L1 geometry foundation:** validated L1 root solver and physical input checks.
 2. **CR3BP propagation:** rotating-frame equations, Jacobi constant, equilibrium and trajectory regression tests. (Implemented; automated validation is tracked by the pull request CI.)
-3. **Track 1 finite-mass dynamics:** add the candidate as a gravitating body; integrate and perturb the full system; quantify boundedness and collision/escape outcomes.
-4. **Track 2 controlled dynamics:** add explicit control acceleration, station-keeping policy, control effort, and uncontrolled comparison.
-5. **Observational forward models:** predict transit/residual signatures for each track, including viewing geometry and cadence.
-6. **Search and validation:** inject synthetic signals into development data, measure completeness and false positives, then perform independent follow-up checks.
-7. **Evidence-gated candidate reports:** preserve inputs, catalog/data provenance, model version, parameter uncertainty, random seed, and reproducible commands.
+3. **L1 local linear stability:** variational matrix, characteristic spectrum, and independent finite-difference checks. (Implemented; nonlinear stability remains open.)
+4. **Track 1 finite-mass dynamics:** add the candidate as a gravitating body; integrate and perturb the full system; quantify boundedness and collision/escape outcomes.
+5. **Track 2 controlled dynamics:** add explicit control acceleration, station-keeping policy, control effort, and uncontrolled comparison.
+6. **Observational forward models:** predict transit/residual signatures for each track, including viewing geometry and cadence.
+7. **Search and validation:** inject synthetic signals into development data, measure completeness and false positives, then perform independent follow-up checks.
+8. **Evidence-gated candidate reports:** preserve inputs, catalog/data provenance, model version, parameter uncertainty, random seed, and reproducible commands.
 
 ## Claim and evidence rules
 
