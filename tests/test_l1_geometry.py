@@ -35,7 +35,7 @@ def test_l1_moves_closer_to_secondary_as_planet_mass_decreases() -> None:
     low_mass = StarPlanetCR3BP(1.0e30, 1.0e24, separation).l1_geometry()
     high_mass = StarPlanetCR3BP(1.0e30, 1.0e27, separation).l1_geometry()
 
-    assert high_mass.distance_from_secondary < low_mass.distance_from_secondary
+    assert low_mass.distance_from_secondary < high_mass.distance_from_secondary
 
 
 @pytest.mark.parametrize(
