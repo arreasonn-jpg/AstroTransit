@@ -1,0 +1,80 @@
+# AstroTransit L1 Discovery Program: Two Research Tracks
+
+**Status:** Research specification and first numerical geometry component  
+**Model scope:** Star--planet L1, circular restricted three-body problem (CR3BP)
+
+## Scientific objectives
+
+AstroTransit will investigate two distinct hypotheses. They share the star--planet L1 geometry but must not share assumptions about the candidate's mass, physical nature, habitability, or ability to station-keep.
+
+### Track 1: Earth-like habitable planet near star--planet L1
+
+The ambitious target is a near-Earth-twin candidate associated with the L1 region of a separate host-star/planet pair. Earth similarity is not a substitute for habitability: the assessment must separately consider radius, mass, incident stellar flux, atmosphere, temperature constraints, water indicators where measurable, and stellar activity.
+
+The host star--planet pair defines the L1 reference geometry. L1 is a gravitational equilibrium point, not a habitable zone by definition; the candidate's local stellar irradiance must be calculated and compared with an explicitly stated habitable-zone model. A candidate with non-negligible mass cannot be treated as a massless test particle at L1: its gravity changes the three-body configuration. Any candidate-scale interpretation therefore requires a finite-mass N-body model and a stability analysis, not only the CR3BP equilibrium calculation.
+
+A body exactly at the ideal L1 equilibrium is not a stable free equilibrium. The research must test whether a physically admissible nearby trajectory exists and persists under perturbations. A photometric signal alone cannot establish L1 occupancy.
+
+### Track 2: Controlled satellite or megastructure near star--planet L1
+
+The host planet's size is not a selection criterion. Candidate structures may be natural satellites, artificial satellites, stations, or larger engineered structures. The key hypothesis is that the object or structure occupies an L1-associated trajectory whose motion is actively controlled or corrected.
+
+Halo and Lissajous trajectories are relevant dynamical families around L1. They are not themselves proof of passive long-term stability. A controlled structure may require station-keeping; the model must explicitly distinguish uncontrolled dynamics from control input and propellant/energy constraints.
+
+Potential observables include repeatable transit residuals, additional photometric events, transit timing/duration perturbations, phase-correlated signals, and (where available) independent radial-velocity or imaging constraints. None is a unique technosignature by itself. Instrumental effects, stellar variability, eclipsing binaries, background sources, and ordinary planetary companions must be tested as alternatives.
+
+## CR3BP propagation implemented in Phase 2
+
+`astrotransit.dynamics.cr3bp.CR3BPDynamics` implements the normalized rotating-frame equations, effective potential, Jacobi constant, and a fixed-step classical RK4 propagator. The state order is `(x, y, z, vx, vy, vz)`. The numerical regression suite checks that the computed L1 location is an equilibrium of the vector field and that Jacobi drift decreases under step refinement. This remains an idealized massless-test-particle model; it is not a finite-mass Earth-twin model or a controlled station-keeping model.
+
+## L1 local linear stability implemented in Phase 3
+
+`astrotransit.dynamics.stability.analyze_l1_local_stability` constructs the six-dimensional first-order variational matrix at the supplied collinear L1 equilibrium. It evaluates the CR3BP Hessian terms and the planar characteristic quartic, lambda^4 + (2 - A) lambda^2 + (1 + A - 2 A^2) = 0, where A = (1 - mu)/r1^3 + mu/r2^3. The Coriolis contribution is included explicitly. It then reports the real unstable pair and the two imaginary oscillatory pairs in normalized inverse-time units.
+
+For an ideal collinear L1 point, the linear spectrum has saddle-center-center structure: one exponentially growing/decaying planar pair, one planar oscillatory pair, and one vertical oscillatory pair. This is a local linear result. It does not establish nonlinear boundedness, long-term survival, halo-orbit existence, or station-keeping feasibility.
+
+Regression tests compare the analytic matrix against finite differences of the nonlinear CR3BP vector field, verify the characteristic polynomial, check the expected eigenvalue structure for Earth--Moon and Sun--Earth mass ratios, and reject inconsistent geometry inputs.
+
+## Geometry model implemented in Phase 1
+
+`astrotransit.dynamics.l1.StarPlanetCR3BP` solves the collinear L1 equilibrium for two point-mass primaries on a circular orbit. It reports normalized barycentric and primary/secondary distances, plus dimensional distances for a user-supplied separation.
+
+The model assumes:
+- circular star--planet orbit;
+- point-mass primaries;
+- constant separation;
+- negligible candidate mass for the geometry calculation;
+- rotating-frame equilibrium.
+
+It does **not** calculate:
+- a finite-mass candidate's orbit;
+- halo/Lissajous initial conditions or propagation;
+- long-term stability or escape time;
+- station-keeping control effort;
+- habitability;
+- detection significance or candidate confirmation.
+
+Those are explicit subsequent work packages, not implicit capabilities.
+
+## Development sequence
+
+1. **L1 geometry foundation:** validated L1 root solver and physical input checks.
+2. **CR3BP propagation:** rotating-frame equations, Jacobi constant, equilibrium and trajectory regression tests. (Implemented; automated validation is tracked by the pull request CI.)
+3. **L1 local linear stability:** variational matrix, characteristic spectrum, and independent finite-difference checks. (Implemented; nonlinear stability remains open.)
+4. **Track 1 finite-mass dynamics:** add the candidate as a gravitating body; integrate and perturb the full system; quantify boundedness and collision/escape outcomes.
+5. **Track 2 controlled dynamics:** add explicit control acceleration, station-keeping policy, control effort, and uncontrolled comparison.
+6. **Observational forward models:** predict transit/residual signatures for each track, including viewing geometry and cadence.
+7. **Search and validation:** inject synthetic signals into development data, measure completeness and false positives, then perform independent follow-up checks.
+8. **Evidence-gated candidate reports:** preserve inputs, catalog/data provenance, model version, parameter uncertainty, random seed, and reproducible commands.
+
+## Claim and evidence rules
+
+- `L1_GEOMETRY_COMPUTED` means only that the idealized two-primary L1 point was calculated.
+- `DYNAMICALLY_PLAUSIBLE` requires a documented trajectory integration and perturbation study with stated duration and tolerances.
+- `CONTROL_REQUIRED` requires a comparison showing that the uncontrolled trajectory fails the declared bound while a specified control law maintains it within that bound.
+- `OBSERVATIONAL_CANDIDATE` requires repeatable data evidence and explicit false-positive tests.
+- `EARTH_ANALOG_CANDIDATE` requires measured Earth-relevant properties and completeness reporting; it is not a habitability or life claim.
+- `HABITABILITY_SUPPORTED` requires independent support for the relevant environmental conditions and cannot be assigned from an Earth-similarity score alone.
+- `CONFIRMED` is reserved for independent follow-up evidence.
+
+The blind holdout remains untouched during development. All tuning and injection-recovery work must use development data until the pre-registered final validation stage.
