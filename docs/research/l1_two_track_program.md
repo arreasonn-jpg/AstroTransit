@@ -23,7 +23,11 @@ Halo and Lissajous trajectories are relevant dynamical families around L1. They 
 
 Potential observables include repeatable transit residuals, additional photometric events, transit timing/duration perturbations, phase-correlated signals, and (where available) independent radial-velocity or imaging constraints. None is a unique technosignature by itself. Instrumental effects, stellar variability, eclipsing binaries, background sources, and ordinary planetary companions must be tested as alternatives.
 
-## CR3BP propagation implemented in Phase 2\n\n`astrotransit.dynamics.cr3bp.CR3BPDynamics` implements the normalized rotating-frame equations, effective potential, Jacobi constant, and a fixed-step classical RK4 propagator. The state order is `(x, y, z, vx, vy, vz)`. The numerical regression suite checks that the computed L1 location is an equilibrium of the vector field and that Jacobi drift decreases under step refinement. This remains an idealized massless-test-particle model; it is not a finite-mass Earth-twin model or a controlled station-keeping model.\n\n## Geometry model implemented in Phase 1
+## CR3BP propagation implemented in Phase 2
+
+`astrotransit.dynamics.cr3bp.CR3BPDynamics` implements the normalized rotating-frame equations, effective potential, Jacobi constant, and a fixed-step classical RK4 propagator. The state order is `(x, y, z, vx, vy, vz)`. The numerical regression suite checks that the computed L1 location is an equilibrium of the vector field and that Jacobi drift decreases under step refinement. This remains an idealized massless-test-particle model; it is not a finite-mass Earth-twin model or a controlled station-keeping model.
+
+## Geometry model implemented in Phase 1
 
 `astrotransit.dynamics.l1.StarPlanetCR3BP` solves the collinear L1 equilibrium for two point-mass primaries on a circular orbit. It reports normalized barycentric and primary/secondary distances, plus dimensional distances for a user-supplied separation.
 
