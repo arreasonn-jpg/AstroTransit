@@ -135,15 +135,19 @@ def test_verify_refuses_a_gate_without_predeclared_checks(tmp_path: Path):
 
 def test_freeze_writes_evidence_and_flips_only_the_fpp_gate(tmp_path: Path):
     args, _rows_used = _measured_report(tmp_path)
-    dest = tmp_path / "validation_runs" / "fpp_calibration"
-    dest.mkdir(parents=True, exist_ok=True)
     # Kanonik yolu test dizinine taşı: guard, dest-dir ile required_output'un
-    # aynı dizin olmasını zorunlu kılar.
+    # aynı dizin olmasını zorunlu kılar. Windows'ta tmp_path backslash içerir;
+    # JSON'a gömülen bu yol geçersiz kaçış (\t, \v...) üretebilir, bu yüzden
+    # required_output'u göreli (relative) kanonik bir yola çeviriyoruz ve
+    # dest-dir'i de ROOT'a göre o göreli yolun karşılığı olacak şekilde kuruyoruz.
+    rel_dest = "validation_runs/fpp_calibration"
     program_text = PROGRAM.read_text(encoding="utf-8").replace(
         '"required_output": "validation_runs/final_acceptance_v1/fpp_calibration/report.json"',
-        f'"required_output": "{dest / "report.json"}"',
+        f'"required_output": "{rel_dest}/report.json"',
         1,
     )
+    dest = freeze_module.ROOT / rel_dest
+    dest.mkdir(parents=True, exist_ok=True)
     program_copy = tmp_path / "program.json"
     program_copy.write_text(program_text, encoding="utf-8")
     program_before = json.loads(program_text)
@@ -180,7 +184,9 @@ def test_freeze_writes_evidence_and_flips_only_the_fpp_gate(tmp_path: Path):
     assert gates["labelled_fp_quiet_controls"]["status"] == statuses_before["labelled_fp_quiet_controls"]
     assert gates["adversarial_false_positives"]["status"] == statuses_before["adversarial_false_positives"]
     assert gates["blind_domain_holdout"]["status"] != "measured"
-    assert gates["detrending_cadence_impact_robustness"]["status"] != "measured"
+    # Not: detrending_cadence_impact_robustness kapısı main'de zaten "measured"
+    # (bd8e946); bu yüzden "değişmedi" kontratı yukarıdaki `flipped` kümesinde
+    # zaten kapsanıyor - burada additionally != measured beklenemez.
     committed = json.loads(PROGRAM.read_text(encoding="utf-8"))
     before = {g["id"]: g["status"] for g in committed["gates"] if g["id"] != "fpp_quality_calibration"}
     after = {g["id"]: g["status"] for g in program["gates"] if g["id"] != "fpp_quality_calibration"}
