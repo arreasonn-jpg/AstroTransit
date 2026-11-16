@@ -483,6 +483,126 @@
       ]
     },
     {
+      "id": "blind_domain_holdout_v2",
+      "status": "pending_run",
+      "required_output": "validation_runs/final_acceptance_v1/blind_holdout_v2/report.json",
+      "input_contract": "validation_runs/final_acceptance_v1/blind_holdout_v2/holdout_manifest_v2.json",
+      "runner": "scripts/validation/run_blind_holdout.py",
+      "rationale": "v2 blind holdout: a fresh frozen corpus (new selection seed 20261120) from the same blind_test partition, disjoint from v1 and all prior gates, with sector availability frozen into the manifest at build time so no live MAST lookup can fail mid-run. Floors are identical to v1 and were declared before any v2 measurement: recall >= 0.5, FPR <= 0.6, zero errors, >= 120 evaluated. The single blind run happens only after all algorithm changes are frozen and validated on development corpora; nothing is tuned on this corpus.",
+      "acceptance_checks": [
+        {
+          "path": "status",
+          "operator": "equals",
+          "value": "measured"
+        },
+        {
+          "path": "campaign",
+          "operator": "equals",
+          "value": "blind_domain_holdout_v2"
+        },
+        {
+          "path": "corpus.sha256",
+          "operator": "equals",
+          "value": "374ad1030965142e1d29539a5a6c95baa1d051d9247eb7e2982a9a05f0d5c064"
+        },
+        {
+          "path": "corpus.n_cases",
+          "operator": "gte",
+          "value": 144
+        },
+        {
+          "path": "corpus.counts.planet",
+          "operator": "gte",
+          "value": 60
+        },
+        {
+          "path": "corpus.counts.false_positive",
+          "operator": "gte",
+          "value": 60
+        },
+        {
+          "path": "data.n_evaluated",
+          "operator": "gte",
+          "value": 120
+        },
+        {
+          "path": "data.errors",
+          "operator": "equals",
+          "value": 0
+        },
+        {
+          "path": "disjointness.non_blind_rows",
+          "operator": "equals",
+          "value": 0
+        },
+        {
+          "path": "disjointness.excluded_id_count",
+          "operator": "gte",
+          "value": 100
+        },
+        {
+          "path": "method.detector_used_for_selection",
+          "operator": "equals",
+          "value": false
+        },
+        {
+          "path": "method.retrained",
+          "operator": "equals",
+          "value": false
+        },
+        {
+          "path": "method.data",
+          "operator": "equals",
+          "value": "real_light_curves"
+        },
+        {
+          "path": "method.declared_floor_recall",
+          "operator": "equals",
+          "value": 0.5
+        },
+        {
+          "path": "method.declared_ceiling_false_positive_rate",
+          "operator": "equals",
+          "value": 0.6
+        },
+        {
+          "path": "overall.recall",
+          "operator": "gte",
+          "value": 0.5
+        },
+        {
+          "path": "overall.false_positive_rate",
+          "operator": "lte",
+          "value": 0.6
+        },
+        {
+          "path": "strata.planet:CP.n_evaluated",
+          "operator": "gte",
+          "value": 8
+        },
+        {
+          "path": "strata.planet:KP.n_evaluated",
+          "operator": "gte",
+          "value": 8
+        },
+        {
+          "path": "strata.false_positive:FP.n_evaluated",
+          "operator": "gte",
+          "value": 8
+        },
+        {
+          "path": "strata.false_positive:APC.n_evaluated",
+          "operator": "gte",
+          "value": 8
+        },
+        {
+          "path": "strata.false_positive:FA.n_evaluated",
+          "operator": "gte",
+          "value": 8
+        }
+      ]
+    },
+    {
       "id": "mcmc_coverage_ppc",
       "status": "pending_run",
       "required_output": "validation_runs/final_acceptance_v1/mcmc/report.json",
