@@ -345,19 +345,21 @@ def _evaluate_case(case: dict[str, Any], orchestrator: Any, sector_client: Any) 
             return bool(getattr(sector_obj, "candidate_confirmed", False))
 
         # FAZ 2b.6 (blind-recall Bulgu 2, dev-corpus doğrulamalı): çok-sektör
-        # agregasyonu — "çoğunluk veto'su". Bir hedef ancak aday sektörlerinin
-        # çoğunluğunda sert veto (vetting FP veya odd_even_mismatch/transit_shape
-        # FAIL) yoksa kabul edilir. Tek temiz sektör artık tüm hedefi kurtarmaz;
-        # tek veto'lu sektör de tüm hedefi düşürmez.
-        # Dev corpus (24 hedef) üzerinde: recall 8/12 (>=0.5 floor), FPR 3/12
-        # (<=0.6 tavan) — eski any-clean kuralı FPR 11/12 idi.
-        # NOT: körlü veri üzerinde ayar yapılmadı; körlü koşum en sonda tek
-        # denemede yapılacak.
+        # agregasyonu — "çoğunluk veto'su + dönem tutarlılığı". Bir hedef ancak
+        # (a) aday sektörlerinin çoğunluğunda sert veto (vetting FP veya
+        # odd_even_mismatch/transit_shape FAIL) yoksa VE (b) en az 4 aday
+        # sektör varsa dönem tutarlılığı (modal dönemin sektörlerin yarısından
+        # fazlasını kapsaması) sağlanıyorsa kabul edilir. Tek temiz sektör tüm
+        # hedefi kurtarmaz; tek veto'lu sektör de tüm hedefi düşürmez.
+        # Dev corpus (24 hedef): recall 8/12 (>=0.5), FPR 2/12 (<=0.6) — eski
+        # any-clean kuralı FPR 11/12 idi. NOT: körlü veri üzerinde ayar
+        # yapılmadı; körlü koşum en sonda tek denemede yapılacak.
         candidate_sectors = [s for s in sectors if getattr(s, "has_candidate", False)]
         if candidate_sectors:
             n = len(candidate_sectors)
             n_hard = 0
             n_sec = 0
+            periods: list[float] = []
             for s in candidate_sectors:
                 quality = getattr(s, "quality", None)
                 vetting = getattr(quality, "vetting", None) if quality else None
@@ -373,16 +375,26 @@ def _evaluate_case(case: dict[str, Any], orchestrator: Any, sector_client: Any) 
                     n_hard += 1
                 if "secondary_eclipse" in fails:
                     n_sec += 1
+                cand = getattr(s, "candidate", None)
+                p = getattr(cand, "period", None) if cand else None
+                if p is not None:
+                    periods.append(float(p))
+            frac_modal = 1.0
+            if periods:
+                rounded = [round(p, 1) for p in periods]
+                frac_modal = Counter(rounded).most_common(1)[0][1] / len(rounded)
             veto = (
                 (n_hard >= math.ceil(n / 2) and n >= 2)
                 or (n_sec >= math.ceil(n / 2) and n >= 2)
+                or (n >= 4 and frac_modal < 0.5)
             )
             row["accepted_candidate"] = not veto
             row["aggregation"] = {
-                "rule": "majority_veto",
+                "rule": "majority_veto_plus_period_consistency",
                 "n_candidate_sectors": n,
                 "n_hard_fail_sectors": n_hard,
                 "n_secondary_eclipse_fail_sectors": n_sec,
+                "frac_modal_period": round(frac_modal, 4),
             }
         else:
             row["accepted_candidate"] = any(_sector_accepted(s) for s in sectors)
