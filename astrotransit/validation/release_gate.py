@@ -94,12 +94,10 @@ def _l1_claim_gate(l1_pool: Any) -> GateResult:
         structure = record.get("l1_structure") or {}
         earth = record.get("l1_earth_twin") or {}
         flat.setdefault("l1_stationkeeping_review_score", structure.get("stationkeeping_review_score"))
+        budget_dv = structure.get("station_keeping_total_delta_v_m_per_s")
         flat.setdefault(
             "station_keeping_budget_ok",
-            (
-                structure.get("station_keeping_total_delta_v_m_per_s") is not None
-                and structure.get("station_keeping_total_delta_v_m_per_s") <= 100.0
-            ),
+            budget_dv is not None and float(budget_dv) <= 100.0,
         )
         flat.setdefault("host_in_habitable_zone", earth.get("host_in_habitable_zone"))
         flat.setdefault("l1_insolation_in_habitable_range", earth.get("eligible"))

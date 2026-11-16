@@ -48,7 +48,7 @@ def infer_l1_claim(result: Mapping[str, Any] | Any) -> L1ClaimLabel:
     """
     l1_assessed = bool(_get(result, "l1_assessed", False))
     if not l1_assessed:
-        return L1ClaimLabel.L1_REGION_ASSESSED if l1_assessed else L1ClaimLabel.L1_REGION_ASSESSED
+        return L1ClaimLabel.L1_REGION_ASSESSED
 
     review_score = _get(result, "l1_stationkeeping_review_score", None)
     budget_ok = _get(result, "station_keeping_budget_ok", None)

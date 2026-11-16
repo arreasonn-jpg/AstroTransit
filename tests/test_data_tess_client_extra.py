@@ -3,22 +3,21 @@ from __future__ import annotations
 
 from unittest.mock import MagicMock, patch
 
+import astropy.units as u
 import numpy as np
 import pytest
 
-import astropy.units as u  # noqa: E402
-
-
-def _lk():
-    """Lazy lightkurve import (module-level import segfaults AppTest on Windows)."""
-    return pytest.importorskip("lightkurve")
-
-from astrotransit.data.tess_client import (  # noqa: E402
+from astrotransit.data.tess_client import (
     TESSClient,
     TESSDataError,
     TESSLightCurveData,
     TESSNoDataError,
 )
+
+
+def _lk():
+    """Lazy lightkurve import (module-level import segfaults AppTest on Windows)."""
+    return pytest.importorskip("lightkurve")
 
 
 def _client(tmp_path, use_cache=True):

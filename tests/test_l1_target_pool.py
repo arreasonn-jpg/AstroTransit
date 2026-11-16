@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from typing import ClassVar
 
 from astrotransit.discovery.l1_target_pool import L1PoolEntry, L1TargetPoolBuilder
 
@@ -125,7 +126,7 @@ def test_mass_msun_and_mearth_conversions():
 
 
 class _FakeCatalogRow:
-    colnames = ["ID", "mass", "lum", "Teff", "rad"]
+    colnames: ClassVar[list[str]] = ["ID", "mass", "lum", "Teff", "rad"]
 
     def __getitem__(self, key):
         return {"ID": 100, "mass": 1.0, "lum": 1.0, "Teff": 5778.0, "rad": 1.0}[key]

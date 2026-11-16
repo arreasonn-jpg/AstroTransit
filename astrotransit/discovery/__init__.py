@@ -30,8 +30,6 @@ __all__ = [
     "EarthTargetPoolBuilder",
     "L1EarthTwinCandidate",
     "L1EarthTwinScorer",
-    "L1EarthTwinCandidate",
-    "L1EarthTwinScorer",
     "L1PoolEntry",
     "L1StructureCandidate",
     "L1StructureScorer",

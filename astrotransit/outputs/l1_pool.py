@@ -101,7 +101,7 @@ def write_l1_pool_json(
 __all__ = [
     "L1_POOL_SCHEMA_VERSION",
     "L1PoolRecord",
-    "build_l1_pool_record",
     "build_l1_pool_payload",
+    "build_l1_pool_record",
     "write_l1_pool_json",
 ]

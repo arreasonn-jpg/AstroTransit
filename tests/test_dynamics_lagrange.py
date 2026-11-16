@@ -177,5 +177,5 @@ def test_orbital_period_rejects_bad_input() -> None:
 
 
 def test_au_constant_sane() -> None:
-    assert AU_M == pytest.approx(1.496e11, rel=1e-3)
+    assert pytest.approx(1.496e11, rel=1e-3) == AU_M
     assert math.isfinite(AU_M)

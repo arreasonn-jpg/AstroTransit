@@ -216,7 +216,7 @@ def summarize_orbit(mu: float, orbit: dict[str, np.ndarray]) -> OrbitSummary:
         duration=float(orbit["t"][-1]),
         final_distance_from_l1=float(dist[-1]),
         max_distance_from_l1=float(np.max(dist)),
-        n_points=int(len(orbit["t"])),
+        n_points=len(orbit["t"]),
     )
 
 

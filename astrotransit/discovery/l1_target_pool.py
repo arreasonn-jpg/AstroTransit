@@ -221,20 +221,20 @@ class L1TargetPoolBuilder:
             None,
         )
         if raw_id is None:
-            return row
+            return dict(row)
         try:
             tic_id = int(str(raw_id).split()[-1])
         except (ValueError, IndexError):
-            return row
+            return dict(row)
         try:
             catalog = self._mast_client.query_tic_catalog(tic_id=tic_id)
         except Exception as exc:  # ağ/bağımlılık hatası: satır olduğu gibi kalır
             from loguru import logger
 
             logger.warning(f"MAST sorgusu başarısız ({raw_id}): {exc}")
-            return row
+            return dict(row)
         if catalog is None or len(catalog) == 0:
-            return row
+            return dict(row)
         first = catalog[0]
         names = getattr(first, "colnames", None)
         record = {name: first[name] for name in names} if names else dict(first)

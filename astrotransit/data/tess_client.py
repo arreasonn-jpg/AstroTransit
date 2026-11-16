@@ -15,15 +15,23 @@ Sonraki fazlarda eklenecek:
 
 from __future__ import annotations
 
+import contextlib
 import json
 import re
 import zipfile
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Optional
+from typing import TYPE_CHECKING, Any, Optional
 
 import numpy as np
 from loguru import logger
+
+from astrotransit.data.mast_client import MASTClient
+from astrotransit.data.temp_cache import TempCache
+from astrotransit.utils.identifiers import extract_tic_number, normalize_tic_id
+
+if TYPE_CHECKING:
+    import lightkurve as lk
 
 # lightkurve is imported lazily via _get_lk(): a module-level import corrupts
 # the Windows heap when streamlit's AppTest runs later in the same process
@@ -45,12 +53,6 @@ def _get_lk():
             return None
         lk = _lk_module
     return lk
-
-import contextlib
-
-from astrotransit.data.mast_client import MASTClient
-from astrotransit.data.temp_cache import TempCache
-from astrotransit.utils.identifiers import extract_tic_number, normalize_tic_id
 
 
 # ──────────────────────────────────────

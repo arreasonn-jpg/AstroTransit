@@ -45,13 +45,13 @@ def _f(x: float, mu: float) -> float:
     """Kolineer denge quintic'i: x - (1-mu)(x+mu)/|x+mu|^3 - mu(x-1+mu)/|x-1+mu|^3 = 0."""
     d1 = x + mu
     d2 = x - 1.0 + mu
-    return x - (1.0 - mu) * d1 / abs(d1) ** 3 - mu * d2 / abs(d2) ** 3
+    return float(x - (1.0 - mu) * d1 / abs(d1) ** 3 - mu * d2 / abs(d2) ** 3)
 
 
 def _fprime(x: float, mu: float) -> float:
     d1 = x + mu
     d2 = x - 1.0 + mu
-    return 1.0 + 2.0 * (1.0 - mu) / abs(d1) ** 3 + 2.0 * mu / abs(d2) ** 3
+    return float(1.0 + 2.0 * (1.0 - mu) / abs(d1) ** 3 + 2.0 * mu / abs(d2) ** 3)
 
 
 def collinear_equilibrium_x(mu: float, point: str, tol: float = 1e-14, max_iter: int = 100) -> float:
@@ -76,7 +76,7 @@ def collinear_equilibrium_x(mu: float, point: str, tol: float = 1e-14, max_iter:
     for _ in range(max_iter):
         fx = _f(x, mu)
         if abs(fx) < tol:
-            return x
+            return float(x)
         x -= fx / _fprime(x, mu)
     raise RuntimeError(f"{point} için yakınsama sağlanamadı (mu={mu}).")
 
@@ -106,7 +106,7 @@ def hill_radius_au(mu: float, separation_au: float) -> float:
     """Gezegenin Hill yarıçapı (AU): a * (mu/3)^(1/3)."""
     if separation_au <= 0.0:
         raise ValueError("Yörünge yarı-büyük ekseni pozitif olmalıdır.")
-    return separation_au * (mu / 3.0) ** (1.0 / 3.0)
+    return float(separation_au * (mu / 3.0) ** (1.0 / 3.0))
 
 
 def orbital_period_days(m_star_kg: float, separation_au: float) -> float:
