@@ -13,7 +13,6 @@ Eksik alanlar None/false kalır; 0.0 asla "bilinmiyor" yerine yazılmaz.
 
 from __future__ import annotations
 
-import json
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Iterable, Mapping, Optional
@@ -30,9 +29,11 @@ class L1PoolEntry:
     target_id: str
     l1_assessed: bool = False
     l1_distance_from_planet_au: Optional[float] = None
+    l1_distance_from_star_au: Optional[float] = None
     l1_stability_e_folding_days: Optional[float] = None
     l1_earth_twin: dict[str, Any] = field(default_factory=dict)
     l1_structure: dict[str, Any] = field(default_factory=dict)
+    l1_claim_label: Optional[str] = None
 
     def to_dict(self) -> dict[str, Any]:
         def r(v: Optional[float]) -> Optional[float]:
@@ -42,31 +43,48 @@ class L1PoolEntry:
             "target_id": self.target_id,
             "l1_assessed": self.l1_assessed,
             "l1_distance_from_planet_au": r(self.l1_distance_from_planet_au),
+            "l1_distance_from_star_au": r(self.l1_distance_from_star_au),
             "l1_stability_e_folding_days": r(self.l1_stability_e_folding_days),
             "l1_earth_twin": self.l1_earth_twin,
             "l1_structure": self.l1_structure,
+            "l1_claim_label": self.l1_claim_label,
         }
 
 
 class L1TargetPoolBuilder:
-    """Katalog satırlarından L1 hedef havuzu üretir (ağ gerektirmez)."""
+    """Katalog satırlarından L1 hedef havuzu üretir (ağ gerektirmez).
+
+    ``query_mast=True`` ile eksik yıldız parametreleri (mass/lum/teff/rad)
+    MAST TIC kataloğundan tek tek tamamlanır; ağ hatasında satır olduğu gibi
+    kalır (hedef ``l1_assessed=False`` olur, asla 0.0 yazılmaz).
+    """
 
     def __init__(
         self,
         *,
         min_similarity: float = 90.0,
         min_review_score: float = 70.0,
+        mast_client: Any = None,
     ):
         self.earth_scorer = L1EarthTwinScorer(min_similarity=min_similarity)
         self.structure_scorer = L1StructureScorer(min_review_score=min_review_score)
+        self._mast_client = mast_client
 
-    def build_from_rows(self, rows: Iterable[Mapping[str, Any]]) -> list[L1PoolEntry]:
+    def build_from_rows(
+        self,
+        rows: Iterable[Mapping[str, Any]],
+        *,
+        query_mast: bool = False,
+    ) -> list[L1PoolEntry]:
         entries: list[L1PoolEntry] = []
         for row in rows:
-            entries.append(self.build_from_row(row))
+            entries.append(self.build_from_row(row, query_mast=query_mast))
         return entries
 
-    def build_from_row(self, row: Mapping[str, Any]) -> L1PoolEntry:
+    def build_from_row(self, row: Mapping[str, Any], *, query_mast: bool = False) -> L1PoolEntry:
+        row = dict(row)
+        if query_mast:
+            row = self._enrich_from_mast(row)
         raw_id = next(
             (
                 row.get(key)
@@ -127,23 +145,39 @@ class L1TargetPoolBuilder:
         )
 
         assessed = earth.l1_distance_from_star_au is not None or structure.l1_distance_from_planet_au is not None
+        claim_label: Optional[str] = None
+        if assessed:
+            from astrotransit.validation.l1_claims import infer_l1_claim
+
+            claim_label = infer_l1_claim(
+                {
+                    "l1_assessed": True,
+                    "l1_stationkeeping_review_score": structure.stationkeeping_review_score,
+                    "station_keeping_budget_ok": (
+                        structure.station_keeping_total_delta_v_m_per_s is not None
+                        and structure.station_keeping_total_delta_v_m_per_s <= 100.0
+                    ),
+                    "host_in_habitable_zone": earth.host_in_habitable_zone,
+                    "l1_insolation_in_habitable_range": earth.eligible,
+                    "earth_similarity_score": earth.earth_similarity_score,
+                    "l1_min_similarity": self.earth_scorer.min_similarity,
+                }
+            ).value
         return L1PoolEntry(
             target_id=target_id,
             l1_assessed=assessed,
             l1_distance_from_planet_au=structure.l1_distance_from_planet_au,
+            l1_distance_from_star_au=earth.l1_distance_from_star_au,
             l1_stability_e_folding_days=structure.l1_stability_e_folding_days,
             l1_earth_twin=earth.to_dict(),
             l1_structure=structure.to_dict(),
+            l1_claim_label=claim_label,
         )
 
-    def write_json(self, entries: Iterable[L1PoolEntry], path: str | Path) -> Path:
-        output = Path(path)
-        output.parent.mkdir(parents=True, exist_ok=True)
-        output.write_text(
-            json.dumps([entry.to_dict() for entry in entries], ensure_ascii=False, indent=2),
-            encoding="utf-8",
-        )
-        return output
+    def write_json(self, entries: Iterable[L1PoolEntry], path: str | Path, *, branch: str = "both") -> Path:
+        from astrotransit.outputs.l1_pool import write_l1_pool_json
+
+        return write_l1_pool_json(entries, path, branch=branch)
 
     @staticmethod
     def _opt_float(row: Mapping[str, Any], keys: tuple[str, ...]) -> Optional[float]:
@@ -168,6 +202,67 @@ class L1TargetPoolBuilder:
     def _mass_kg(row: Mapping[str, Any], keys: tuple[str, ...]) -> Optional[float]:
         value = L1TargetPoolBuilder._opt_float(row, keys)
         return value if value is not None and value > 0 else None
+
+    def _enrich_from_mast(self, row: Mapping[str, Any]) -> dict[str, Any]:
+        """Eksik yıldız alanlarını MAST TIC kataloğundan doldurur.
+
+        Ağ/bağımlılık hatasında orijinal satırı döndürür; None alanlar None kalır.
+        """
+        if self._mast_client is None:
+            from astrotransit.data.mast_client import MASTClient
+
+            self._mast_client = MASTClient()
+        raw_id = next(
+            (
+                row.get(key)
+                for key in ("target_id", "tic_id", "TIC", "ID", "id")
+                if row.get(key) not in (None, "")
+            ),
+            None,
+        )
+        if raw_id is None:
+            return row
+        try:
+            tic_id = int(str(raw_id).split()[-1])
+        except (ValueError, IndexError):
+            return row
+        try:
+            catalog = self._mast_client.query_tic_catalog(tic_id=tic_id)
+        except Exception as exc:  # ağ/bağımlılık hatası: satır olduğu gibi kalır
+            from loguru import logger
+
+            logger.warning(f"MAST sorgusu başarısız ({raw_id}): {exc}")
+            return row
+        if catalog is None or len(catalog) == 0:
+            return row
+        first = catalog[0]
+        names = getattr(first, "colnames", None)
+        record = {name: first[name] for name in names} if names else dict(first)
+
+        def pick(*keys: str) -> Any:
+            for key in keys:
+                if key in record and record[key] not in (None, "", 0, 0.0):
+                    return record[key]
+            return None
+
+        enriched = dict(row)
+        if self._opt_float(enriched, ("mass_msun", "stellar_mass_msun", "mass", "m_star_kg", "stellar_mass_kg")) is None:
+            mass = pick("mass", "Mass")
+            if mass is not None:
+                enriched["mass_msun"] = float(mass)
+        if self._opt_float(enriched, ("luminosity_lsun", "luminosity", "L_lsun")) is None:
+            lum = pick("lum", "luminosity", "Lum")
+            if lum is not None:
+                enriched["luminosity_lsun"] = float(lum)
+        if self._opt_float(enriched, ("teff_k", "stellar_teff_k")) is None:
+            teff = pick("Teff", "teff")
+            if teff is not None:
+                enriched["teff_k"] = float(teff)
+        if self._opt_float(enriched, ("radius_rsun", "stellar_radius_rsun")) is None:
+            rad = pick("rad", "radius")
+            if rad is not None:
+                enriched["radius_rsun"] = float(rad)
+        return enriched
 
 
 __all__ = ["L1PoolEntry", "L1TargetPoolBuilder"]

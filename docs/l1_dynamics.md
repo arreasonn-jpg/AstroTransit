@@ -74,7 +74,17 @@ motor:
 
 ```bash
 astrotransit l1-search targets.csv -o outputs/l1_pool.json --min-similarity 90 --min-review 70
+# MAST'tan eksik yıldız parametrelerini tamamla (TXT olarak saf TIC listesi de olur):
+astrotransit l1-search tic_list.txt --query-mast -o outputs/l1_pool.json
+# Çıktı şema versiyonlu JSON'dur (metadata.schema_version = 1.0, kind = l1_target_pool);
+# her kayıtta l1_claim_label claim-firewall etiketini taşır.
+# Release gate'e L1 claim tutarlılığını ekle:
+astrotransit release-gate --l1-pool outputs/l1_pool.json
 ```
+
+`l1-search` çıktısındaki `l1_claim_firewall` gate'i: havuz yoksa `PENDING_RUN`,
+etiketler `infer_l1_claim` ile uyuşmazsa `FAIL`, aksi halde `PASS`.
+`followup-update --l1-pool outputs/l1_pool.json` hedef için L1 etiketini panelde gösterir.
 
 ### Kol testleri
 

@@ -15,8 +15,17 @@ from unittest.mock import MagicMock, patch
 import numpy as np
 import pytest
 
-lk = pytest.importorskip("lightkurve")
 import astropy.units as u  # noqa: E402
+
+
+def _lk():
+    """Lazy lightkurve import.
+
+    Module-level ``import lightkurve`` in the pytest main process corrupts the
+    Windows heap and later segfaults streamlit's AppTest (see docs/testing.md),
+    so lightkurve must only be imported inside test bodies, after collection.
+    """
+    return pytest.importorskip("lightkurve")
 
 from astrotransit.data.tess_client import (  # noqa: E402
     TESSClient,
@@ -37,7 +46,7 @@ def _make_lc(n=200, sector=14, with_err=True, with_quality=True):
     kwargs = {"time": time * u.day, "flux": flux}
     if with_err:
         kwargs["flux_err"] = np.full(n, 1e-4)
-    lc = lk.LightCurve(**kwargs)
+    lc = _lk().LightCurve(**kwargs)
     lc.meta["SECTOR"] = sector
     lc.meta["CAMERA"] = 1
     lc.meta["TICID"] = 123456789
@@ -263,7 +272,7 @@ def test_clean_lightcurve_removes_nans(tmp_path):
     time = np.arange(n, dtype=float) + 1000.0
     flux = np.ones(n)
     flux[5] = np.nan
-    lc = lk.LightCurve(time=time * u.day, flux=flux * u.dimensionless_unscaled)
+    lc = _lk().LightCurve(time=time * u.day, flux=flux * u.dimensionless_unscaled)
     result = c._clean_lightcurve(lc)
     assert len(result.time) < n
 
@@ -274,7 +283,7 @@ def test_clean_lightcurve_removes_negative_flux(tmp_path):
     time = np.arange(n, dtype=float) + 1000.0
     flux = np.ones(n)
     flux[10] = -1.0
-    lc = lk.LightCurve(time=time * u.day, flux=flux * u.dimensionless_unscaled)
+    lc = _lk().LightCurve(time=time * u.day, flux=flux * u.dimensionless_unscaled)
     result = c._clean_lightcurve(lc)
     # en azından negatif akı ve NaN olanlar çıkarılmalı
     assert len(result.time) < n
@@ -327,7 +336,8 @@ def test_to_data_object_no_quality(tmp_path):
 def test_search_no_lightkurve(tmp_path, monkeypatch):
     import astrotransit.data.tess_client as mod
     c = _make_client(tmp_path, use_cache=False)
-    monkeypatch.setattr(mod, "lk", None)
+    # _get_lk None döndürdüğünde (lightkurve kurulu değil) TESSDataError beklenir.
+    monkeypatch.setattr(mod, "_get_lk", lambda: None)
     with pytest.raises(TESSDataError, match="Lightkurve"):
         c.search("TIC 123")
 

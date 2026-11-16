@@ -398,6 +398,11 @@ def l1_search(
     min_similarity: float = typer.Option(90.0, "--min-similarity", help="Kol 1 minimum Earth similarity"),
     min_review: float = typer.Option(70.0, "--min-review", help="Kol 2 minimum station-keeping review skoru"),
     branch: str = typer.Option("both", "--branch", help="Kol seçimi: kol1, kol2 veya both"),
+    query_mast: bool = typer.Option(
+        False,
+        "--query-mast/--no-query-mast",
+        help="Eksik yıldız parametrelerini (mass/lum/teff/rad) MAST TIC kataloğundan tamamla",
+    ),
 ):
     """Katalog hedefleri için L1 değerlendirmesi üretir (Kol 1 ve Kol 2 ayrı ayrı).
 
@@ -434,9 +439,9 @@ def l1_search(
         if not isinstance(rows, list):
             raise ValueError("Girdi listesi veya katalog satırları içeren JSON olmalıdır.")
         builder = L1TargetPoolBuilder(min_similarity=min_similarity, min_review_score=min_review)
-        entries = builder.build_from_rows(rows)
+        entries = builder.build_from_rows(rows, query_mast=query_mast)
         destination = Path(output)
-        builder.write_json(entries, destination)
+        builder.write_json(entries, destination, branch=branch)
     except (OSError, ValueError, TypeError, json.JSONDecodeError) as exc:
         console.print(f"[red]L1 havuzu oluşturulamadı: {exc}[/red]")
         raise typer.Exit(1) from exc
@@ -481,6 +486,9 @@ def followup_update(
         "--output-dir",
         help="Mevcut JSON/Parquet çıktı kökü",
     ),
+    l1_pool: Optional[str] = typer.Option(
+        None, "--l1-pool", help="l1-search JSON çıktısı; hedef için L1 claim etiketi gösterilir"
+    ),
 ):
     """Mevcut aday kaydını doğrulanmış follow-up kanıtıyla günceller."""
 
@@ -522,12 +530,28 @@ def followup_update(
         console.print(f"[red]Follow-up güncellemesi başarısız: {exc}[/red]")
         raise typer.Exit(1) from exc
 
+    l1_line = ""
+    if l1_pool:
+        l1_path = Path(l1_pool)
+        if l1_path.exists():
+            from astrotransit.validation.l1_claims import infer_l1_claim
+
+            pool = json.loads(l1_path.read_text(encoding="utf-8"))
+            for entry in pool.get("targets", []):
+                if str(entry.get("target_id", "")).split()[-1] == str(target_id).split()[-1]:
+                    label = entry.get("l1_claim_label") or infer_l1_claim(entry).value
+                    l1_line = f"L1 claim: {label} (etiket follow-up önceliğidir, kontrol kanıtı değildir)\n"
+                    break
+        else:
+            console.print(f"[yellow]L1 havuzu bulunamadı: {l1_path}[/yellow]")
+
     console.print(
         Panel(
             f"[bold green]Follow-up kaydı güncellendi[/bold green]\n"
             f"Hedef: {updated.source_id} / sektör {updated.sector}\n"
             f"Durum: {updated.followup_status}\n"
-            f"Earth sınıfı: {updated.earth_twin_status}",
+            f"Earth sınıfı: {updated.earth_twin_status}\n"
+            f"{l1_line}",
             border_style="green",
         )
     )
@@ -784,6 +808,9 @@ def release_gate(
     robustness_report: Optional[str] = typer.Option(
         None, "--robustness-report", help="Cadence-robustness gate JSON (robustness.py)"
     ),
+    l1_pool: Optional[str] = typer.Option(
+        None, "--l1-pool", help="l1-search JSON çıktısı; claim-firewall gate'i için"
+    ),
     output: Optional[str] = typer.Option(None, "--output", "-o"),
 ):
     """Evaluate release evidence without turning missing data into a pass."""
@@ -796,6 +823,13 @@ def release_gate(
     known_targets = len(payload if isinstance(payload, list) else payload.get("targets", []))
     cases = load_corpus(corpus) if corpus else []
     summary = corpus_summary(cases)
+    l1_payload = None
+    if l1_pool:
+        l1_path = Path(l1_pool)
+        if not l1_path.exists():
+            console.print(f"[red]L1 havuzu bulunamadi: {l1_path}[/red]")
+            raise typer.Exit(1)
+        l1_payload = json.loads(l1_path.read_text(encoding="utf-8"))
     report = evaluate_release_gates(
         known_targets=known_targets,
         false_positives=summary["counts"]["false_positive"],
@@ -809,6 +843,7 @@ def release_gate(
             for report in (injection_report, blind_report, baseline_report, robustness_report)
             if report
         ),
+        l1_pool=l1_payload,
     )
     rendered = json.dumps(report.to_dict(), indent=2, ensure_ascii=False)
     if output:
