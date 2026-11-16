@@ -46,6 +46,7 @@ def evaluate_release_gates(
     has_baseline_report: bool = False,
     has_robustness_report: bool = False,
     has_provenance: bool = False,
+    l1_pool: Any = None,
     release: str = "v0.x-validation",
 ) -> ReleaseGateReport:
     checks = [
@@ -57,8 +58,68 @@ def evaluate_release_gates(
         _bool_gate("independent_baseline", has_baseline_report),
         _bool_gate("cadence_robustness", has_robustness_report),
         _bool_gate("provenance", has_provenance),
+        _l1_claim_gate(l1_pool),
     ]
     return ReleaseGateReport(release, tuple(checks))
+
+
+def _l1_claim_gate(l1_pool: Any) -> GateResult:
+    """L1 havuzu varsa claim-firewall tutarlılığını kontrol eder.
+
+    Havuz yoksa gate ``PENDING_RUN`` olur (veri yok = pass değil).
+    Havuz varsa her kaydın ``l1_claim_label`` değeri ``infer_l1_claim`` ile
+    yeniden türetilir; uyuşmazlık varsa gate FAIL olur. "L1'de görüldü"
+    kontrol kanıtı olamayacağından ``L1_CONTROLLED_STRUCTURE_CANDIDATE``
+    ancak review skoru + bütçe birlikte varsa kabul edilir.
+    """
+
+    if l1_pool is None:
+        return GateResult(
+            "l1_claim_firewall",
+            "L1 havuzu claim etiketleriyle tutarlı",
+            "PENDING_RUN",
+            None,
+            "L1 havuzu verilmedi.",
+        )
+    from astrotransit.validation.l1_claims import infer_l1_claim
+
+    entries = l1_pool.get("targets", []) if isinstance(l1_pool, dict) else list(l1_pool)
+    mismatches = 0
+    for entry in entries:
+        record = entry if isinstance(entry, dict) else getattr(entry, "to_dict", lambda: {})()
+        if not record.get("l1_assessed"):
+            continue
+        # Havuz kaydı kol sonuçlarını iç içe taşıyorsa bunları düz alana çıkar.
+        flat = dict(record)
+        structure = record.get("l1_structure") or {}
+        earth = record.get("l1_earth_twin") or {}
+        flat.setdefault("l1_stationkeeping_review_score", structure.get("stationkeeping_review_score"))
+        budget_dv = structure.get("station_keeping_total_delta_v_m_per_s")
+        flat.setdefault(
+            "station_keeping_budget_ok",
+            budget_dv is not None and float(budget_dv) <= 100.0,
+        )
+        flat.setdefault("host_in_habitable_zone", earth.get("host_in_habitable_zone"))
+        flat.setdefault("l1_insolation_in_habitable_range", earth.get("eligible"))
+        flat.setdefault("earth_similarity_score", earth.get("earth_similarity_score"))
+        expected = infer_l1_claim(flat).value
+        if record.get("l1_claim_label") != expected:
+            mismatches += 1
+    if mismatches:
+        return GateResult(
+            "l1_claim_firewall",
+            "L1 havuzu claim etiketleriyle tutarlı",
+            "FAIL",
+            mismatches,
+            f"{mismatches} kayıtta l1_claim_label infer_l1_claim ile uyuşmuyor.",
+        )
+    return GateResult(
+        "l1_claim_firewall",
+        "L1 havuzu claim etiketleriyle tutarlı",
+        "PASS",
+        len(entries),
+        "Tüm L1 etiketleri kanıtla türetildi.",
+    )
 
 
 def _count_gate(name: str, required: str, observed: int, minimum: int) -> GateResult:

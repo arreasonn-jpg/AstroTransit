@@ -32,6 +32,11 @@ sayılmaz).
 │              transit_consistency, eb_coorbital_discriminator, …)   │
 │  Modelleme:  modeling/ (transit_model, MAP fitter, PyMC/exoplanet  │
 │              MCMC, arviz R-hat/ESS kalite kapısı)                  │
+│  Dinamik:    dynamics/ (L1/Lagrange geometrisi, CR3BP yörünge,     │
+│              L1 kararlılık ve istasyon tutma — bkz. docs/l1_dynamics.md)│
+│  Keşif:      discovery/ (earth_search, target_pool + L1 kolları:    │
+│              l1_earth_twin (Kol 1), l1_structure (Kol 2),          │
+│              l1_target_pool; CLI: astrotransit l1-search)         │
 │  Tespit:     detection/ (BLS → TLS cascade, 20–500 gün uzun       │
 │              periyot taraması, threshold'lar)                      │
 │  Ön-işlem:   preprocessing/ (normalize, temizlik, Wotan detrend,   │

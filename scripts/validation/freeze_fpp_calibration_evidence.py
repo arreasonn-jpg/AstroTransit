@@ -204,9 +204,21 @@ def freeze(args: argparse.Namespace) -> int:
     dest = Path(args.dest_dir)
     # Kanıt, kapının `required_output` yoluyla aynı dizinde durmak zorundadır;
     # aksi halde program.json "measured" der ama denetçi kanıtı bulamaz.
+    # Not: testler program kopyasında required_output'u göreli bir yola
+    # (örn. "validation_runs/fpp_calibration/report.json") değiştirebilir;
+    # bu durumda kanonik hedef ROOT'a göre çözümlenir. Windows'ta mutlak
+    # dest yolunun backslash'i JSON kaçışı olarak okunmamalı diye karşılaştırma
+    # her iki tarafı da normalize edilmiş göreli yol üzerinden yapılır.
     required = Path(gate["required_output"])
     canonical_dest = required.parent if str(required.parent) not in ("", ".") else ROOT
-    if dest.resolve() != (ROOT / canonical_dest).resolve():
+
+    def _norm(p: Path) -> str:
+        try:
+            return str(p.resolve().relative_to(ROOT)).replace("\\", "/")
+        except ValueError:
+            return str(p.resolve()).replace("\\", "/")
+
+    if _norm(dest) != _norm(ROOT / canonical_dest):
         print(
             "REFUSING TO FREEZE — --dest-dir is not the gate's canonical evidence path\n"
             f"  expected: {ROOT / canonical_dest}\n"

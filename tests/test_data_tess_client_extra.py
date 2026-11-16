@@ -3,18 +3,21 @@ from __future__ import annotations
 
 from unittest.mock import MagicMock, patch
 
+import astropy.units as u
 import numpy as np
 import pytest
 
-lk = pytest.importorskip("lightkurve")
-import astropy.units as u  # noqa: E402
-
-from astrotransit.data.tess_client import (  # noqa: E402
+from astrotransit.data.tess_client import (
     TESSClient,
     TESSDataError,
     TESSLightCurveData,
     TESSNoDataError,
 )
+
+
+def _lk():
+    """Lazy lightkurve import (module-level import segfaults AppTest on Windows)."""
+    return pytest.importorskip("lightkurve")
 
 
 def _client(tmp_path, use_cache=True):
@@ -32,7 +35,7 @@ def _make_lc(n=50, sector=14, with_err=True, with_quality=True):
     kwargs = {"time": time * u.day, "flux": flux}
     if with_err:
         kwargs["flux_err"] = np.full(n, 1e-4)
-    lc = lk.LightCurve(**kwargs)
+    lc = _lk().LightCurve(**kwargs)
     lc.meta["SECTOR"] = sector
     return lc
 

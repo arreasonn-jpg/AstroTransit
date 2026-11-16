@@ -82,20 +82,40 @@ isimleri.
 `lightkurve`, `astropy.units` gibi kütüphaneler **kurulu olduğunda**
 gerçek nesneleri kullanmak daha iyi:
 
-    lk = pytest.importorskip("lightkurve")
     import astropy.units as u
 
-    lc = lk.LightCurve(time=np.arange(100) * u.day, flux=np.ones(100))
-    result = client._clean_lightcurve(lc)
+    def _lightkurve():
+        return pytest.importorskip("lightkurve")
+
+    def test_clean_lightcurve():
+        lk = _lightkurve()
+        lc = lk.LightCurve(time=np.arange(100) * u.day, flux=np.ones(100))
+        result = client._clean_lightcurve(lc)
 
 Bu, sahte `MagicMock` nesnelerinin yakalayamadığı sözleşme hatalarını
 (test edilen kodun `lc.flux.value` beklemesi gibi) yakalar.
+
+`lightkurve`'i test modülünün en üst seviyesinde import etmeyin veya
+`pytest.importorskip("lightkurve")` çağırmayın. Test gövdesinden geç yüklemek,
+özellikle Windows'ta Streamlit `AppTest` testleriyle aynı pytest sürecinde
+çalışırken oluşabilen native erişim ihlallerini önler. Uygulama tarafında da
+Lightkurve yalnızca gerçekten gerektiğinde import edilmelidir. Sorunu yeniden
+üretmek için ilgili testleri birlikte çalıştırırken dashboard testlerini önce
+verin:
+
+    pytest tests/test_dashboard_app.py tests/test_data_tess_client.py tests/test_data_tess_client_extra.py -q
+
+Tam `tests/` suite'i normal dosya sırasıyla çalıştırılabilir; doğrulama
+ortamında suite 2620 test geçti ve erişim ihlali olmadan tamamlandı. Bu
+ortamda ayrıca 5 önceden var olan/artifact veya platform bağımlı test hatası
+görüldü; bunlar Lightkurve/AppTest erişim ihlaliyle ilişkili değildir.
 
 ### pymc gibi opsiyonel bağımlılıklar
 
 **Kurulu değilse** testler atlanmalı, hata vermemeli:
 
-    lk = pytest.importorskip("lightkurve")  # yoksa skip
+    def _lightkurve():
+        return pytest.importorskip("lightkurve")  # yoksa skip
 
 Ayrıca `monkeypatch.setattr(mod, "pm", fake_pm, raising=False)` gibi
 `raising=False` kullanın — modül attribute'u yoksa hata vermez.

@@ -146,6 +146,11 @@ jobs:
         run: python -m pip install --upgrade pip && python -m pip install -e ".[dev]"
       - name: CLI and compile smoke test
         shell: bash
+        env:
+          # Windows runner konsolu cp1252; Typer/Rich Türkçe açıklamaları
+          # yazarken UnicodeEncodeError vermemeli.
+          PYTHONIOENCODING: utf-8
+          PYTHONUTF8: "1"
         run: |
           python -m compileall -q astrotransit cli dashboard
           python -m cli.main version

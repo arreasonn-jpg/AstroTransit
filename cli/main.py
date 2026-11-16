@@ -384,6 +384,95 @@ def earth_search(
         console.print(f"JSON çıktı: [green]{output_path}[/green]")
 
 
+@app.command("l1-search")
+def l1_search(
+    input_file: str = typer.Argument(
+        ...,
+        help="L1 hedef katalogu (CSV/JSON/TXT; kolonlar: tic_id, mass_msun, planet_mass_mearth, separation_au, luminosity_lsun, host_in_habitable_zone, ...)",
+    ),
+    output: str = typer.Option(
+        "outputs/l1_pool.json",
+        "--output", "-o",
+        help="L1 havuzu JSON çıktı yolu",
+    ),
+    min_similarity: float = typer.Option(90.0, "--min-similarity", help="Kol 1 minimum Earth similarity"),
+    min_review: float = typer.Option(70.0, "--min-review", help="Kol 2 minimum station-keeping review skoru"),
+    branch: str = typer.Option("both", "--branch", help="Kol seçimi: kol1, kol2 veya both"),
+    query_mast: bool = typer.Option(
+        False,
+        "--query-mast/--no-query-mast",
+        help="Eksik yıldız parametrelerini (mass/lum/teff/rad) MAST TIC kataloğundan tamamla",
+    ),
+):
+    """Katalog hedefleri için L1 değerlendirmesi üretir (Kol 1 ve Kol 2 ayrı ayrı).
+
+    Kol 1: L1'de yaşanabilir Dünya-benzeri aday (ana gezegen HZ ön koşulu).
+    Kol 2: L1'de kontrollü yapı adayı (istasyon tutma işareti + delta-v bütçesi).
+    'L1'de görüldü' kontrol kanıtı değildir; etiketler yalnızca follow-up önceliğidir.
+    """
+
+    from astrotransit.discovery.l1_target_pool import L1TargetPoolBuilder
+
+    if branch not in ("kol1", "kol2", "both"):
+        console.print("[red]--branch kol1, kol2 veya both olmalıdır.[/red]")
+        raise typer.Exit(1)
+
+    source = Path(input_file)
+    if not source.exists():
+        console.print(f"[red]Dosya bulunamadı: {source}[/red]")
+        raise typer.Exit(1)
+    try:
+        if source.suffix.lower() == ".csv":
+            import pandas as pd
+
+            rows = pd.read_csv(source).to_dict(orient="records")
+        elif source.suffix.lower() == ".json":
+            rows = json.loads(source.read_text(encoding="utf-8"))
+            if isinstance(rows, dict):
+                rows = rows.get("targets", rows.get("data", [rows]))
+        else:
+            rows = [
+                {"tic_id": line.strip()}
+                for line in source.read_text(encoding="utf-8").splitlines()
+                if line.strip() and not line.lstrip().startswith("#")
+            ]
+        if not isinstance(rows, list):
+            raise ValueError("Girdi listesi veya katalog satırları içeren JSON olmalıdır.")
+        builder = L1TargetPoolBuilder(min_similarity=min_similarity, min_review_score=min_review)
+        entries = builder.build_from_rows(rows, query_mast=query_mast)
+        destination = Path(output)
+        builder.write_json(entries, destination, branch=branch)
+    except (OSError, ValueError, TypeError, json.JSONDecodeError) as exc:
+        console.print(f"[red]L1 havuzu oluşturulamadı: {exc}[/red]")
+        raise typer.Exit(1) from exc
+
+    n_assessed = sum(entry.l1_assessed for entry in entries)
+    n_kol1 = sum(1 for entry in entries if entry.l1_earth_twin.get("eligible"))
+    n_kol2 = sum(1 for entry in entries if entry.l1_structure.get("controllable_candidate"))
+
+    table = Table(title="L1 keşif havuzu")
+    table.add_column("Hedef", style="cyan")
+    table.add_column("L1 assessed", justify="center")
+    table.add_column("d_L1 (AU)", justify="right")
+    table.add_column("Kol 1 eligible", justify="center")
+    table.add_column("Kol 2 candidate", justify="center")
+    for entry in entries:
+        table.add_row(
+            entry.target_id,
+            "yes" if entry.l1_assessed else "-",
+            f"{entry.l1_distance_from_planet_au:.5f}" if entry.l1_distance_from_planet_au is not None else "?",
+            "yes" if entry.l1_earth_twin.get("eligible") else "-",
+            "yes" if entry.l1_structure.get("controllable_candidate") else "-",
+        )
+    console.print(table)
+    console.print(
+        f"[bold]Özet:[/bold] {n_assessed}/{len(entries)} hedefte L1 değerlendirmesi; "
+        f"Kol 1 (yaşanabilir L1 adayı): {n_kol1}; Kol 2 (kontrollü yapı adayı): {n_kol2}. "
+        "Etiketler follow-up önceliğidir, kanıt değildir. Çıktı: "
+        f"[green]{destination}[/green]"
+    )
+
+
 @app.command("followup-update")
 def followup_update(
     target: str = typer.Argument(..., help="Hedef TIC ID (örn. TIC 123456789)"),
@@ -396,6 +485,9 @@ def followup_update(
         "outputs",
         "--output-dir",
         help="Mevcut JSON/Parquet çıktı kökü",
+    ),
+    l1_pool: Optional[str] = typer.Option(
+        None, "--l1-pool", help="l1-search JSON çıktısı; hedef için L1 claim etiketi gösterilir"
     ),
 ):
     """Mevcut aday kaydını doğrulanmış follow-up kanıtıyla günceller."""
@@ -438,12 +530,28 @@ def followup_update(
         console.print(f"[red]Follow-up güncellemesi başarısız: {exc}[/red]")
         raise typer.Exit(1) from exc
 
+    l1_line = ""
+    if l1_pool:
+        l1_path = Path(l1_pool)
+        if l1_path.exists():
+            from astrotransit.validation.l1_claims import infer_l1_claim
+
+            pool = json.loads(l1_path.read_text(encoding="utf-8"))
+            for entry in pool.get("targets", []):
+                if str(entry.get("target_id", "")).split()[-1] == str(target_id).split()[-1]:
+                    label = entry.get("l1_claim_label") or infer_l1_claim(entry).value
+                    l1_line = f"L1 claim: {label} (etiket follow-up önceliğidir, kontrol kanıtı değildir)\n"
+                    break
+        else:
+            console.print(f"[yellow]L1 havuzu bulunamadı: {l1_path}[/yellow]")
+
     console.print(
         Panel(
             f"[bold green]Follow-up kaydı güncellendi[/bold green]\n"
             f"Hedef: {updated.source_id} / sektör {updated.sector}\n"
             f"Durum: {updated.followup_status}\n"
-            f"Earth sınıfı: {updated.earth_twin_status}",
+            f"Earth sınıfı: {updated.earth_twin_status}\n"
+            f"{l1_line}",
             border_style="green",
         )
     )
@@ -700,6 +808,9 @@ def release_gate(
     robustness_report: Optional[str] = typer.Option(
         None, "--robustness-report", help="Cadence-robustness gate JSON (robustness.py)"
     ),
+    l1_pool: Optional[str] = typer.Option(
+        None, "--l1-pool", help="l1-search JSON çıktısı; claim-firewall gate'i için"
+    ),
     output: Optional[str] = typer.Option(None, "--output", "-o"),
 ):
     """Evaluate release evidence without turning missing data into a pass."""
@@ -712,6 +823,13 @@ def release_gate(
     known_targets = len(payload if isinstance(payload, list) else payload.get("targets", []))
     cases = load_corpus(corpus) if corpus else []
     summary = corpus_summary(cases)
+    l1_payload = None
+    if l1_pool:
+        l1_path = Path(l1_pool)
+        if not l1_path.exists():
+            console.print(f"[red]L1 havuzu bulunamadi: {l1_path}[/red]")
+            raise typer.Exit(1)
+        l1_payload = json.loads(l1_path.read_text(encoding="utf-8"))
     report = evaluate_release_gates(
         known_targets=known_targets,
         false_positives=summary["counts"]["false_positive"],
@@ -725,6 +843,7 @@ def release_gate(
             for report in (injection_report, blind_report, baseline_report, robustness_report)
             if report
         ),
+        l1_pool=l1_payload,
     )
     rendered = json.dumps(report.to_dict(), indent=2, ensure_ascii=False)
     if output:

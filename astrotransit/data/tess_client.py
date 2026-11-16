@@ -15,26 +15,44 @@ Sonraki fazlarda eklenecek:
 
 from __future__ import annotations
 
+import contextlib
 import json
 import re
 import zipfile
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Optional
+from typing import TYPE_CHECKING, Any, Optional
 
 import numpy as np
 from loguru import logger
 
-try:  # Import is intentionally lazy-friendly: data models work offline.
-    import lightkurve as lk
-except ImportError:  # pragma: no cover - exercised only in minimal installs
-    lk = None
-
-import contextlib
-
 from astrotransit.data.mast_client import MASTClient
 from astrotransit.data.temp_cache import TempCache
 from astrotransit.utils.identifiers import extract_tic_number, normalize_tic_id
+
+if TYPE_CHECKING:
+    import lightkurve as lk
+
+# lightkurve is imported lazily via _get_lk(): a module-level import corrupts
+# the Windows heap when streamlit's AppTest runs later in the same process
+# (access violation; see docs/testing.md).
+lk = None
+
+
+def _get_lk():
+    """Return the lightkurve module, importing it on first use.
+
+    Returns None when lightkurve is not installed. Tests may patch the
+    module global ``lk`` (or this accessor) to mock lightkurve.
+    """
+    global lk
+    if lk is None:
+        try:
+            import lightkurve as _lk_module
+        except ImportError:  # pragma: no cover - exercised only in minimal installs
+            return None
+        lk = _lk_module
+    return lk
 
 
 # ──────────────────────────────────────
@@ -275,7 +293,8 @@ class TESSClient:
             Veri bulunamazsa.
         """
 
-        if lk is None:
+        lk_module = _get_lk()
+        if lk_module is None:
             raise TESSDataError(
                 "Lightkurve bağımlılığı kullanılamıyor. "
                 "Kurulumu tamamlamak için 'pip install lightkurve' çalıştırın."
@@ -295,7 +314,7 @@ class TESSClient:
 
         for attempt in range(3):  # pragma: no branch
             try:
-                search_result = lk.search_lightcurve(
+                search_result = lk_module.search_lightcurve(
                     target_str,
                     mission="TESS",
                     author=self.author,
