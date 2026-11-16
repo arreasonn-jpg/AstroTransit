@@ -86,6 +86,12 @@ from astrotransit.validation.injection_recovery import (
     make_injection_grid,
     run_injection_recovery,
 )
+from astrotransit.validation.l1_claims import (
+    L1ClaimEvidenceError,
+    L1ClaimLabel,
+    infer_l1_claim,
+    validate_l1_claim,
+)
 from astrotransit.validation.metrics import RecoveryMetric, interval_coverage, parameter_recovery
 from astrotransit.validation.performance import RuntimeMeasurement, measure_runtime
 from astrotransit.validation.plots import generate_validation_figures
@@ -136,6 +142,8 @@ __all__ = [
     "GateResult",
     "InjectionRecoveryReport",
     "InjectionScenario",
+    "L1ClaimEvidenceError",
+    "L1ClaimLabel",
     "RVFollowupMeasurement",
     "RecoveryMetric",
     "RecoveryTrial",
@@ -173,6 +181,7 @@ __all__ = [
     "grid_sha256",
     "holdout_sha256",
     "infer_claim_status",
+    "infer_l1_claim",
     "inject_box_transit",
     "interval_coverage",
     "load_corpus",
@@ -194,5 +203,6 @@ __all__ = [
     "transit_measurement_to_evidence",
     "validate_claim",
     "validate_followup_evidence",
+    "validate_l1_claim",
     "write_artifact",
 ]
