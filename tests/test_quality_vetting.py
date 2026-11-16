@@ -13,6 +13,7 @@ from astrotransit.quality.metrics import (
 )
 from astrotransit.quality.vetting import (
     FPP_METHOD,
+    STRONG_SOLO_FAIL_TESTS,
     FalsePositiveVetter,
     VettingReport,
     VettingTest,
@@ -527,3 +528,75 @@ def test_secondary_ratio_fail_alone_still_vetoes():
     r = v.vet(c, m)
     assert "secondary_eclipse" in r.fp_flags
     assert r.is_false_positive is True
+
+
+# ═══════════════════════════════════════════════════════════
+# FAZ 2b.6: odd_even_mismatch güçlü tek-kanıt veto (Bulgu 2)
+# ═══════════════════════════════════════════════════════════
+
+def test_odd_even_mismatch_in_strong_solo_set():
+    assert "odd_even_mismatch" in STRONG_SOLO_FAIL_TESTS
+
+
+def test_solo_odd_even_fail_vetoes():
+    """Dev-corpus Bulgu 2: tek odd_even_mismatch FAIL artık yumuşak değil —
+    veto eder (5 FP sızması bu bayrakla tek başına kabul edilmişti)."""
+    v = FalsePositiveVetter(odd_even_threshold=2.0)
+    c = _candidate(depth=0.001, period=3.5, duration=0.1)
+    m = _metrics(
+        odd_even=3.8,  # FAIL (threshold 2.0), başka hiçbir FAIL yok
+        secondary=0.00001, secondary_snr=0.0,
+        variable=False, amplitude=50.0, depth_var=1e-10,
+        n_transits=5, symmetry=0.9, completeness=0.95,
+    )
+    r = v.vet(c, m)
+    assert "odd_even_mismatch" in r.fp_flags
+    assert r.n_fail == 1
+    assert r.is_false_positive is True
+
+
+def test_odd_even_sentinel_999_vetoes():
+    """999.0 sentinel (TLS yok/belirsiz) FAIL sayılır ve veto eder —
+    null-semantik: veri yok ≠ sıfır risk."""
+    v = FalsePositiveVetter(odd_even_threshold=2.0)
+    c = _candidate(depth=0.001, period=3.5, duration=0.1)
+    m = _metrics(
+        odd_even=999.0,
+        secondary=0.00001, secondary_snr=0.0,
+        variable=False, amplitude=50.0, depth_var=1e-10,
+        n_transits=5, symmetry=0.9, completeness=0.95,
+    )
+    r = v.vet(c, m)
+    assert r.is_false_positive is True
+
+
+def test_odd_even_warn_alone_does_not_veto():
+    """WARN seviyesindeki odd_even tek başına veto etmez (recall koruması)."""
+    v = FalsePositiveVetter(odd_even_threshold=2.0)
+    c = _candidate(depth=0.001, period=3.5, duration=0.1)
+    m = _metrics(
+        odd_even=1.6,  # 2.0*0.7=1.4 < 1.6 < 2.0 → WARN
+        secondary=0.00001, secondary_snr=0.0,
+        variable=False, amplitude=50.0, depth_var=1e-10,
+        n_transits=5, symmetry=0.9, completeness=0.95,
+    )
+    r = v.vet(c, m)
+    assert r.is_false_positive is False
+
+
+def test_odd_even_not_counted_as_soft_pair():
+    """odd_even_mismatch artık SOFT çifte katılmaz; tek FAIL yeterli, ama
+    yumuşak havuza girmediği için ``len(soft_fails) >= 2`` kuralını
+    tek başına tetiklemez."""
+    v = FalsePositiveVetter(odd_even_threshold=2.0)
+    c = _candidate(depth=0.001, period=3.5, duration=0.1)
+    m = _metrics(
+        odd_even=1.6,  # WARN
+        harmonic=5.0,  # odd_even_harmonic FAIL (soft)
+        secondary=0.00001, secondary_snr=0.0,
+        variable=False, amplitude=50.0, depth_var=1e-10,
+        n_transits=5, symmetry=0.9, completeness=0.95,
+    )
+    r = v.vet(c, m)
+    # tek soft FAIL (harmonic) + odd_even WARN → veto yok
+    assert r.is_false_positive is False

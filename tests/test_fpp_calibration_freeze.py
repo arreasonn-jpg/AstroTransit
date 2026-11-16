@@ -168,7 +168,10 @@ def test_freeze_writes_evidence_and_flips_only_the_fpp_gate(tmp_path: Path):
     program = json.loads(program_copy.read_text(encoding="utf-8"))
     gates = {gate["id"]: gate for gate in program["gates"]}
     assert gates["fpp_quality_calibration"]["status"] == "measured"
-    assert len(gates) == 11
+    # FAZ 2b.7: v2 körlü kapısı eklendi; sabit 11 sayısı artık geçerli değil.
+    # Önemli olan dondurma adımının SADECE kendi kapısını değiştirmesidir
+    # (aşağıdaki `flipped` kümesi kontratı zaten bunu doğrular).
+    assert len(gates) == len({g["id"] for g in program["gates"]})
     assert gates["final_report_release"]["status"] == "blocked_by_gates"
     # Dondurma adimi SADECE kendi kapisinin (fpp_quality_calibration)
     # durumunu degistirmeli; commit 360625c oncesi literal beklerken

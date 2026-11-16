@@ -12,11 +12,18 @@ assert SPEC and SPEC.loader
 SPEC.loader.exec_module(AUDIT)
 
 
-def test_program_has_exactly_eleven_unique_gates():
+def test_program_has_unique_gates():
+    """FAZ 2b.7: v2 blind holdout kapısı eklendi; kapı sayısı artık sabit 11 değil.
+
+    Önemli olan kapı kimliklerinin benzersiz olması ve v1 körlü kapısının
+    hâlâ listede olmasıdır (v1 kanıtı tarihsel olarak korunur).
+    """
     path = Path("validation_runs/final_acceptance_v1/program.json")
     program = json.loads(path.read_text())
     ids = [gate["id"] for gate in program["gates"]]
-    assert len(ids) == len(set(ids)) == 11
+    assert len(ids) == len(set(ids))
+    assert "blind_domain_holdout" in ids
+    assert "blind_domain_holdout_v2" in ids
 
 
 def test_pending_evidence_never_closes_a_gate(tmp_path):

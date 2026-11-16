@@ -86,10 +86,15 @@ Yol haristası:
 
 ## Sıra ve doğrulama girdileri
 
-1. Eğitim corpora'larında ikincil tutulma bayrağı davranışını ölç
-   (`analyze_real_noise_injection_parameters.py` usulüne uygun ölçüm).
-2. Veto/kaçırma kuralı değişikliklerini eğitim corpora'larında doğrula;
-   değişken listesi ve değerleri dondur.
-3. v2 corpus'u kur, sha kilitle.
-4. v2 tabanlarını kanıt öncesi ilan et.
-5. Tek körlü koşum + `finalize_*_gate` akışıyla kapı durumunu çevir.
+1. ✅ Eğitim corpora'larında ikincil tutulma bayrağı davranışını ölç
+   (`scripts/validation/analyze_dev_secondary_eclipse.py`, dev shard0 → 5 SP sızması bulundu).
+2. ✅ Veto/kaçırma kuralı değişikliklerini eğitim corpora'larında doğrula
+   (`STRONG_SOLO_FAIL_TESTS` + çoğunluk-veto agregasyonu + dönem tutarlılığı;
+   dev corpus: recall 8/12, FPR 2/12 — eski any-clean kuralı FPR 11/12 idi).
+3. ✅ v2 corpus'u kur, sha kilitle — `build_blind_holdout_v2.py` (seed 20261120,
+   144 vaka 72/72, v1'den ve tüm önceki kapılardan ayrık, sha `374ad103...`).
+4. 🔄 v2 tabanlarını kanıt öncesi ilan et — `program.json`'da `blind_domain_holdout_v2`
+   kapısı `pending_run` olarak önceden ilan edildi (aynı tabanlar: recall ≥ 0.5,
+   FPR ≤ 0.6, errors = 0, n ≥ 120). Sektör listeleri corpus kurulumunda dondurulabilir
+   (`--freeze-sectors`) böylece körlü koşum sırasında canlı MAST sorgusu hata üretmez.
+5. ⏳ Tek körlü koşum + `finalize_*_gate` akışıyla kapı durumunu çevir.

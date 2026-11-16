@@ -90,6 +90,18 @@ SOFT_FAIL_TESTS = frozenset({
     "transit_symmetry",
 })
 
+# FAZ 2b.6 (blind-recall Bulgu 2, dev-corpus ölçümü): ``odd_even_mismatch``
+# FAIL artık yumuşak değil, **güçlü tek-kanıt veto**'su. Dev corpus'ta (24
+# satır) bu bayrakla tek başına kabul edilen 5 FP hedef (148228019, 296780789,
+# 356978132, 286132427, 341815767) varken, gezegen tarafında aynı eşiği aşan
+# sektörler ya zaten başka bir veto ile kapalıydı ya da temiz sektörle
+# kurtuluyordu; bu yüzden tek FAIL veto'su dev recall'u düşürmedi.
+# 999.0 sentinel'i (TLS yok / belirsiz) de FAIL sayılır — veri yoksa "temiz"
+# demek değildir (null-semantik: yok ≠ sıfır).
+STRONG_SOLO_FAIL_TESTS = frozenset({
+    "odd_even_mismatch",
+})
+
 
 # ──────────────────────────────────────
 # Test sonuç tipleri
@@ -343,7 +355,13 @@ class FalsePositiveVetter:
             if t.verdict == VettingVerdict.FAIL
         ]
         hard_fails = [name for name in fp_flags if name in HARD_FAIL_TESTS]
-        soft_fails = [name for name in fp_flags if name in SOFT_FAIL_TESTS]
+        strong_solo_fails = [
+            name for name in fp_flags if name in STRONG_SOLO_FAIL_TESTS
+        ]
+        soft_fails = [
+            name for name in fp_flags if name in SOFT_FAIL_TESTS
+            and name not in STRONG_SOLO_FAIL_TESTS
+        ]
         # FAZ 2b.5 (Bulgu 1): secondary-eclipse corroboration. A solo
         # ``secondary_eclipse_snr`` FAIL no longer vetoes; the veto needs the
         # depth-ratio test to agree (FAIL) or at least warn, so a noise-floor
@@ -357,6 +375,7 @@ class FalsePositiveVetter:
         )
         is_fp = (
             bool(hard_fails)
+            or bool(strong_solo_fails)
             or secondary_corroborated
             or len(soft_fails) >= 2
             or n_fail >= 2
