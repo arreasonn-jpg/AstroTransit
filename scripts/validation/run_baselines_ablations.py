@@ -32,6 +32,7 @@ False sayılır — recall'a yardım etmez.
 from __future__ import annotations
 
 import argparse
+import contextlib
 import json
 import multiprocessing
 import os
@@ -684,10 +685,8 @@ def _start_periodic_heartbeat(out_dir: Path, every_sec: int = 60) -> None:
 
     def _tick() -> None:
         while not stop.wait(every_sec):
-            try:
+            with contextlib.suppress(Exception):
                 (Path(out_dir) / "heartbeat").write_text(str(time.time()))
-            except Exception:
-                pass
 
     thread = threading.Thread(target=_tick, daemon=True)
     thread.start()
