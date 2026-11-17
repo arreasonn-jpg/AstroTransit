@@ -92,9 +92,11 @@ Yol haristası:
    (`STRONG_SOLO_FAIL_TESTS` + çoğunluk-veto agregasyonu + dönem tutarlılığı;
    dev corpus: recall 8/12, FPR 2/12 — eski any-clean kuralı FPR 11/12 idi).
 3. ✅ v2 corpus'u kur, sha kilitle — `build_blind_holdout_v2.py` (seed 20261120,
-   144 vaka 72/72, v1'den ve tüm önceki kapılardan ayrık, sha `374ad103...`).
+   144 vaka 72/72, v1'den ve tüm önceki kapılardan ayrık). SPOC 120s verisi
+   olmayan 17 hedef aynı disposition katmanlarında değiştirildi; sektörler
+   144/144 vaka için donduruldu. Yeni sha `ee6c19f9...`.
 4. 🔄 v2 tabanlarını kanıt öncesi ilan et — `program.json`'da `blind_domain_holdout_v2`
    kapısı `pending_run` olarak önceden ilan edildi (aynı tabanlar: recall ≥ 0.5,
-   FPR ≤ 0.6, errors = 0, n ≥ 120). Sektör listeleri corpus kurulumunda dondurulabilir
-   (`--freeze-sectors`) böylece körlü koşum sırasında canlı MAST sorgusu hata üretmez.
+   FPR ≤ 0.6, errors = 0, n ≥ 120). Ayrıca her case için sektör listesi manifestte
+   sabit; körlü koşum sırasında canlı MAST sorgusu gerekmiyor.
 5. ⏳ Tek körlü koşum + `finalize_*_gate` akışıyla kapı durumunu çevir.

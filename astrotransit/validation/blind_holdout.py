@@ -156,8 +156,13 @@ def select_holdout(
     split_seed: int = SPLIT_SEED,
     split: str = "blind_test",
     minimum_per_stratum: int = MINIMUM_CASES_PER_STRATUM,
+    fixed_quotas: Mapping[str, int] | None = None,
 ) -> dict[str, Any]:
-    """Kotalara göre donmuş holdout üyelik listesini üretir (offline, deterministik)."""
+    """Kotalara göre donmuş holdout üyelik listesini üretir (offline, deterministik).
+
+    ``fixed_quotas`` is optional and preserves an already-declared stratum
+    allocation when candidates are excluded for a data-availability contract.
+    """
 
     excluded = {normalize_target_id(value) for value in excluded_ids}
     rejected: Counter[str] = Counter()
@@ -201,7 +206,22 @@ def select_holdout(
     for label, strata in pools.items():
         counts = {key: len(rows) for key, rows in sorted(strata.items())}
         pool_sizes[label] = sum(counts.values())
-        allocation = allocate_quotas(counts, per_label, minimum=minimum_per_stratum)
+        if fixed_quotas is None:
+            allocation = allocate_quotas(counts, per_label, minimum=minimum_per_stratum)
+        else:
+            label_quotas = {
+                key: int(value)
+                for key, value in fixed_quotas.items()
+                if key.startswith(f"{label}:")
+            }
+            if sum(label_quotas.values()) != per_label:
+                raise ValueError(f"fixed quotas for {label} do not sum to {per_label}")
+            if any(value > counts.get(key, 0) for key, value in label_quotas.items()):
+                raise ValueError(f"fixed quotas for {label} exceed the eligible stratum pool")
+            allocation = {
+                key: label_quotas.get(key, 0)
+                for key in set(counts) | set(label_quotas)
+            }
         for stratum, quota in sorted(allocation.items()):
             quotas[stratum] = quota
             ranked = sorted(strata[stratum], key=lambda row: (row["selection_rank"], row["target_id"]))
