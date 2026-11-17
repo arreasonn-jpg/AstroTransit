@@ -204,16 +204,23 @@ def test_baseline_fingerprint_depends_on_oversampling_factor():
 
 def test_runner_alive_does_not_require_procfs_on_windows(monkeypatch):
     monkeypatch.setattr(runner.sys, "platform", "win32")
-    monkeypatch.setattr(runner.os, "kill", lambda pid, signal: None)
+    monkeypatch.setattr(
+        runner.subprocess,
+        "run",
+        lambda *args, **kwargs: type("Result", (), {"stdout": '"python.exe","123","Console","1","1,000 K"\n'})(),
+    )
     assert runner._runner_alive(123)
 
 
 def test_runner_alive_recognizes_missing_windows_process(monkeypatch):
-    def missing_process(pid, signal):
-        raise ProcessLookupError
-
     monkeypatch.setattr(runner.sys, "platform", "win32")
-    monkeypatch.setattr(runner.os, "kill", missing_process)
+    monkeypatch.setattr(
+        runner.subprocess,
+        "run",
+        lambda *args, **kwargs: type(
+            "Result", (), {"stdout": "INFO: No tasks are running which match the specified criteria.\n"}
+        )(),
+    )
     assert not runner._runner_alive(123)
 
 

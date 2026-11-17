@@ -37,11 +37,14 @@ from __future__ import annotations
 
 import argparse
 import contextlib
+import csv
+import io
 import json
 import multiprocessing
 import os
 import re
 import signal
+import subprocess
 import sys
 import time
 from concurrent.futures import ProcessPoolExecutor, as_completed
@@ -944,13 +947,22 @@ def _release_runner_lock(lock_path: Path, pid: int) -> None:
 def _runner_alive(pid: int) -> bool:
     """pid canlı ve gerçekten koşucu mu? (bayat kilit ayrımı için)"""
 
+    if sys.platform == "win32":
+        result = subprocess.run(
+            ["tasklist", "/FI", f"PID eq {pid}", "/FO", "CSV", "/NH"],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+        return any(
+            len(row) > 1 and row[1] == str(pid)
+            for row in csv.reader(io.StringIO(result.stdout))
+        )
     try:
         os.kill(pid, 0)
     except ProcessLookupError:
         return False
     except OSError:
-        return True
-    if sys.platform == "win32":
         return True
     try:
         cmdline = Path(f"/proc/{pid}/cmdline").read_bytes().split(b"\x00")
