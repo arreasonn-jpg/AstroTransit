@@ -202,6 +202,21 @@ def test_baseline_fingerprint_depends_on_oversampling_factor():
     assert a == c  # deterministik
 
 
+def test_runner_alive_does_not_require_procfs_on_windows(monkeypatch):
+    monkeypatch.setattr(runner.sys, "platform", "win32")
+    monkeypatch.setattr(runner.os, "kill", lambda pid, signal: None)
+    assert runner._runner_alive(123)
+
+
+def test_runner_alive_recognizes_missing_windows_process(monkeypatch):
+    def missing_process(pid, signal):
+        raise ProcessLookupError
+
+    monkeypatch.setattr(runner.sys, "platform", "win32")
+    monkeypatch.setattr(runner.os, "kill", missing_process)
+    assert not runner._runner_alive(123)
+
+
 def test_read_cache_skips_incomplete_rows(tmp_path: Path):
     cache = tmp_path / "runs_cache.jsonl"
     rows = [

@@ -950,6 +950,8 @@ def _runner_alive(pid: int) -> bool:
         return False
     except OSError:
         return True
+    if sys.platform == "win32":
+        return True
     try:
         cmdline = Path(f"/proc/{pid}/cmdline").read_bytes().split(b"\x00")
         return any(b"run_baselines_ablations" in part for part in cmdline)
