@@ -46,7 +46,7 @@ import sys
 import time
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from pathlib import Path
-from typing import Any, Callable, Mapping
+from typing import Any, Callable, Iterator, Mapping
 
 from astrotransit.validation import baselines as baseline_lib
 from astrotransit.validation.artifacts import write_artifact
@@ -69,6 +69,7 @@ BLS_RULE: dict[str, Any] = {
     "min_depth_snr": 7.0,
     "min_transits": 2,
 }
+BLS_PERIOD_CHUNK_SIZE = 65_536
 RULE_TAG = "tls_sde5_snr7_t2__bls_dsnr7_t2__loader_v2"
 
 REPORT_PATH = Path("validation_runs/final_acceptance_v1/baselines/report.json")
@@ -296,10 +297,79 @@ def _tls_detect(lc, oversampling_factor: float | None = None) -> bool:
     )
 
 
+class BaselineBatchPaused(RuntimeError):
+    """Raised after saving BLS progress when a bounded run reaches its budget."""
+
+
+def _bls_period_grid_parameters(
+    time: Any,
+    durations: Any,
+    minimum_period: float,
+    maximum_period: float,
+) -> tuple[float, float, int]:
+    """Return Astropy's default frequency spacing, maximum frequency, and grid size."""
+
+    import numpy as np
+
+    baseline = float(np.max(time) - np.min(time))
+    min_duration = float(np.min(durations))
+    df = min_duration / baseline**2
+    min_frequency = 1.0 / maximum_period
+    max_frequency = 1.0 / minimum_period
+    n_frequencies = 1 + int(np.round((max_frequency - min_frequency) / df))
+    return df, max_frequency, n_frequencies
+
+
+def _iter_bls_period_chunks(
+    time: Any,
+    durations: Any,
+    minimum_period: float,
+    maximum_period: float,
+    *,
+    chunk_size: int = BLS_PERIOD_CHUNK_SIZE,
+    start_index: int = 0,
+) -> Iterator[tuple[int, Any]]:
+    """Yield the default Astropy BLS period grid without allocating it all."""
+
+    import numpy as np
+
+    if chunk_size < 1:
+        raise ValueError("chunk_size must be positive")
+    df, max_frequency, n_frequencies = _bls_period_grid_parameters(
+        time,
+        durations,
+        minimum_period,
+        maximum_period,
+    )
+    if start_index < 0 or start_index > n_frequencies:
+        raise ValueError("start_index is outside the BLS period grid")
+
+    for start in range(start_index, n_frequencies, chunk_size):
+        indices = np.arange(start, min(start + chunk_size, n_frequencies))
+        yield start, 1.0 / (max_frequency - df * indices)
+
+
+def _write_bls_checkpoint(path: Path, payload: dict[str, Any]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary_path = path.with_suffix(path.suffix + ".tmp")
+    temporary_path.write_text(
+        json.dumps(payload, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    os.replace(temporary_path, path)
+
+
 # ── sade BLS dedektörü ──
 
 
-def _bls_detect(lc) -> bool:
+def _bls_detect(
+    lc,
+    *,
+    checkpoint_path: Path | None = None,
+    checkpoint_fingerprint: str | None = None,
+    checkpoint_key: str | None = None,
+    deadline: float | None = None,
+) -> bool:
     """Sade BLS kuralı (ilan edilen sabitler).
 
     astropy BLS tek süre ızgarasıyla çağrılır (çoklu süre 2-D çıktı
@@ -322,45 +392,107 @@ def _bls_detect(lc) -> bool:
         except (TypeError, ValueError):
             return 0.0
 
-    time = lc.time.value
+    time_values = lc.time.value
     flux = lc.flux.value
     flux_err = lc.flux_err.value  # ağırlıksız BLS hatayi 1 kabul eder -> ölçek bozulur
-    bls = BoxLeastSquares(time, flux, dy=flux_err)
+    bls = BoxLeastSquares(time_values, flux, dy=flux_err)
     durations = np.array(BLS_RULE["duration_hours"]) / 24.0
-    period_grid = bls.autoperiod(
+    _, _, n_frequencies = _bls_period_grid_parameters(
+        time_values,
         durations,
-        minimum_period=BLS_RULE["period_min"],
-        maximum_period=BLS_RULE["period_max"],
+        BLS_RULE["period_min"],
+        BLS_RULE["period_max"],
     )
+    if (checkpoint_path is None) != (checkpoint_fingerprint is None):
+        raise ValueError("BLS checkpoint path and fingerprint must be supplied together")
+    if (checkpoint_path is None) != (checkpoint_key is None):
+        raise ValueError("BLS checkpoint path and key must be supplied together")
+    if deadline is not None and checkpoint_path is None:
+        raise ValueError("a deadline requires a persistent BLS checkpoint")
 
+    duration_index = 0
+    next_period_index = 0
     best_snr = -1.0
     best = None
-    for duration in durations:
-        frame = bls.power(period_grid, float(duration), objective="snr")
-        power = np.asarray(frame.power, dtype=float)
-        if not np.isfinite(power).any():
+    if checkpoint_path is not None and checkpoint_path.exists():
+        checkpoint = json.loads(checkpoint_path.read_text(encoding="utf-8"))
+        if (
+            checkpoint.get("schema_version") != 1
+            or checkpoint.get("fingerprint") != checkpoint_fingerprint
+            or checkpoint.get("key") != checkpoint_key
+        ):
+            raise ValueError(f"BLS checkpoint does not match this run: {checkpoint_path}")
+        duration_index = int(checkpoint["duration_index"])
+        next_period_index = int(checkpoint["next_period_index"])
+        best_snr = float(checkpoint["best_snr"])
+        best = checkpoint["best"]
+        if not 0 <= duration_index <= len(durations):
+            raise ValueError(f"invalid BLS checkpoint duration: {checkpoint_path}")
+        if not 0 <= next_period_index <= n_frequencies:
+            raise ValueError(f"invalid BLS checkpoint period offset: {checkpoint_path}")
+
+    for current_duration_index, duration in enumerate(durations):
+        if current_duration_index < duration_index:
             continue
-        index = int(np.nanargmax(power))
-        stats = bls.compute_stats(
-            _scalar(frame.period[index]),
-            float(duration),
-            _scalar(frame.transit_time[index]),
+        start_index = (
+            next_period_index if current_duration_index == duration_index else 0
         )
-        raw_depth = stats.get("depth")
-        depth_arr = np.asarray(raw_depth, dtype=float).ravel()
-        depth = float(depth_arr[0]) if depth_arr.size else 0.0
-        # compute_stats altta depth'i (değer, hata) ikilisi olarak döndürebilir
-        depth_err = (
-            float(depth_arr[1]) if depth_arr.size > 1 else _num_or_zero(stats.get("depth_err"))
-        )
-        per_transit = np.asarray(stats.get("per_transit_count", []), dtype=float)
-        n_transit = int(np.sum(per_transit > 0)) if per_transit.size else 0
-        if depth_err <= 0 or n_transit <= 0:
-            continue
-        depth_snr = abs(depth) / depth_err  # astropy depth_err çoklu-transit kümelidir
-        if depth_snr > best_snr:
-            best_snr = depth_snr
-            best = {"depth_snr": depth_snr, "n_transits": n_transit}
+        for start, period_chunk in _iter_bls_period_chunks(
+            time_values,
+            durations,
+            BLS_RULE["period_min"],
+            BLS_RULE["period_max"],
+            chunk_size=BLS_PERIOD_CHUNK_SIZE,
+            start_index=start_index,
+        ):
+            frame = bls.power(period_chunk, float(duration), objective="snr")
+            power = np.asarray(frame.power, dtype=float)
+            if np.isfinite(power).any():
+                index = int(np.nanargmax(power))
+                stats = bls.compute_stats(
+                    _scalar(frame.period[index]),
+                    float(duration),
+                    _scalar(frame.transit_time[index]),
+                )
+                raw_depth = stats.get("depth")
+                depth_arr = np.asarray(raw_depth, dtype=float).ravel()
+                depth = float(depth_arr[0]) if depth_arr.size else 0.0
+                # compute_stats may return depth as a (value, error) pair.
+                depth_err = (
+                    float(depth_arr[1])
+                    if depth_arr.size > 1
+                    else _num_or_zero(stats.get("depth_err"))
+                )
+                per_transit = np.asarray(stats.get("per_transit_count", []), dtype=float)
+                n_transit = int(np.sum(per_transit > 0)) if per_transit.size else 0
+                if depth_err > 0 and n_transit > 0:
+                    depth_snr = abs(depth) / depth_err
+                    if depth_snr > best_snr:
+                        best_snr = depth_snr
+                        best = {"depth_snr": depth_snr, "n_transits": n_transit}
+
+            next_period_index = start + len(period_chunk)
+            next_duration_index = current_duration_index
+            if next_period_index >= n_frequencies:
+                next_duration_index += 1
+                next_period_index = 0
+            if checkpoint_path is not None:
+                _write_bls_checkpoint(
+                    checkpoint_path,
+                    {
+                        "schema_version": 1,
+                        "fingerprint": checkpoint_fingerprint,
+                        "key": checkpoint_key,
+                        "duration_index": next_duration_index,
+                        "next_period_index": next_period_index,
+                        "best_snr": best_snr,
+                        "best": best,
+                    },
+                )
+            if deadline is not None and time.monotonic() >= deadline:
+                raise BaselineBatchPaused("batch budget reached; BLS checkpoint saved")
+    if checkpoint_path is not None and checkpoint_path.exists():
+        checkpoint_path.unlink()
     if best is None:
         return False
     min_depth_snr: float = BLS_RULE["min_depth_snr"]
@@ -379,7 +511,8 @@ def _naive_worker(
     cache_path: str,
     fingerprint: str,
     oversampling_factor: float | None = None,
-) -> tuple[str, bool]:
+    deadline: float | None = None,
+) -> tuple[str, bool, str]:
     """Tek sade-dedektör koşumu (işçi süreç; SIGALRM zaman aşımı)."""
 
     def _alarm(signum: int, frame: Any) -> None:
@@ -404,10 +537,22 @@ def _naive_worker(
         if detector_name == "tls":
             detected = _tls_detect(lc, oversampling_factor=oversampling_factor)
         elif detector_name == "bls":
-            detected = _bls_detect(lc)
+            target_cache = Path(cache_path).parent / f"bls_progress_{target}.json"
+            detected = _bls_detect(
+                lc,
+                checkpoint_path=target_cache,
+                checkpoint_fingerprint=fingerprint,
+                checkpoint_key=key,
+                deadline=deadline,
+            )
         else:
             raise ValueError(f"bilinmeyen sade detector: {detector_name}")
         status = "ok"
+    except BaselineBatchPaused as exc:
+        detected = False
+        status = "in_progress"
+        error_msg = str(exc)
+        print(f"[batch] {key}: {error_msg}", flush=True)
     except TimeoutError:
         print(f"[timeout] {key}: {timeout_sec} sn içinde bitmedi -> detected=False", flush=True)
         detected = False
@@ -438,7 +583,7 @@ def _naive_worker(
         )
         fh.flush()
     print(f"[task] {key} -> detected={detected} ({elapsed:.0f} sn)", flush=True)
-    return key, detected
+    return key, detected, status
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -446,6 +591,12 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--corpus", required=True, help="Labelled corpus JSON (dengeli-24)")
     parser.add_argument("--workers", type=int, default=1)
     parser.add_argument("--task-timeout-min", type=int, default=45)
+    parser.add_argument(
+        "--batch-hours",
+        type=float,
+        default=None,
+        help="Stop after this wall-clock budget; BLS resumes from its saved period chunk",
+    )
     parser.add_argument(
         "--oversampling-factor",
         type=float,
@@ -470,6 +621,10 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--output", default=str(REPORT_PATH))
     args = parser.parse_args(argv)
+    if args.batch_hours is not None and args.batch_hours <= 0:
+        parser.error("--batch-hours must be positive")
+    if args.batch_hours is not None and args.workers != 1:
+        parser.error("--batch-hours requires --workers 1")
 
     declared = {
         "corpus": args.corpus,
@@ -482,6 +637,7 @@ def main(argv: list[str] | None = None) -> int:
         "bls_rule": BLS_RULE,
         "workers": args.workers,
         "task_timeout_min": args.task_timeout_min,
+        "batch_hours": args.batch_hours,
         "oversampling_factor": (
             args.oversampling_factor
             if args.oversampling_factor is not None
@@ -595,6 +751,11 @@ def main(argv: list[str] | None = None) -> int:
             else:
                 tasks.append((key, dict(case)))
 
+    deadline = (
+        time.monotonic() + args.batch_hours * 3600
+        if args.batch_hours is not None
+        else None
+    )
     if tasks and args.workers > 1:
         ctx = multiprocessing.get_context(args.mp_method)
         total = len(tasks)
@@ -609,6 +770,7 @@ def main(argv: list[str] | None = None) -> int:
                     cache_path=str(cache_path),
                     fingerprint=naive_fp,
                     oversampling_factor=args.oversampling_factor,
+                    deadline=deadline,
                 ): task[0]
                 for task in tasks
             }
@@ -632,15 +794,32 @@ def main(argv: list[str] | None = None) -> int:
                 _heartbeat(out_dir)
     elif tasks:
         for task in tasks:
-            _naive_worker(
+            if deadline is not None and time.monotonic() >= deadline:
+                break
+            _, _, task_status = _naive_worker(
                 task,
                 detector_name=task[0].split("|", 1)[0],
                 timeout_sec=_escalated_timeout_sec(task[0]),
                 cache_path=str(cache_path),
                 fingerprint=naive_fp,
                 oversampling_factor=args.oversampling_factor,
+                deadline=deadline,
             )
             _heartbeat(out_dir)
+            if task_status == "in_progress":
+                break
+
+    if args.batch_hours is not None:
+        remaining_tasks = [
+            key for key, _ in tasks if _cached_lookup(key) is None
+        ]
+        if remaining_tasks:
+            print(
+                f"[batch] pending/retryable tasks: {len(remaining_tasks)}; "
+                "rerun the same command to resume",
+                flush=True,
+            )
+            return 0
 
     naive_map = _read_cache(cache_path, naive_fp)
     for name in ("tls", "bls"):
