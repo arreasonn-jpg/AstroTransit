@@ -24,9 +24,13 @@ Sade kuralların amacı stratejik değil, şeffaftır: iki karşılaştırma
 implementasyonu da klasik eşiklerle (SDE/SNR) çalışır; pipeline'ın
 kazancı teknik katmanlardan (ön-işleme, cascade, vetting) gelir.
 
-Yalnız sade dedektörler paralel koşar (--workers; astrotransit sonuçları
-önbellekten okunur). Görev zaman aşımı muhafazakârdır: aşan/çöken görev
-False sayılır — recall'a yardım etmez.
+Tam-pipeline kararlarını aynı corpus üzerinde üreten
+``run_dev_vetting_eval.py`` çıktısı ``--pipeline-rows`` ile verilebilir; bu
+satırlar aynı kabul/vetting sözleşmesini karşılaştırmaya taşır. Legacy cache
+yolu yalnız eski robustness-kampanyası candidate-detection sonuçlarını kullanır.
+
+Yalnız sade dedektörler paralel koşar (--workers). Görev zaman aşımı
+muhafazakârdır: aşan/çöken görev False sayılır — recall'a yardım etmez.
 """
 
 from __future__ import annotations
@@ -87,6 +91,44 @@ def _load_cases(path: Path) -> list[dict[str, Any]]:
             }
         )
     return cases
+
+
+def _load_pipeline_rows(path: Path, cases: list[dict[str, Any]]) -> dict[str, bool]:
+    """Load exact-corpus accepted-candidate decisions from the dev evaluator."""
+
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    rows = payload.get("rows") if isinstance(payload, dict) else None
+    if not isinstance(rows, list):
+        raise ValueError(f"pipeline rows must contain a 'rows' list: {path}")
+
+    expected = {
+        str(case["target_id"]).replace("TIC ", "").strip(): str(case["label"])
+        for case in cases
+    }
+    if len(expected) != len(cases):
+        raise ValueError("baseline corpus contains duplicate target IDs")
+    results: dict[str, bool] = {}
+    for row in rows:
+        if not isinstance(row, dict):
+            raise ValueError("pipeline rows must contain JSON objects")
+        target_id = str(row.get("target_id", "")).replace("TIC ", "").strip()
+        if target_id not in expected:
+            raise ValueError(f"unexpected pipeline result target: {target_id!r}")
+        if target_id in results:
+            raise ValueError(f"duplicate pipeline result target: {target_id}")
+        if str(row.get("label")) != expected[target_id]:
+            raise ValueError(f"pipeline result label mismatch for target {target_id}")
+        if row.get("error"):
+            raise ValueError(f"pipeline evaluation failed for {target_id}: {row['error']}")
+        decision = row.get("accepted_candidate")
+        if not isinstance(decision, bool):
+            raise ValueError(f"pipeline result has no boolean decision for target {target_id}")
+        results[target_id] = decision
+
+    missing = sorted(set(expected) - set(results))
+    if missing:
+        raise ValueError(f"pipeline results missing targets: {missing}")
+    return results
 
 
 def _load_robustness_cache(fingerprint: str) -> dict[str, bool]:
@@ -419,6 +461,12 @@ def main(argv: list[str] | None = None) -> int:
         default=None,
         help="Robustness önbelleği parmak izi (boşsa runner_loop.log'dan okunur)",
     )
+    parser.add_argument(
+        "--pipeline-rows",
+        type=Path,
+        default=None,
+        help="Current dev evaluator rows with accepted_candidate decisions for the exact corpus",
+    )
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--output", default=str(REPORT_PATH))
     args = parser.parse_args(argv)
@@ -426,6 +474,9 @@ def main(argv: list[str] | None = None) -> int:
     declared = {
         "corpus": args.corpus,
         "reference": "astrotransit",
+        "pipeline_decision": (
+            "accepted_candidate" if args.pipeline_rows is not None else "legacy_candidate_detection"
+        ),
         "rules_tag": RULE_TAG,
         "tls_rule": TLS_RULE,
         "bls_rule": BLS_RULE,
@@ -448,23 +499,29 @@ def main(argv: list[str] | None = None) -> int:
         print(f"[error] corpus boş: {args.corpus}", file=sys.stderr)
         return 2
 
-    # ── astrotransit sonuçları: robustness önbelleğinden yeniden kullanım ──
-    fingerprint = args.reuse_fingerprint or load_runtime_fingerprint()
-    reuse = _load_robustness_cache(fingerprint)
-    missing_p = [
-        case["target_id"].replace("TIC ", "")
-        for case in cases
-        if case["target_id"].replace("TIC ", "") not in reuse
-    ]
-    if missing_p:
-        raise RuntimeError(f"robustness önbelleğinde eksik hedef: {missing_p}")
+    pipeline_rows_sha256 = None
+    if args.pipeline_rows is not None:
+        import hashlib
 
-    astro_results: dict[str, bool] = {
-        case["target_id"].replace("TIC ", ""): reuse[
+        astro_results = _load_pipeline_rows(args.pipeline_rows, cases)
+        pipeline_rows_sha256 = hashlib.sha256(args.pipeline_rows.read_bytes()).hexdigest()
+        fingerprint = None
+    else:
+        fingerprint = args.reuse_fingerprint or load_runtime_fingerprint()
+        reuse = _load_robustness_cache(fingerprint)
+        missing_p = [
             case["target_id"].replace("TIC ", "")
+            for case in cases
+            if case["target_id"].replace("TIC ", "") not in reuse
         ]
-        for case in cases
-    }
+        if missing_p:
+            raise RuntimeError(f"robustness önbelleğinde eksik hedef: {missing_p}")
+        astro_results = {
+            case["target_id"].replace("TIC ", ""): reuse[
+                case["target_id"].replace("TIC ", "")
+            ]
+            for case in cases
+        }
 
     def astro_detector(case: Mapping[str, Any]) -> bool:
         return astro_results[str(case["target_id"]).replace("TIC ", "")]
@@ -632,6 +689,8 @@ def main(argv: list[str] | None = None) -> int:
             "git_commit": _git_head(),
             "run_timestamp_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
             "reuse_fingerprint": fingerprint,
+            "pipeline_rows": str(args.pipeline_rows) if args.pipeline_rows else None,
+            "pipeline_rows_sha256": pipeline_rows_sha256,
             "rules_tag": RULE_TAG,
         },
     }

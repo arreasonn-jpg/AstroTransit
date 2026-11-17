@@ -60,6 +60,71 @@ def test_robustness_cache_filtering(tmp_path: Path):
     assert results == {"100": True, "200": False}  # ALL anahtarları, yanlış fingerprint filtreli
 
 
+def test_pipeline_rows_match_targets_labels_and_decisions(tmp_path: Path):
+    rows_path = tmp_path / "pipeline_rows.json"
+    rows_path.write_text(
+        json.dumps(
+            {
+                "rows": [
+                    {"target_id": "100", "label": "planet", "accepted_candidate": True, "error": ""},
+                    {
+                        "target_id": "200",
+                        "label": "false_positive",
+                        "accepted_candidate": False,
+                        "error": "",
+                    },
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+    cases = [
+        {"target_id": "100", "label": "planet"},
+        {"target_id": "200", "label": "false_positive"},
+    ]
+
+    assert runner._load_pipeline_rows(rows_path, cases) == {"100": True, "200": False}
+
+
+@pytest.mark.parametrize(
+    "rows, message",
+    [
+        ([{"target_id": "100", "label": "planet", "accepted_candidate": True}], "missing targets"),
+        (
+            [
+                {"target_id": "100", "label": "planet", "accepted_candidate": True},
+                {
+                    "target_id": "200",
+                    "label": "false_positive",
+                    "accepted_candidate": True,
+                    "error": "failed",
+                },
+            ],
+            "evaluation failed",
+        ),
+        (
+            [
+                {"target_id": "100", "label": "planet", "accepted_candidate": True},
+                {"target_id": "200", "label": "planet", "accepted_candidate": False},
+            ],
+            "label mismatch",
+        ),
+    ],
+)
+def test_pipeline_rows_reject_incomplete_or_invalid_evidence(
+    tmp_path: Path, rows: list[dict], message: str
+):
+    rows_path = tmp_path / "pipeline_rows.json"
+    rows_path.write_text(json.dumps({"rows": rows}), encoding="utf-8")
+    cases = [
+        {"target_id": "100", "label": "planet"},
+        {"target_id": "200", "label": "false_positive"},
+    ]
+
+    with pytest.raises(ValueError, match=message):
+        runner._load_pipeline_rows(rows_path, cases)
+
+
 def test_baseline_fingerprint_depends_on_rules():
     a = runner.baseline_fingerprint("corpus.json", "v1")
     b = runner.baseline_fingerprint("corpus.json", "v2")

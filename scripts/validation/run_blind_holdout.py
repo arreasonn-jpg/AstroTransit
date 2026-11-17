@@ -25,7 +25,7 @@ from collections import Counter
 from contextlib import contextmanager
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any, Mapping, Optional, Sequence
 
 
 @contextmanager
@@ -282,6 +282,53 @@ def check_contract(args: argparse.Namespace) -> int:
     return 0
 
 
+def _aggregate_sector_signals(
+    sectors: Sequence[Mapping[str, Any]],
+) -> tuple[bool, dict[str, Any]]:
+    """Apply the shared multi-sector acceptance rule to serialized signals."""
+
+    candidates = [sector for sector in sectors if sector.get("has_candidate")]
+    if not candidates:
+        return (
+            any(bool(sector.get("candidate_confirmed")) for sector in sectors),
+            {"rule": "no_candidate_sectors_fallback"},
+        )
+
+    n = len(candidates)
+    n_hard = 0
+    n_secondary = 0
+    periods: list[float] = []
+    for sector in candidates:
+        fails = set(sector.get("failed_tests", []) or [])
+        if sector.get("vetting_is_false_positive") or fails & {
+            "odd_even_mismatch",
+            "transit_shape",
+        }:
+            n_hard += 1
+        if "secondary_eclipse" in fails:
+            n_secondary += 1
+        period = sector.get("candidate_period_days")
+        if period is not None:
+            periods.append(float(period))
+
+    frac_modal = 1.0
+    if periods:
+        rounded = [round(period, 1) for period in periods]
+        frac_modal = Counter(rounded).most_common(1)[0][1] / len(rounded)
+    veto = (
+        (n_hard >= math.ceil(n / 2) and n >= 2)
+        or (n_secondary >= math.ceil(n / 2) and n >= 2)
+        or (n >= 4 and frac_modal < 0.5)
+    )
+    return not veto, {
+        "rule": "majority_veto_plus_period_consistency",
+        "n_candidate_sectors": n,
+        "n_hard_fail_sectors": n_hard,
+        "n_secondary_eclipse_fail_sectors": n_secondary,
+        "frac_modal_period": round(frac_modal, 4),
+    }
+
+
 def _evaluate_case(case: dict[str, Any], orchestrator: Any, sector_client: Any) -> dict[str, Any]:
     """Tek hedef: sektör seçimi → pipeline → kabul edilmiş aday var mı?
 
@@ -354,51 +401,30 @@ def _evaluate_case(case: dict[str, Any], orchestrator: Any, sector_client: Any) 
         # Dev corpus (24 hedef): recall 8/12 (>=0.5), FPR 2/12 (<=0.6) — eski
         # any-clean kuralı FPR 11/12 idi. NOT: körlü veri üzerinde ayar
         # yapılmadı; körlü koşum en sonda tek denemede yapılacak.
-        candidate_sectors = [s for s in sectors if getattr(s, "has_candidate", False)]
-        if candidate_sectors:
-            n = len(candidate_sectors)
-            n_hard = 0
-            n_sec = 0
-            periods: list[float] = []
-            for s in candidate_sectors:
-                quality = getattr(s, "quality", None)
-                vetting = getattr(quality, "vetting", None) if quality else None
-                tests = getattr(vetting, "tests", []) or [] if vetting else []
-                fails = {
-                    str(getattr(t, "name", "") or "")
-                    for t in tests
-                    if _verdict_value(getattr(t, "verdict", "")) == "fail"
-                }
-                if getattr(vetting, "is_false_positive", False) or fails & {
-                    "odd_even_mismatch", "transit_shape",
-                }:
-                    n_hard += 1
-                if "secondary_eclipse" in fails:
-                    n_sec += 1
-                cand = getattr(s, "candidate", None)
-                p = getattr(cand, "period", None) if cand else None
-                if p is not None:
-                    periods.append(float(p))
-            frac_modal = 1.0
-            if periods:
-                rounded = [round(p, 1) for p in periods]
-                frac_modal = Counter(rounded).most_common(1)[0][1] / len(rounded)
-            veto = (
-                (n_hard >= math.ceil(n / 2) and n >= 2)
-                or (n_sec >= math.ceil(n / 2) and n >= 2)
-                or (n >= 4 and frac_modal < 0.5)
-            )
-            row["accepted_candidate"] = not veto
-            row["aggregation"] = {
-                "rule": "majority_veto_plus_period_consistency",
-                "n_candidate_sectors": n,
-                "n_hard_fail_sectors": n_hard,
-                "n_secondary_eclipse_fail_sectors": n_sec,
-                "frac_modal_period": round(frac_modal, 4),
-            }
-        else:
-            row["accepted_candidate"] = any(_sector_accepted(s) for s in sectors)
-            row["aggregation"] = {"rule": "no_candidate_sectors_fallback"}
+        sector_signals = []
+        for sector in sectors:
+            quality = getattr(sector, "quality", None)
+            vetting = getattr(quality, "vetting", None) if quality else None
+            tests = (getattr(vetting, "tests", []) or []) if vetting else []
+            candidate = getattr(sector, "candidate", None)
+            sector_signals.append({
+                "has_candidate": bool(getattr(sector, "has_candidate", False)),
+                "candidate_confirmed": _sector_accepted(sector),
+                "vetting_is_false_positive": bool(
+                    getattr(vetting, "is_false_positive", False)
+                ) if vetting else False,
+                "failed_tests": [
+                    str(getattr(test, "name", "") or "")
+                    for test in tests
+                    if _verdict_value(getattr(test, "verdict", "")) == "fail"
+                ],
+                "candidate_period_days": (
+                    getattr(candidate, "period", None) if candidate else None
+                ),
+            })
+        row["accepted_candidate"], row["aggregation"] = _aggregate_sector_signals(
+            sector_signals
+        )
 
         per_sector: list[dict[str, Any]] = []
         for item in sectors:
