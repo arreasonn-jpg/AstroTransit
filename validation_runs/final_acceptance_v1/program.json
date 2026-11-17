@@ -488,7 +488,7 @@
       "required_output": "validation_runs/final_acceptance_v1/blind_holdout_v2/report.json",
       "input_contract": "validation_runs/final_acceptance_v1/blind_holdout_v2/holdout_manifest_v2.json",
       "runner": "scripts/validation/run_blind_holdout.py",
-      "rationale": "v2 blind holdout: a fresh frozen corpus (new selection seed 20261120) from the same blind_test partition, disjoint from v1 and all prior gates, with sector availability frozen into the manifest at build time so no live MAST lookup can fail mid-run. Floors are identical to v1 and were declared before any v2 measurement: recall >= 0.5, FPR <= 0.6, zero errors, >= 120 evaluated. The single blind run happens only after all algorithm changes are frozen and validated on development corpora; nothing is tuned on this corpus.",
+      "rationale": "v2 blind holdout: a fresh frozen corpus (new selection seed 20261120) from the same blind_test partition, disjoint from v1 and all prior gates. Targets without SPOC 120s sectors were replaced within their original label/disposition strata before the run; sector lists are frozen for all 144 cases, so the run does not depend on live MAST lookups. Floors are identical to v1 and were declared before any v2 measurement: recall >= 0.5, FPR <= 0.6, zero errors, >= 120 evaluated. The single blind run happens only after all algorithm changes are frozen and validated on development corpora; nothing is tuned on this corpus.",
       "acceptance_checks": [
         {
           "path": "status",
@@ -503,7 +503,7 @@
         {
           "path": "corpus.sha256",
           "operator": "equals",
-          "value": "374ad1030965142e1d29539a5a6c95baa1d051d9247eb7e2982a9a05f0d5c064"
+          "value": "ee6c19f936e57d5a8c2dab59fe4aa8a6f905d42d0be984b180c20b01ebd4e453"
         },
         {
           "path": "corpus.n_cases",

@@ -16,7 +16,7 @@ import argparse
 import json
 import sys
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
@@ -41,6 +41,73 @@ V2_SPLIT_SEED = SPLIT_SEED
 V2_PER_LABEL = 72
 
 
+def _select_with_frozen_sectors(
+    cases: list[dict[str, Any]],
+    *,
+    excluded_ids: set[str],
+    per_label: int,
+    selection_seed: int,
+    split_seed: int,
+    minimum_per_stratum: int,
+    max_sectors: int,
+    sector_lookup: Callable[[str], list[int]],
+    cached_sectors: dict[str, list[int]] | None = None,
+    known_unavailable: set[str] | None = None,
+) -> tuple[dict[str, Any], set[str]]:
+    """Keep the declared quotas while excluding targets without SPOC coverage."""
+
+    sector_cache = {
+        normalize_target_id(target_id): sorted({int(sector) for sector in sectors})[:max_sectors]
+        for target_id, sectors in (cached_sectors or {}).items()
+        if sectors
+    }
+    unavailable = {
+        normalize_target_id(target_id) for target_id in (known_unavailable or ())
+    } - sector_cache.keys()
+    declared = select_holdout(
+        cases,
+        excluded_ids=excluded_ids,
+        per_label=per_label,
+        seed=selection_seed,
+        split_seed=split_seed,
+        split="blind_test",
+        minimum_per_stratum=minimum_per_stratum,
+    )
+    fixed_quotas = declared["quotas"]
+    while True:
+        result = select_holdout(
+            cases,
+            excluded_ids=excluded_ids | unavailable,
+            per_label=per_label,
+            seed=selection_seed,
+            split_seed=split_seed,
+            split="blind_test",
+            minimum_per_stratum=minimum_per_stratum,
+            fixed_quotas=fixed_quotas,
+        )
+        if any(result["counts"].get(label, 0) != per_label for label in ("planet", "false_positive")):
+            raise RuntimeError(
+                "SPOC-available candidates cannot fill the declared per-label quotas"
+            )
+
+        newly_unavailable: set[str] = set()
+        for case in result["cases"]:
+            target_id = normalize_target_id(case["target_id"])
+            if target_id not in sector_cache:
+                try:
+                    sectors = sector_lookup(target_id)
+                except Exception as exc:
+                    raise RuntimeError(f"MAST sector lookup failed for {target_id}") from exc
+                sector_cache[target_id] = sorted({int(sector) for sector in sectors})[:max_sectors]
+                if not sector_cache[target_id]:
+                    newly_unavailable.add(target_id)
+            case["sectors"] = sector_cache[target_id]
+
+        if not newly_unavailable:
+            return result, unavailable
+        unavailable.update(newly_unavailable)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
@@ -61,6 +128,8 @@ def main() -> int:
         help="cap on frozen sectors per target (default 6; keeps multi-sector aggregation meaningful)",
     )
     args = parser.parse_args()
+    if args.max_sectors < 1:
+        parser.error("--max-sectors must be at least 1")
 
     corpus = json.loads((ROOT / LABELLED_CORPUS).read_text(encoding="utf-8"))
     cases = corpus["cases"]
@@ -97,17 +166,58 @@ def main() -> int:
     print(f"loaded labelled corpus: {len(cases)} cases")
     print(f"excluded IDs (v1 holdout + prior gates): {len(excluded)}")
 
-    result: dict[str, Any] = select_holdout(
-        cases,
-        excluded_ids=excluded,
-        per_label=args.per_label,
-        seed=args.selection_seed,
-        split_seed=args.split_seed,
-        split="blind_test",
-        minimum_per_stratum=args.minimum_per_stratum,
-    )
+    if args.freeze_sectors:
+        from astrotransit.data.tess_client import TESSClient
+
+        cached_sectors: dict[str, list[int]] = {}
+        known_unavailable: set[str] = set()
+        if args.output.is_file():
+            previous = json.loads(args.output.read_text(encoding="utf-8"))
+            if "mast_availability" in str(previous.get("materialization", "")):
+                for case in previous.get("cases", []):
+                    target_id = normalize_target_id(case.get("target_id", ""))
+                    sectors = [int(item) for item in case.get("sectors", []) or []]
+                    if sectors:
+                        cached_sectors[target_id] = sectors
+                    else:
+                        known_unavailable.add(target_id)
+                known_unavailable.update(
+                    normalize_target_id(item)
+                    for item in previous.get("exclusions", {}).get("sources", {}).get(
+                        "no_spoc_120s", []
+                    )
+                )
+
+        result, unavailable = _select_with_frozen_sectors(
+            cases,
+            excluded_ids=excluded,
+            per_label=args.per_label,
+            selection_seed=args.selection_seed,
+            split_seed=args.split_seed,
+            minimum_per_stratum=args.minimum_per_stratum,
+            max_sectors=args.max_sectors,
+            sector_lookup=TESSClient().get_available_sectors,
+            cached_sectors=cached_sectors,
+            known_unavailable=known_unavailable,
+        )
+        print(
+            f"froze sectors for {len(result['cases'])}/{len(result['cases'])} targets; "
+            f"excluded {len(unavailable)} targets with no SPOC sectors"
+        )
+    else:
+        result = select_holdout(
+            cases,
+            excluded_ids=excluded,
+            per_label=args.per_label,
+            seed=args.selection_seed,
+            split_seed=args.split_seed,
+            split="blind_test",
+            minimum_per_stratum=args.minimum_per_stratum,
+        )
+        unavailable = set()
+
     result["campaign"] = "blind_domain_holdout_v2"
-    result["materialization"] = "deterministic_rebuild_from_frozen_sources_v2"
+    result["materialization"] = "deterministic_rebuild_from_frozen_sources_and_mast_availability_v2"
     result["claim_boundary"] = (
         "v2 blind holdout: fresh sha256-seeded selection from the blind_test partition, "
         "disjoint from v1 and all prior gates. Labels are external TFoP WG dispositions. "
@@ -118,13 +228,18 @@ def main() -> int:
         "sources": {
             "v1_holdout": sorted(v1_ids),
             **{name: ids for name, ids in sorted(per_source.items())},
+            "no_spoc_120s": sorted(unavailable),
         },
-        "n_excluded_ids": len(excluded),
+        "n_excluded_ids": len(excluded | unavailable),
         "policy": (
-            "v1 holdout IDs and every id touched by a prior gate are removed before "
-            "ranking, so v2 cannot inherit a selection advantage from earlier measurements"
+            "v1 holdout IDs, every id touched by a prior gate, and targets with no "
+            "available SPOC 120s sectors are removed before ranking; replacements "
+            "preserve the declared label and disposition-stratum quotas"
         ),
     }
+    if unavailable:
+        result["rejection_counts"]["used_by_prior_gate"] -= len(unavailable)
+        result["rejection_counts"]["no_spoc_120s"] = len(unavailable)
     result["sources"] = {
         "labelled_corpus": LABELLED_CORPUS,
         "v1_manifest": str(V1_MANIFEST.relative_to(ROOT)),
@@ -134,31 +249,6 @@ def main() -> int:
     v2_ids = {normalize_target_id(c["target_id"]) for c in result["cases"]}
     overlap = v2_ids & v1_ids
     assert not overlap, f"v2/v1 overlap: {overlap}"
-
-    # FAZ 2b.7: freeze sector availability into the manifest so the blind run
-    # never depends on a live MAST lookup (v1 lost 9 rows to sector fetch
-    # failures). Sector *availability* is archive metadata, not detector
-    # output — freezing it keeps the run detector-blind.
-    if args.freeze_sectors:
-        from astrotransit.data.tess_client import TESSClient
-
-        client = TESSClient()
-        frozen = 0
-        for case in result["cases"]:
-            tid = normalize_target_id(case["target_id"])
-            try:
-                sectors = client.get_available_sectors(tid)
-            except Exception as exc:
-                print(f"  sector lookup failed for {tid}: {exc}")
-                sectors = []
-            case["sectors"] = sorted(sectors)[: args.max_sectors]
-            if case["sectors"]:
-                frozen += 1
-        print(f"froze sectors for {frozen}/{len(result['cases'])} targets")
-        # Re-freeze the hash AFTER sector lists are embedded.
-        from astrotransit.validation.blind_holdout import holdout_sha256
-
-        result["holdout_sha256"] = holdout_sha256(result["cases"])
 
     if args.dry_run:
         keys = ("counts", "stratum_counts", "pool_sizes", "holdout_sha256", "rejection_counts")

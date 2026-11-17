@@ -5,6 +5,8 @@ import importlib.util
 import json
 from pathlib import Path
 
+from astrotransit.validation.blind_holdout import holdout_sha256
+
 SCRIPT = Path("scripts/validation/final_acceptance_audit.py")
 SPEC = importlib.util.spec_from_file_location("final_acceptance_audit", SCRIPT)
 AUDIT = importlib.util.module_from_spec(SPEC)
@@ -24,6 +26,27 @@ def test_program_has_unique_gates():
     assert len(ids) == len(set(ids))
     assert "blind_domain_holdout" in ids
     assert "blind_domain_holdout_v2" in ids
+
+
+def test_v2_manifest_is_sector_complete_and_matches_declared_hash():
+    program = json.loads(Path("validation_runs/final_acceptance_v1/program.json").read_text())
+    gate = next(gate for gate in program["gates"] if gate["id"] == "blind_domain_holdout_v2")
+    manifest = json.loads(
+        Path(
+            "validation_runs/final_acceptance_v1/blind_holdout_v2/holdout_manifest_v2.json"
+        ).read_text()
+    )
+    declared_hash = next(
+        check["value"]
+        for check in gate["acceptance_checks"]
+        if check["path"] == "corpus.sha256"
+    )
+
+    assert manifest["campaign"] == "blind_domain_holdout_v2"
+    assert len(manifest["cases"]) == 144
+    assert all(case["sectors"] for case in manifest["cases"])
+    assert manifest["holdout_sha256"] == holdout_sha256(manifest["cases"])
+    assert declared_hash == manifest["holdout_sha256"]
 
 
 def test_pending_evidence_never_closes_a_gate(tmp_path):
