@@ -148,6 +148,35 @@ def test_pipeline_rows_match_targets_labels_and_decisions(tmp_path: Path):
     assert runner._load_pipeline_rows(rows_path, cases) == {"100": True, "200": False}
 
 
+def test_pipeline_rows_ignore_targets_outside_shard(tmp_path: Path):
+    rows_path = tmp_path / "pipeline_rows.json"
+    rows_path.write_text(
+        json.dumps(
+            {
+                "rows": [
+                    {"target_id": "100", "label": "planet", "accepted_candidate": True, "error": ""},
+                    {
+                        "target_id": "200",
+                        "label": "false_positive",
+                        "accepted_candidate": False,
+                        "error": "",
+                    },
+                    {
+                        "target_id": "300",
+                        "label": "planet",
+                        "accepted_candidate": True,
+                        "error": "",
+                    },
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+    shard_cases = [{"target_id": "100", "label": "planet"}]
+
+    assert runner._load_pipeline_rows(rows_path, shard_cases) == {"100": True}
+
+
 @pytest.mark.parametrize(
     "rows, message",
     [

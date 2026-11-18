@@ -117,7 +117,7 @@ def _load_pipeline_rows(path: Path, cases: list[dict[str, Any]]) -> dict[str, bo
             raise ValueError("pipeline rows must contain JSON objects")
         target_id = str(row.get("target_id", "")).replace("TIC ", "").strip()
         if target_id not in expected:
-            raise ValueError(f"unexpected pipeline result target: {target_id!r}")
+            continue  # shard filtresi: bu shard'da olmayan hedefleri atla
         if target_id in results:
             raise ValueError(f"duplicate pipeline result target: {target_id}")
         if str(row.get("label")) != expected[target_id]:
