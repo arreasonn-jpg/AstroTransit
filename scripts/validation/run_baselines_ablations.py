@@ -506,6 +506,30 @@ def _bls_detect(
     )
 
 
+def _adopt_bls_checkpoints(source_dir: Path, out_dir: Path, new_fingerprint: str) -> None:
+    """Eski koşum klasöründeki BLS checkpoint'lerini yeni parmak iziyle kopyala.
+
+    Eski sürüm path-bazlı parmak izi kullandığından checkpoint'ler yeni
+    içerik-bazlı parmak iziyle eşleşmez; burada ``fingerprint`` alanı
+    güncellenip hedef klasöre yazılır. Kaynak klasör dokunulmaz (kanıt).
+    """
+
+    adopted = 0
+    for src in sorted(source_dir.glob("bls_progress_*.json")):
+        try:
+            payload = json.loads(src.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, OSError):
+            continue
+        if payload.get("schema_version") != 1:
+            continue
+        payload["fingerprint"] = new_fingerprint
+        _write_bls_checkpoint(out_dir / src.name, payload)
+        adopted += 1
+        print(f"[adopt] {src.name} -> {out_dir.name}/{src.name}", flush=True)
+    if adopted == 0:
+        print(f"[adopt] {source_dir}: benimsenacak checkpoint yok", flush=True)
+
+
 def _naive_worker(
     task: tuple[str, dict[str, Any]],
     *,
@@ -621,6 +645,27 @@ def main(argv: list[str] | None = None) -> int:
         default=None,
         help="Current dev evaluator rows with accepted_candidate decisions for the exact corpus",
     )
+    parser.add_argument(
+        "--shard",
+        default=None,
+        metavar="I/N",
+        help=(
+            "Corpus'u N parçaya böl, yalnızca I. parçayı koş (1-based). "
+            "Colab'da paralel shard koşumu için; her shard aynı --output'a yazmaz, "
+            "ayrı çıktı klasörüyle koşun ve sonra birleştirin."
+        ),
+    )
+    parser.add_argument(
+        "--adopt-checkpoint",
+        type=Path,
+        default=None,
+        metavar="DIR",
+        help=(
+            "Eski (path-bazlı parmak izli) bir koşum klasöründen BLS checkpoint'lerini "
+            "bu koşuma kopyala; içerik-bazlı yeni parmak iziyle yeniden yazılır. "
+            "Karantina klasörü kanıt olarak korunur (kopyalanır, taşınmaz)."
+        ),
+    )
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--output", default=str(REPORT_PATH))
     args = parser.parse_args(argv)
@@ -628,6 +673,10 @@ def main(argv: list[str] | None = None) -> int:
         parser.error("--batch-hours must be positive")
     if args.batch_hours is not None and args.workers != 1:
         parser.error("--batch-hours requires --workers 1")
+    if args.shard is not None:
+        match = re.fullmatch(r"(\d+)/(\d+)", args.shard)
+        if not match or not 1 <= int(match.group(1)) <= int(match.group(2)):
+            parser.error("--shard 'I/N' biçiminde olmalı (1 <= I <= N)")
 
     declared = {
         "corpus": args.corpus,
@@ -641,6 +690,7 @@ def main(argv: list[str] | None = None) -> int:
         "workers": args.workers,
         "task_timeout_min": args.task_timeout_min,
         "batch_hours": args.batch_hours,
+        "shard": args.shard,
         "oversampling_factor": (
             args.oversampling_factor
             if args.oversampling_factor is not None
@@ -657,6 +707,10 @@ def main(argv: list[str] | None = None) -> int:
     if not cases:
         print(f"[error] corpus boş: {args.corpus}", file=sys.stderr)
         return 2
+    if args.shard is not None:
+        shard_i, shard_n = (int(part) for part in args.shard.split("/"))
+        cases = [c for idx, c in enumerate(cases) if idx % shard_n == shard_i - 1]
+        print(f"[shard] {args.shard}: {len(cases)} vaka bu shard'da", flush=True)
 
     pipeline_rows_sha256 = None
     if args.pipeline_rows is not None:
@@ -693,6 +747,8 @@ def main(argv: list[str] | None = None) -> int:
     _start_periodic_heartbeat(out_dir, every_sec=60)
     cache_path = out_dir / "runs_cache.jsonl"
     naive_fp = baseline_fingerprint(args.corpus, RULE_TAG, args.oversampling_factor)
+    if args.adopt_checkpoint is not None:
+        _adopt_bls_checkpoints(Path(args.adopt_checkpoint), out_dir, naive_fp)
 
     def _cached_lookup(key: str) -> bool | None:
         """Önbellek araması; timed_out/error satırları 'yok' sayılır (retry)."""
@@ -881,20 +937,38 @@ def main(argv: list[str] | None = None) -> int:
     return 0 if checks_pass else 1
 
 
+def corpus_content_fingerprint(corpus: str | Path) -> str:
+    """Corpus dosyasının içerik hash'i — yoldan bağımsız (Colab/Windows uyumu).
+
+    Aynı içerik farklı makinede/farklı path'te aynı parmak izi üretir;
+    bu sayede checkpoint/cache başka ortamda da devam eder.
+    """
+
+    import hashlib
+
+    digest = hashlib.sha256()
+    with Path(corpus).open("rb") as fh:
+        for block in iter(lambda: fh.read(1 << 20), b""):
+            digest.update(block)
+    return digest.hexdigest()
+
+
 def baseline_fingerprint(
     corpus: str, rules_tag: str, oversampling_factor: float | None = None
 ) -> str:
-    """Corpus + kural sürümüne bağlı parmak izi (koşum ayarı değişirse cache bozulur).
+    """Corpus içeriği + kural sürümüne bağlı parmak izi (koşum ayarı değişirse cache bozulur).
 
-    ``oversampling_factor`` kuralı yeniden tanımlı coarse-scan geçişidir;
-    farklı faktör farklı kanıt alanıdır — parmak izine dahildir.
+    Corpus anahtarı dosya içeriği hash'idir; yol (Windows backslash / Colab
+    mount) parmak izine girmez. ``oversampling_factor`` kuralı yeniden
+    tanımlı coarse-scan geçişidir; farklı faktör farklı kanıt alanıdır —
+    parmak izine dahildir.
     """
 
     import hashlib
 
     payload = json.dumps(
         {
-            "corpus": corpus,
+            "corpus_sha256": corpus_content_fingerprint(corpus),
             "rules": rules_tag,
             "oversampling_factor": float(
                 oversampling_factor

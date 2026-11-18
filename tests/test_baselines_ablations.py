@@ -187,19 +187,39 @@ def test_pipeline_rows_reject_incomplete_or_invalid_evidence(
         runner._load_pipeline_rows(rows_path, cases)
 
 
-def test_baseline_fingerprint_depends_on_rules():
-    a = runner.baseline_fingerprint("corpus.json", "v1")
-    b = runner.baseline_fingerprint("corpus.json", "v2")
+def test_baseline_fingerprint_depends_on_rules(tmp_path):
+    corpus = tmp_path / "corpus.json"
+    corpus.write_text('{"cases": []}', encoding="utf-8")
+    a = runner.baseline_fingerprint(str(corpus), "v1")
+    b = runner.baseline_fingerprint(str(corpus), "v2")
     assert a != b
-    assert runner.baseline_fingerprint("corpus.json", "v1") == a  # deterministik
+    assert runner.baseline_fingerprint(str(corpus), "v1") == a  # deterministik
 
 
-def test_baseline_fingerprint_depends_on_oversampling_factor():
-    a = runner.baseline_fingerprint("corpus.json", "v1", 3.0)
-    b = runner.baseline_fingerprint("corpus.json", "v1", 1.0)
+def test_baseline_fingerprint_depends_on_oversampling_factor(tmp_path):
+    corpus = tmp_path / "corpus.json"
+    corpus.write_text('{"cases": []}', encoding="utf-8")
+    a = runner.baseline_fingerprint(str(corpus), "v1", 3.0)
+    b = runner.baseline_fingerprint(str(corpus), "v1", 1.0)
     assert a != b  # coarse-scan farklı kanıt alanıdır
-    c = runner.baseline_fingerprint("corpus.json", "v1", 3.0)
+    c = runner.baseline_fingerprint(str(corpus), "v1", 3.0)
     assert a == c  # deterministik
+
+
+def test_baseline_fingerprint_is_path_independent(tmp_path):
+    """Aynı içerik farklı path'te aynı parmak izi: Colab/Windows uyumu."""
+
+    a_dir = tmp_path / "windows_style"
+    b_dir = tmp_path / "colab_mount"
+    a_dir.mkdir()
+    b_dir.mkdir()
+    (a_dir / "corpus.json").write_text('{"cases": [1]}', encoding="utf-8")
+    (b_dir / "corpus.json").write_text('{"cases": [1]}', encoding="utf-8")
+    fp_a = runner.baseline_fingerprint(str(a_dir / "corpus.json"), "v1")
+    fp_b = runner.baseline_fingerprint(str(b_dir / "corpus.json"), "v1")
+    assert fp_a == fp_b
+    (b_dir / "corpus.json").write_text('{"cases": [2]}', encoding="utf-8")
+    assert runner.baseline_fingerprint(str(b_dir / "corpus.json"), "v1") != fp_a
 
 
 def test_runner_alive_does_not_require_procfs_on_windows(monkeypatch):
