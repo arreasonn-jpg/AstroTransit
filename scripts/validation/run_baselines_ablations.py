@@ -671,8 +671,6 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     if args.batch_hours is not None and args.batch_hours <= 0:
         parser.error("--batch-hours must be positive")
-    if args.batch_hours is not None and args.workers != 1:
-        parser.error("--batch-hours requires --workers 1")
     if args.shard is not None:
         match = re.fullmatch(r"(\d+)/(\d+)", args.shard)
         if not match or not 1 <= int(match.group(1)) <= int(match.group(2)):
